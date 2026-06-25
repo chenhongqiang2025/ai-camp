@@ -9,9 +9,16 @@
 <meta name="theme-color" content="#0f62fe" />
 <meta property="og:title" content="AI Camp 2026 · IBM × 大连高新园区" />
 <meta property="og:description" content="2026 校企合作 AI 夏令营互动课件" />
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+SC:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Fonts via jsdelivr CDN — 国内访问稳定，按需 unicode-range 切片加载 -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/600.css">
 <style>
   :root {
     --bg-0: #0b0b0c;
@@ -24,9 +31,9 @@
     --accent-2: #78a9ff;
     --accent-soft: rgba(69,137,255,0.16);
     --border: #2a2a30;
-    --font-zh: 'IBM Plex Sans SC', system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    --font-en: 'IBM Plex Sans', system-ui, sans-serif;
-    --font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+    --font-zh: 'IBM Plex Sans', 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-en: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'JetBrains Mono', Consolas, monospace;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; background: var(--bg-0); color: var(--text); font-family: var(--font-zh); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
