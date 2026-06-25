@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI Camp 2026 · IBM × 大连高新园区</title>
+<meta name="description" content="2026 IBM × 大连高新园区 AI 夏令营互动课件，敬请期待。" />
+<meta name="author" content="Richard Chen · IBM Consulting" />
+<meta name="theme-color" content="#0f62fe" />
+<meta property="og:title" content="AI Camp 2026 · IBM × 大连高新园区" />
+<meta property="og:description" content="2026 校企合作 AI 夏令营互动课件" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+SC:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-0: #0b0b0c;
+    --bg-1: #121214;
+    --bg-2: #1a1a1d;
+    --text: #f4f4f4;
+    --text-dim: #a8a8b0;
+    --text-faint: #6b6b75;
+    --accent: #4589ff;
+    --accent-2: #78a9ff;
+    --accent-soft: rgba(69,137,255,0.16);
+    --border: #2a2a30;
+    --font-zh: 'IBM Plex Sans SC', system-ui, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-en: 'IBM Plex Sans', system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--bg-0); color: var(--text); font-family: var(--font-zh); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  body { display: flex; flex-direction: column; min-height: 100vh; position: relative; }
+
+  /* Subtle ambient grid */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(69,137,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(69,137,255,0.045) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-position: -1px -1px;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, black, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black, transparent 70%);
+  }
+  body::after {
+    content: '';
+    position: fixed; top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, var(--accent-soft), transparent 60%);
+    pointer-events: none;
+    filter: blur(40px);
+  }
+
+  /* Header */
+  .topbar {
+    position: relative;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 40px;
+    z-index: 2;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; font-family: var(--font-en); font-size: 13px; color: var(--text-dim); letter-spacing: 0.5px; }
+  .brand .dot { width: 9px; height: 9px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 14px var(--accent); }
+  .brand b { color: var(--text); font-weight: 600; }
+  .countdown-pill {
+    font-family: var(--font-mono); font-size: 12px;
+    background: var(--bg-2); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 20px;
+    color: var(--text-dim);
+  }
+  .countdown-pill b { color: var(--accent-2); font-weight: 600; }
+
+  /* Hero */
+  .hero {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 60px 24px 40px;
+    text-align: center;
+    position: relative; z-index: 2;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px;
+    background: var(--accent-soft);
+    border: 1px solid rgba(69,137,255,0.3);
+    border-radius: 100px;
+    font-family: var(--font-en);
+    font-size: 12px; letter-spacing: 0.6px;
+    color: var(--accent-2);
+    margin-bottom: 32px;
+    animation: fade-in 1s ease;
+  }
+  .badge .pulse {
+    width: 8px; height: 8px; background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 var(--accent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(69,137,255,0.6); }
+    70% { box-shadow: 0 0 0 12px rgba(69,137,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(69,137,255,0); }
+  }
+
+  h1 {
+    font-size: clamp(34px, 6vw, 64px);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-bottom: 18px;
+    background: linear-gradient(180deg, #ffffff 30%, #b8b8c0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fade-in 1s ease 0.1s both;
+  }
+  .subtitle {
+    font-size: clamp(15px, 1.5vw, 18px);
+    color: var(--text-dim);
+    max-width: 640px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+    animation: fade-in 1s ease 0.2s both;
+  }
+  .subtitle b { color: var(--text); font-weight: 500; }
+
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* Tags */
+  .tags {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center;
+    max-width: 720px;
+    margin-bottom: 50px;
+    animation: fade-in 1s ease 0.3s both;
+  }
+  .tags span {
+    font-family: var(--font-en);
+    font-size: 12px;
+    padding: 5px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-dim);
+  }
+
+  /* Info card */
+  .info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    max-width: 760px;
+    width: 100%;
+    margin: 0 auto;
+    animation: fade-in 1s ease 0.4s both;
+  }
+  .info-card {
+    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    text-align: left;
+  }
+  .info-card .label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 1.4px;
+    color: var(--text-faint);
+    font-family: var(--font-en);
+    margin-bottom: 6px;
+  }
+  .info-card .value { font-size: 15px; font-weight: 500; }
+  .info-card .sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Footer */
+  footer {
+    position: relative; z-index: 2;
+    padding: 24px 40px;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    background: rgba(11,11,12,0.6);
+    backdrop-filter: blur(8px);
+    font-size: 12px;
+    color: var(--text-faint);
+    font-family: var(--font-en);
+    letter-spacing: 0.3px;
+  }
+  footer b { color: var(--text-dim); font-weight: 500; }
+
+  @media (max-width: 680px) {
+    .topbar { padding: 18px 20px; }
+    .info { grid-template-columns: 1fr; }
+    .hero { padding: 40px 20px 30px; }
+    footer { padding: 18px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>
+    <span><b>IBM</b> · FutureNow Center China · 大连</span>
+  </div>
+  <div class="countdown-pill">距开营 <b id="cd">—</b></div>
+</header>
+
+<main class="hero">
+  <div class="badge">
+    <span class="pulse"></span>
+    COMING SOON · 2026.07.01
+  </div>
+
+  <h1>AI 夏令营 2026</h1>
+
+  <p class="subtitle">
+    <b>IBM × 大连高新园区</b> 校企合作生成式 AI 启蒙课件。
+    我们将从 AI 发展史出发，一路走过机器学习、Transformer、ChatGPT、RAG、
+    知识图谱、Agent，<b>每个核心章节都让你亲手参与</b>。
+  </p>
+
+  <div class="tags">
+    <span>AI 发展史</span>
+    <span>神经网络</span>
+    <span>NLP</span>
+    <span>ChatGPT</span>
+    <span>RAG</span>
+    <span>本体论</span>
+    <span>知识图谱</span>
+    <span>力导图</span>
+    <span>MCP</span>
+    <span>Agent</span>
+    <span>A2A</span>
+    <span>IBM watsonx</span>
+  </div>
+
+  <div class="info">
+    <div class="info-card">
+      <div class="label">DATE</div>
+      <div class="value">2026.07.01</div>
+      <div class="sub">开营首日 · 周三</div>
+    </div>
+    <div class="info-card">
+      <div class="label">INSTRUCTOR</div>
+      <div class="value">陳宏强 Richard Chen</div>
+      <div class="sub">IBM 生成式 AI 解决方案架构师</div>
+    </div>
+    <div class="info-card">
+      <div class="label">HOST</div>
+      <div class="value">大连高新园区</div>
+      <div class="sub">Dalian Hi-Tech Zone</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  © 2026 陳宏强 Richard Chen · All Rights Reserved · 教学专用
+  <span style="margin: 0 8px; opacity: 0.4;">|</span>
+  <b>IBM Consulting · FutureNow Center China</b>
+</footer>
+
+<script>
+  // Countdown to 2026-07-01 09:00 local
+  function tick() {
+    const target = new Date('2026-07-01T09:00:00').getTime();
+    const now = Date.now();
+    const diffMs = target - now;
+    const cd = document.getElementById('cd');
+    if (diffMs <= 0) { cd.textContent = '已开营'; return; }
+    const days = Math.floor(diffMs / 86400000);
+    const hrs  = Math.floor((diffMs % 86400000) / 3600000);
+    cd.textContent = days > 0 ? (days + ' 天 ' + hrs + ' 时') : (hrs + ' 小时');
+  }
+  tick();
+  setInterval(tick, 60000);
+</script>
+
+</body>
+</html>
