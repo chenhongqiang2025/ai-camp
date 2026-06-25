@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>AI Camp 2026 · 课件预览 · Richard Chen</title>
+<meta name="description" content="2026 IBM × 大连高新园区 AI 夏令营互动课件（开发预览）" />
+<meta name="theme-color" content="#0b0b0c" />
+
+<!-- Fonts via jsdelivr CDN -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/700.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/600.css">
+
+<!-- Reveal.js -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+
+<style>
+  :root {
+    --r-background-color: #0b0b0c;
+    --r-main-font: 'IBM Plex Sans', 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --r-main-font-size: 24px;
+    --r-main-color: #f4f4f4;
+    --r-block-margin: 18px;
+    --r-heading-margin: 0 0 24px 0;
+    --r-heading-font: 'IBM Plex Sans', 'Noto Sans SC', sans-serif;
+    --r-heading-color: #f4f4f4;
+    --r-heading-line-height: 1.15;
+    --r-heading-letter-spacing: -0.5px;
+    --r-heading-text-transform: none;
+    --r-heading-text-shadow: none;
+    --r-heading-font-weight: 600;
+    --r-h1-size: 3.4em;
+    --r-h2-size: 2.2em;
+    --r-h3-size: 1.4em;
+    --r-h4-size: 1em;
+    --r-code-font: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+    --r-link-color: #78a9ff;
+    --r-link-color-hover: #4589ff;
+    --r-selection-background-color: #4589ff;
+    --r-selection-color: #fff;
+    --r-controls-color: #78a9ff;
+
+    --bg-1: #161618;
+    --bg-2: #1f1f23;
+    --border: #2e2e35;
+    --text-dim: #a8a8b0;
+    --text-faint: #6b6b75;
+    --accent: #4589ff;
+    --accent-2: #78a9ff;
+    --accent-soft: rgba(69,137,255,0.14);
+    --success: #42be65;
+    --warning: #f1c21b;
+    --interactive: #c08bff;
+    --danger: #fa4d56;
+  }
+
+  html, body { background: var(--r-background-color); }
+
+  /* Ambient grid background */
+  .reveal-viewport::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(69,137,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(69,137,255,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, black, transparent 75%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black, transparent 75%);
+    z-index: 0;
+  }
+
+  .reveal .slides { text-align: left; }
+  .reveal .slides section { padding: 40px 60px; }
+  .reveal .slides > section { position: relative; }
+  .reveal h1, .reveal h2, .reveal h3 { font-weight: 600; }
+  .reveal b { font-weight: 600; }
+  .reveal ul, .reveal ol { margin-left: 1em; }
+  .reveal li { margin: 6px 0; }
+  .reveal code { background: var(--bg-2); padding: 1px 6px; border-radius: 4px; font-size: 0.85em; }
+
+  /* === Cover === */
+  .cover { text-align: center !important; display: flex !important; flex-direction: column; justify-content: center; height: 100%; }
+  .cover .logo-bar { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 50px; font-family: var(--r-code-font); font-size: 13px; letter-spacing: 1.2px; color: var(--text-dim); }
+  .cover .logo-bar .dot { width: 10px; height: 10px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 14px var(--accent); }
+  .cover h1 { font-size: 4em !important; letter-spacing: -1.5px; background: linear-gradient(180deg, #fff 30%, #b8b8c0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 24px !important; line-height: 1.1; }
+  .cover h2 { color: var(--text-dim) !important; font-size: 1.3em !important; font-weight: 400 !important; margin-bottom: 60px !important; }
+  .cover h2 b { color: var(--text); font-weight: 500; }
+  .cover .meta { display: flex; gap: 40px; justify-content: center; font-family: var(--r-code-font); font-size: 13px; color: var(--text-faint); letter-spacing: 0.5px; flex-wrap: wrap; }
+  .cover .meta span b { color: var(--text-dim); font-weight: 500; margin-right: 4px; }
+  .cover .pulse { display: inline-block; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; vertical-align: middle; box-shadow: 0 0 0 0 var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(69,137,255,0.6); }
+    70% { box-shadow: 0 0 0 12px rgba(69,137,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(69,137,255,0); }
+  }
+
+  /* === Chapter title slide === */
+  .chapter-title { display: flex !important; flex-direction: column; justify-content: center; height: 100%; }
+  .chapter-num { font-family: var(--r-code-font); font-size: 14px; letter-spacing: 3px; color: var(--accent); margin-bottom: 22px; }
+  .chapter-h1 { font-size: 3em !important; margin-bottom: 18px !important; line-height: 1.1; }
+  .chapter-sub { color: var(--text-dim); font-size: 1em; line-height: 1.7; max-width: 800px; margin-bottom: 0 !important; }
+  .chapter-meta { margin-top: 40px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* === Badges === */
+  .badge { font-family: var(--r-code-font); font-size: 11px; padding: 5px 12px; border-radius: 4px; background: var(--bg-2); border: 1px solid var(--border); color: var(--text-dim); letter-spacing: 0.6px; display: inline-flex; align-items: center; gap: 6px; }
+  .badge.accent { background: var(--accent-soft); color: var(--accent-2); border-color: rgba(69,137,255,0.3); }
+  .badge.warn { background: rgba(241,194,27,0.14); color: var(--warning); border-color: rgba(241,194,27,0.3); }
+  .badge.success { background: rgba(66,190,101,0.14); color: var(--success); border-color: rgba(66,190,101,0.3); }
+  .badge.interactive { background: rgba(192,139,255,0.14); color: var(--interactive); border-color: rgba(192,139,255,0.3); }
+
+  /* === Placeholder slide === */
+  .placeholder { display: flex !important; flex-direction: column; justify-content: center; height: 100%; max-width: 760px; margin: 0 auto !important; }
+  .placeholder .icon { font-size: 56px; color: var(--accent); opacity: 0.5; margin-bottom: 24px; text-align: center; }
+  .placeholder h3 { color: var(--text-dim) !important; font-weight: 400 !important; text-align: center; font-size: 1.4em !important; }
+  .placeholder .outline-label { font-family: var(--r-code-font); font-size: 11px; letter-spacing: 1.5px; color: var(--text-faint); text-transform: uppercase; margin: 36px 0 16px; text-align: center; }
+  .placeholder ul { list-style: none; padding: 0; margin: 0 auto; max-width: 600px; }
+  .placeholder li { padding: 12px 0; color: var(--text-dim); border-bottom: 1px dashed var(--border); font-size: 0.9em; display: flex; align-items: center; gap: 12px; }
+  .placeholder li::before { content: '—'; color: var(--text-faint); font-family: var(--r-code-font); }
+  .placeholder li:last-child { border-bottom: none; }
+
+  /* === Interactive callout (RAG/KG chapters) === */
+  .interactive-callout { display: flex !important; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center; }
+  .interactive-callout .ic-glyph { font-size: 80px; color: var(--interactive); margin-bottom: 30px; filter: drop-shadow(0 0 24px rgba(192,139,255,0.4)); }
+  .interactive-callout h2 { color: var(--interactive) !important; margin-bottom: 18px !important; }
+  .interactive-callout p { color: var(--text-dim); font-size: 1.1em; max-width: 640px; line-height: 1.7; }
+  .interactive-callout .scan-hint { margin-top: 36px; font-family: var(--r-code-font); font-size: 12px; color: var(--text-faint); letter-spacing: 0.5px; padding: 10px 18px; background: var(--bg-2); border: 1px dashed var(--border); border-radius: 100px; display: inline-flex; align-items: center; gap: 8px; }
+
+  /* === Closing === */
+  .closing { display: flex !important; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center; }
+  .closing .thanks { font-size: 6em !important; background: linear-gradient(180deg, #fff 20%, var(--accent-2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -2px; margin-bottom: 30px !important; }
+  .closing .qa { color: var(--text-dim); font-size: 1.3em; margin-bottom: 50px; }
+  .closing .copyright { font-family: var(--r-code-font); font-size: 12px; color: var(--text-faint); letter-spacing: 0.4px; }
+
+  /* === Reveal controls/progress overrides === */
+  .reveal .progress { color: var(--accent) !important; height: 3px !important; background: rgba(255,255,255,0.04); }
+  .reveal .controls { color: var(--accent-2) !important; }
+  .reveal .slide-number { background: var(--bg-2); color: var(--text-faint); font-family: var(--r-code-font); font-size: 11px; padding: 4px 10px; border-radius: 4px; right: 14px; bottom: 14px; }
+
+  /* === Chapter indicator (top right) === */
+  .chap-indicator { position: fixed; top: 16px; right: 20px; font-family: var(--r-code-font); font-size: 11px; color: var(--text-faint); letter-spacing: 0.5px; z-index: 10; pointer-events: none; }
+  .chap-indicator b { color: var(--accent-2); margin-right: 6px; }
+
+  /* === Help tip (bottom right, fades after first interact) === */
+  .help-tip { position: fixed; bottom: 22px; right: 70px; font-family: var(--r-code-font); font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.3px; z-index: 5; max-width: 320px; text-align: right; transition: opacity .4s; }
+  .help-tip kbd { background: var(--bg-2); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border); font-family: inherit; color: var(--text-dim); margin: 0 2px; }
+  .help-tip.dim { opacity: 0.25; }
+
+  /* === Mobile === */
+  @media (max-width: 760px) {
+    :root {
+      --r-main-font-size: 18px;
+      --r-h1-size: 2.4em;
+      --r-h2-size: 1.6em;
+    }
+    .reveal .slides section { padding: 28px 22px; }
+    .cover h1 { font-size: 2.6em !important; }
+    .cover h2 { font-size: 1.05em !important; margin-bottom: 40px !important; }
+    .cover .meta { flex-direction: column; gap: 10px; font-size: 11.5px; }
+    .chapter-h1 { font-size: 2.2em !important; }
+    .chapter-meta { gap: 6px; }
+    .badge { font-size: 10px; padding: 4px 9px; }
+    .chap-indicator { top: 10px; right: 12px; font-size: 9.5px; }
+    .help-tip { display: none; }
+    .interactive-callout .ic-glyph { font-size: 56px; }
+    .closing .thanks { font-size: 3.6em !important; }
+    .placeholder .icon { font-size: 42px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="chap-indicator" id="chapIndicator"></div>
+<div class="help-tip" id="helpTip">
+  <kbd>← →</kbd> 翻页 · <kbd>↓</kbd> 章节内子页 · <kbd>S</kbd> 演讲者视图 · <kbd>ESC</kbd> 总览 · <kbd>F</kbd> 全屏
+</div>
+
+<div class="reveal">
+  <div class="slides">
+
+    <!-- ========== COVER ========== -->
+    <section class="cover">
+      <div class="logo-bar">
+        <span class="dot"></span>
+        <span>IBM · FUTURENOW CENTER CHINA · 大连</span>
+      </div>
+      <h1>AI 夏令营 2026</h1>
+      <h2>从 AI 发展史到 Agent ·  <b>让你亲手参与</b> 的生成式 AI 启蒙</h2>
+      <div class="meta">
+        <span><b>讲师</b>陳宏强 Richard Chen</span>
+        <span><b>主办</b>IBM × 大连高新园区</span>
+        <span><b>开营</b>2026.07.01</span>
+        <span><span class="pulse"></span> &nbsp;LIVE PREVIEW</span>
+      </div>
+      <aside class="notes">
+        欢迎学生入场。简单 30 秒自我介绍：我是 IBM Consulting · FutureNow Center China 的生成式 AI 解决方案架构师 Richard。
+        提示：本课件是 GitHub Pages 上的在线 HTML，扫码即可在你手机上同步翻页。
+        本页停留 1 分钟左右，等所有学生扫码完成。
+      </aside>
+    </section>
+
+    <!-- ========== CHAPTER 01 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 01</div>
+        <h1 class="chapter-h1">开场 &amp; 自我介绍</h1>
+        <p class="chapter-sub">IBM · FNC · Richard · 大连高新区合作背景 · 你将在这一天学到什么</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">10 min</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">▦</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>IBM 大连办公室介绍（30 秒）</li>
+          <li>FutureNow Center 在做什么</li>
+          <li>我个人 18 年技术路径</li>
+          <li>大连高新区为什么选择和 IBM 合作</li>
+          <li>本次夏令营你将获得什么</li>
+        </ul>
+        <aside class="notes">
+          这里讲个能拉近距离的小故事，例如自己当年也是从大连本地出去的学生，让学生有亲切感。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 02 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 02</div>
+        <h1 class="chapter-h1">AI 发展简史</h1>
+        <p class="chapter-sub">从图灵的疑问，到达特茅斯的命名，到两次寒冬，到机器学习的复兴 —— AI 走了 70 年</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">15 min</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">⌛</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">TIMELINE</div>
+        <ul>
+          <li>1950 · 图灵《计算机器与智能》——"机器能思考吗？"</li>
+          <li>1956 · 达特茅斯会议 —— AI 正式命名</li>
+          <li>1960-70s · 专家系统的黄金年代</li>
+          <li>1974-80 / 1987-93 · 两次 AI 寒冬</li>
+          <li>2006 · 深度学习开始复苏（Hinton）</li>
+          <li>2012 · AlexNet 引爆视觉</li>
+        </ul>
+        <aside class="notes">
+          这一章用时间线视觉化呈现，避免单调列举。
+          推荐讲法：每个时间点给出"代表性事件 + 当时人们怎么想"。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 03 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 03</div>
+        <h1 class="chapter-h1">机器学习与神经网络</h1>
+        <p class="chapter-sub">从一个"神经元"开始，到能识别万物的深度网络 —— 数学并不可怕</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">20 min</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">⊞</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>感知机：最早的人工神经元（用一支笔画出来）</li>
+          <li>反向传播：神经网络如何"学习"</li>
+          <li>CNN：教计算机"看图"</li>
+          <li>RNN：教计算机"读序列"</li>
+          <li>梯度消失 / 残差网络的突破</li>
+        </ul>
+        <aside class="notes">
+          数学公式克制使用，用图示和类比为主。
+          可以举"识别猫"这种直观例子。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 04 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 04</div>
+        <h1 class="chapter-h1">NLP 演进史</h1>
+        <p class="chapter-sub">让机器"理解"语言：从词袋到 Transformer 的范式跃迁</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">20 min</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">⌬</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>词袋模型 (Bag of Words) —— 最朴素的表示</li>
+          <li>Word2Vec —— "国王 - 男 + 女 = 女王"</li>
+          <li>Seq2Seq + Attention —— 机器翻译的进步</li>
+          <li>Transformer 架构 (2017) —— "Attention is all you need"</li>
+          <li>BERT / GPT —— 两种范式的对比</li>
+        </ul>
+        <aside class="notes">
+          Transformer 是核心，需要给学生留下印象。
+          视觉化 Self-Attention 的工作原理。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 05 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 05</div>
+        <h1 class="chapter-h1">ChatGPT 时刻</h1>
+        <p class="chapter-sub">2022 年 11 月 30 日 —— 5 天 100 万用户，2 个月破亿，AI 第一次走进每个人的生活</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">15 min</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">✦</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">TIMELINE</div>
+        <ul>
+          <li>2022.11 · ChatGPT 发布</li>
+          <li>2023 · GPT-4 / Claude / 国产大模型崛起</li>
+          <li>2024 · 多模态 / 长上下文 / 推理模型</li>
+          <li>2025-26 · Agent / 工具调用 / 端侧大模型</li>
+          <li>中美开源 / 闭源生态对比</li>
+        </ul>
+        <aside class="notes">
+          这一章可以现场打开 ChatGPT 或 DeepSeek 做一次真实问答演示，比图片更震撼。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 06 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 06</div>
+        <h1 class="chapter-h1">大模型的幻觉问题</h1>
+        <p class="chapter-sub">当 AI "一本正经地胡说八道" —— 为什么会发生？怎么治？</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">10 min</span>
+          <span class="badge accent">铺垫 RAG</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">⚠</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>什么是幻觉：举 3 个真实案例（律师案 / 医疗案 / 学术案）</li>
+          <li>为什么发生：训练原理 + 概率本质</li>
+          <li>幻觉的危害 vs 创造力的关联</li>
+          <li>引出解法：让 AI"查资料再回答" —— RAG</li>
+        </ul>
+        <aside class="notes">
+          这是承上启下的章节，要为下一章 RAG 做完美铺垫。
+          可以现场让 ChatGPT 编造一个不存在的论文，让学生看到幻觉。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 07 · INTERACTIVE ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 07 · ⭐ INTERACTIVE</div>
+        <h1 class="chapter-h1">RAG · 检索增强生成</h1>
+        <p class="chapter-sub">给 AI 一个外挂"百科全书"——它就能回答它本来不知道的事</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">25 min</span>
+          <span class="badge interactive">⭐ 互动核心</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">⟹</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>RAG 全流程拆解（embed → search → rerank → prompt → generate）</li>
+          <li>向量数据库是什么、长什么样</li>
+          <li>关键词检索 vs 语义检索</li>
+          <li>RAG 失败模式：检索不到 / 检索错 / 用错</li>
+        </ul>
+      </section>
+      <section class="interactive-callout">
+        <div class="ic-glyph">⟹</div>
+        <h2>互动时间</h2>
+        <p>你在手机上提交一段自我介绍 → AI 把它存进"班级知识库" → 全班一起向它提问 → 看检索如何工作</p>
+        <div class="scan-hint">📱 扫码进入互动 · 大屏实时展示</div>
+        <aside class="notes">
+          关键互动章。需要：
+          1. 学生扫码进入手机端 RAG 体验页
+          2. 学生输入个人介绍（姓名+兴趣+学院）
+          3. 大屏展示"知识库构建中..."的可视化
+          4. 演讲者提问"谁喜欢 X？" → 展示检索过程
+          5. 现场没网的兜底：脚本化预录数据。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 08 · INTERACTIVE ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 08 · ⭐ INTERACTIVE</div>
+        <h1 class="chapter-h1">本体论 &amp; 知识图谱</h1>
+        <p class="chapter-sub">把世界拆成"实体 - 关系 - 实体"三元组 —— AI 终于能"推理"</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">25 min</span>
+          <span class="badge interactive">⭐ 互动核心</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">◉</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>本体论从哲学到计算机科学</li>
+          <li>RDF 三元组：主语 - 谓语 - 宾语</li>
+          <li>OWL / Schema.org 简介</li>
+          <li>知识图谱 vs 关系数据库 vs 向量库</li>
+          <li>谷歌知识图谱、维基百科数据如何用</li>
+        </ul>
+      </section>
+      <section class="interactive-callout">
+        <div class="ic-glyph">◉</div>
+        <h2>互动时间</h2>
+        <p>你提交 姓名 + 学院 + 3 个兴趣 → 自动生成三元组 → 大屏的知识图谱实时长大</p>
+        <div class="scan-hint">📱 扫码进入互动 · ECharts 力导图动态可视化</div>
+        <aside class="notes">
+          这一章是整堂课的视觉高潮。学生看到自己的名字出现在大屏图谱上的瞬间是最震撼的。
+          ECharts 力导图 + 平滑过渡动画。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 09 · INTERACTIVE ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 09 · ⭐ INTERACTIVE</div>
+        <h1 class="chapter-h1">力导图 · 关系推理</h1>
+        <p class="chapter-sub">从图谱里"看见"答案：你和谁有共同兴趣？谁该和你组队？</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">20 min</span>
+          <span class="badge interactive">⭐ 互动延伸</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">⌘</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>图算法基础：BFS / DFS / 最短路径</li>
+          <li>共同邻居 / Jaccard 相似度 → 推荐系统</li>
+          <li>PageRank：节点重要性</li>
+          <li>子图推理：从已知推未知</li>
+        </ul>
+      </section>
+      <section class="interactive-callout">
+        <div class="ic-glyph">⌘</div>
+        <h2>互动时间</h2>
+        <p>大屏点击你的节点 → 高亮和你有共同兴趣的同学 → AI 给出"3 人组队"建议</p>
+        <div class="scan-hint">📱 真人组队推荐演示</div>
+        <aside class="notes">
+          延续上一章的图谱数据，做"实战级"推理演示。
+          推荐结果引导学生现场认识彼此。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 10 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 10</div>
+        <h1 class="chapter-h1">MCP · 模型上下文协议</h1>
+        <p class="chapter-sub">Anthropic 提出的"AI 与世界对话"的统一标准 —— 让模型用工具更优雅</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">15 min</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">◫</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>MCP 是什么、为什么需要它</li>
+          <li>MCP Server / Client / Host 三角色</li>
+          <li>对比 OpenAI Function Calling</li>
+          <li>演示一个 MCP server（文件系统 / 浏览器）</li>
+          <li>MCP 的生态前景</li>
+        </ul>
+        <aside class="notes">
+          MCP 是 2024 末提出的新协议，举例时用 Claude Desktop + 文件系统 server。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 11 · INTERACTIVE ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 11 · ⭐ INTERACTIVE</div>
+        <h1 class="chapter-h1">Agent · 智能体</h1>
+        <p class="chapter-sub">从"对话机器人"到"会做事的助手"—— Agent 是怎样"想"和"动"的</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">20 min</span>
+          <span class="badge interactive">⭐ 互动演示</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">◈</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>什么是 Agent：感知 - 思考 - 行动循环</li>
+          <li>ReAct 范式：Reasoning + Acting</li>
+          <li>工具调用 / 多步规划</li>
+          <li>记忆 (Memory) 与上下文管理</li>
+          <li>当代 Agent 框架：LangChain / AutoGen / Claude Agents</li>
+        </ul>
+      </section>
+      <section class="interactive-callout">
+        <div class="ic-glyph">◈</div>
+        <h2>互动时间</h2>
+        <p>一个虚拟 Agent 主动给你的手机发推荐："Hi 张三，你应该和李四聊聊"</p>
+        <div class="scan-hint">📱 看你的手机弹通知</div>
+        <aside class="notes">
+          基于第 9 章的组队推荐，让 Agent 主动 "联系" 学生，强化"Agent 会主动行动"的感觉。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 12 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 12</div>
+        <h1 class="chapter-h1">A2A · 多智能体协作</h1>
+        <p class="chapter-sub">Agent 不再独行 —— 两个或更多 Agent 通过协议交谈、协作、达成目标</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">15 min</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">⇄</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>A2A 协议（Agent-to-Agent）：Google 2025 提出</li>
+          <li>对比单 Agent / Multi-Agent / Agentic Workflow</li>
+          <li>典型场景：客服 + 产品 Agent 协作</li>
+          <li>演示：两个 Agent 帮一个学生匹配最佳组员</li>
+          <li>挑战：信任、协议、责任划分</li>
+        </ul>
+        <aside class="notes">
+          A2A 是 2025 年的热点，紧扣最新趋势。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 13 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 13</div>
+        <h1 class="chapter-h1">IBM 的 AI 实践</h1>
+        <p class="chapter-sub">从 Watson 到 watsonx —— IBM 在企业 AI 落地的真实故事</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">15 min</span>
+          <span class="badge accent">IBM</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">⬢</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">CONTENT OUTLINE</div>
+        <ul>
+          <li>IBM AI 简史：1997 深蓝 → 2011 Watson → 2023 watsonx</li>
+          <li>watsonx 三件套：.ai / .data / .governance</li>
+          <li>Granite 开源模型族</li>
+          <li>典型客户案例（公开脱敏）</li>
+          <li>FNC 在大连为客户做了什么</li>
+        </ul>
+        <aside class="notes">
+          ⚠️ 严格只用 IBM 公开材料，遵循 NOTICE.md 边界。
+          可以适度介绍 FutureNow Center 的工作方法。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CHAPTER 14 ========== -->
+    <section>
+      <section class="chapter-title">
+        <div class="chapter-num">CHAPTER · 14</div>
+        <h1 class="chapter-h1">Q&amp;A · 合影 · 结营</h1>
+        <p class="chapter-sub">问任何问题 · 用今天的数据做一次随机抽奖 · 结营合影</p>
+        <div class="chapter-meta">
+          <span class="badge warn">IN DESIGN</span>
+          <span class="badge">15 min</span>
+        </div>
+      </section>
+      <section class="placeholder">
+        <div class="icon">✦</div>
+        <h3>本章节正在搭建中</h3>
+        <div class="outline-label">FLOW</div>
+        <ul>
+          <li>5 分钟自由 Q&amp;A</li>
+          <li>用学生数据做一次随机抽奖（强化"你的数据真的进系统了"）</li>
+          <li>2 分钟反馈问卷收集</li>
+          <li>结营合影 + 课件 URL 留作纪念</li>
+        </ul>
+        <aside class="notes">
+          抽奖逻辑：用学生提交的姓名做 Math.random，公平且有戏剧效果。
+          奖品可以是 IBM 文创周边。
+        </aside>
+      </section>
+    </section>
+
+    <!-- ========== CLOSING ========== -->
+    <section class="closing">
+      <h1 class="thanks">谢谢</h1>
+      <p class="qa">期待与你在课堂见面 — 2026.07.01</p>
+      <p class="copyright">© 2026 陳宏强 Richard Chen · IBM Consulting · FutureNow Center China · 教学专用</p>
+      <aside class="notes">
+        最后一页停留 30 秒，让学生拍照保存。
+      </aside>
+    </section>
+
+  </div>
+</div>
+
+<!-- Reveal.js -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+
+<script>
+  const deck = new Reveal({
+    hash: true,
+    slideNumber: 'c/t',
+    controls: true,
+    controlsTutorial: false,
+    progress: true,
+    center: false,
+    transition: 'slide',
+    transitionSpeed: 'default',
+    backgroundTransition: 'fade',
+    touch: true,
+    keyboard: true,
+    overview: true,
+    width: 1280,
+    height: 800,
+    margin: 0.06,
+    minScale: 0.2,
+    maxScale: 2.0,
+    plugins: [RevealNotes]
+  });
+  deck.initialize();
+
+  // ===== Chapter indicator (top-right) =====
+  const chapters = [
+    { num: '00', title: 'COVER' },
+    { num: '01', title: '开场' },
+    { num: '02', title: 'AI 发展简史' },
+    { num: '03', title: '机器学习 & 神经网络' },
+    { num: '04', title: 'NLP 演进史' },
+    { num: '05', title: 'ChatGPT 时刻' },
+    { num: '06', title: '大模型幻觉' },
+    { num: '07', title: 'RAG ⭐' },
+    { num: '08', title: '知识图谱 ⭐' },
+    { num: '09', title: '关系推理 ⭐' },
+    { num: '10', title: 'MCP' },
+    { num: '11', title: 'Agent ⭐' },
+    { num: '12', title: 'A2A' },
+    { num: '13', title: 'IBM 实践' },
+    { num: '14', title: 'Q&A 结营' },
+    { num: '∎',  title: 'THE END' }
+  ];
+
+  const indicator = document.getElementById('chapIndicator');
+  function updateIndicator() {
+    const idx = deck.getIndices().h;
+    const c = chapters[idx];
+    if (c) indicator.innerHTML = '<b>' + c.num + '</b>' + c.title;
+  }
+  deck.on('slidechanged', updateIndicator);
+  deck.on('ready', updateIndicator);
+  updateIndicator();
+
+  // ===== Help tip auto-fade =====
+  const tip = document.getElementById('helpTip');
+  let interactCount = 0;
+  function dimTip() {
+    interactCount++;
+    if (interactCount >= 2 && tip) tip.classList.add('dim');
+  }
+  deck.on('slidechanged', dimTip);
+  setTimeout(() => tip && tip.classList.add('dim'), 12000);
+</script>
+
+</body>
+</html>
