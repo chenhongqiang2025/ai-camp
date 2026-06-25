@@ -61,25 +61,29 @@
     --danger: #fa4d56;
   }
 
-  html, body { background: var(--r-background-color); }
+  html, body { background: var(--r-background-color); margin: 0; padding: 0; }
+  body { position: relative; }
 
-  /* Ambient grid background */
-  .reveal-viewport::before {
+  /* Ambient grid background — placed on body for reliability */
+  body::before {
     content: '';
     position: fixed; inset: 0;
     background-image:
-      linear-gradient(rgba(69,137,255,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(69,137,255,0.04) 1px, transparent 1px);
+      linear-gradient(rgba(69,137,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(69,137,255,0.045) 1px, transparent 1px);
     background-size: 48px 48px;
     pointer-events: none;
     mask-image: radial-gradient(ellipse at center, black, transparent 75%);
     -webkit-mask-image: radial-gradient(ellipse at center, black, transparent 75%);
     z-index: 0;
   }
+  .reveal { position: relative; z-index: 1; }
 
   .reveal .slides { text-align: left; }
-  .reveal .slides section { padding: 40px 60px; }
+  .reveal .slides section { padding: 0 40px; }
   .reveal .slides > section { position: relative; }
+  /* Subsections also get padding when active */
+  .reveal .slides section section { padding: 0 40px; }
   .reveal h1, .reveal h2, .reveal h3 { font-weight: 600; }
   .reveal b { font-weight: 600; }
   .reveal ul, .reveal ol { margin-left: 1em; }
@@ -87,12 +91,12 @@
   .reveal code { background: var(--bg-2); padding: 1px 6px; border-radius: 4px; font-size: 0.85em; }
 
   /* === Cover === */
-  .cover { text-align: center !important; display: flex !important; flex-direction: column; justify-content: center; height: 100%; }
+  .cover { text-align: center; }
   .cover .logo-bar { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 50px; font-family: var(--r-code-font); font-size: 13px; letter-spacing: 1.2px; color: var(--text-dim); }
   .cover .logo-bar .dot { width: 10px; height: 10px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 14px var(--accent); }
-  .cover h1 { font-size: 4em !important; letter-spacing: -1.5px; background: linear-gradient(180deg, #fff 30%, #b8b8c0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 24px !important; line-height: 1.1; }
+  .cover h1 { font-size: 4em !important; letter-spacing: -1.5px; background: linear-gradient(180deg, #fff 30%, #b8b8c0 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 24px !important; line-height: 1.1; color: #fff; }
   .cover h2 { color: var(--text-dim) !important; font-size: 1.3em !important; font-weight: 400 !important; margin-bottom: 60px !important; }
-  .cover h2 b { color: var(--text); font-weight: 500; }
+  .cover h2 b { color: #f4f4f4; font-weight: 500; }
   .cover .meta { display: flex; gap: 40px; justify-content: center; font-family: var(--r-code-font); font-size: 13px; color: var(--text-faint); letter-spacing: 0.5px; flex-wrap: wrap; }
   .cover .meta span b { color: var(--text-dim); font-weight: 500; margin-right: 4px; }
   .cover .pulse { display: inline-block; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; vertical-align: middle; box-shadow: 0 0 0 0 var(--accent); animation: pulse 2s infinite; }
@@ -103,7 +107,7 @@
   }
 
   /* === Chapter title slide === */
-  .chapter-title { display: flex !important; flex-direction: column; justify-content: center; height: 100%; }
+  .chapter-title { text-align: left; }
   .chapter-num { font-family: var(--r-code-font); font-size: 14px; letter-spacing: 3px; color: var(--accent); margin-bottom: 22px; }
   .chapter-h1 { font-size: 3em !important; margin-bottom: 18px !important; line-height: 1.1; }
   .chapter-sub { color: var(--text-dim); font-size: 1em; line-height: 1.7; max-width: 800px; margin-bottom: 0 !important; }
@@ -117,7 +121,7 @@
   .badge.interactive { background: rgba(192,139,255,0.14); color: var(--interactive); border-color: rgba(192,139,255,0.3); }
 
   /* === Placeholder slide === */
-  .placeholder { display: flex !important; flex-direction: column; justify-content: center; height: 100%; max-width: 760px; margin: 0 auto !important; }
+  .placeholder { max-width: 760px; margin: 0 auto !important; text-align: left; }
   .placeholder .icon { font-size: 56px; color: var(--accent); opacity: 0.5; margin-bottom: 24px; text-align: center; }
   .placeholder h3 { color: var(--text-dim) !important; font-weight: 400 !important; text-align: center; font-size: 1.4em !important; }
   .placeholder .outline-label { font-family: var(--r-code-font); font-size: 11px; letter-spacing: 1.5px; color: var(--text-faint); text-transform: uppercase; margin: 36px 0 16px; text-align: center; }
@@ -127,15 +131,15 @@
   .placeholder li:last-child { border-bottom: none; }
 
   /* === Interactive callout (RAG/KG chapters) === */
-  .interactive-callout { display: flex !important; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center; }
+  .interactive-callout { text-align: center; }
   .interactive-callout .ic-glyph { font-size: 80px; color: var(--interactive); margin-bottom: 30px; filter: drop-shadow(0 0 24px rgba(192,139,255,0.4)); }
   .interactive-callout h2 { color: var(--interactive) !important; margin-bottom: 18px !important; }
   .interactive-callout p { color: var(--text-dim); font-size: 1.1em; max-width: 640px; line-height: 1.7; }
   .interactive-callout .scan-hint { margin-top: 36px; font-family: var(--r-code-font); font-size: 12px; color: var(--text-faint); letter-spacing: 0.5px; padding: 10px 18px; background: var(--bg-2); border: 1px dashed var(--border); border-radius: 100px; display: inline-flex; align-items: center; gap: 8px; }
 
   /* === Closing === */
-  .closing { display: flex !important; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center; }
-  .closing .thanks { font-size: 6em !important; background: linear-gradient(180deg, #fff 20%, var(--accent-2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -2px; margin-bottom: 30px !important; }
+  .closing { text-align: center; }
+  .closing .thanks { font-size: 6em !important; background: linear-gradient(180deg, #fff 20%, var(--accent-2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -2px; margin-bottom: 30px !important; color: #fff; }
   .closing .qa { color: var(--text-dim); font-size: 1.3em; margin-bottom: 50px; }
   .closing .copyright { font-family: var(--r-code-font); font-size: 12px; color: var(--text-faint); letter-spacing: 0.4px; }
 
@@ -662,7 +666,7 @@
     controls: true,
     controlsTutorial: false,
     progress: true,
-    center: false,
+    center: true,
     transition: 'slide',
     transitionSpeed: 'default',
     backgroundTransition: 'fade',
