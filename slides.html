@@ -18,8 +18,9 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/500.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/600.css">
 
-<!-- Reveal.js -->
+<!-- Reveal.js — load black theme first to get proper dark background baseline, then we override with IBM Carbon palette -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
 
 <style>
   :root {
@@ -61,8 +62,15 @@
     --danger: #fa4d56;
   }
 
-  html, body { background: var(--r-background-color); margin: 0; padding: 0; }
+  /* === Force dark background everywhere — defeats Reveal's default theme === */
+  html, body, .reveal-viewport, .reveal {
+    background: #0b0b0c !important;
+    background-color: #0b0b0c !important;
+  }
+  html, body { margin: 0; padding: 0; color: #f4f4f4; }
   body { position: relative; }
+  .reveal { color: #f4f4f4; }
+  .reveal .slides { color: #f4f4f4; }
 
   /* Ambient grid background — placed on body for reliability */
   body::before {
@@ -80,10 +88,19 @@
   .reveal { position: relative; z-index: 1; }
 
   .reveal .slides { text-align: left; }
-  .reveal .slides section { padding: 0 40px; }
+  /* Force vertical centering on every slide — belt + suspenders to Reveal's center:true */
+  .reveal .slides > section,
+  .reveal .slides > section > section {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    min-height: 700px;
+    padding: 40px 60px;
+    box-sizing: border-box;
+  }
+  /* Top-level horizontal section that has nested vertical sections — they take care of themselves; this just provides height */
   .reveal .slides > section { position: relative; }
-  /* Subsections also get padding when active */
-  .reveal .slides section section { padding: 0 40px; }
   .reveal h1, .reveal h2, .reveal h3 { font-weight: 600; }
   .reveal b { font-weight: 600; }
   .reveal ul, .reveal ol { margin-left: 1em; }
