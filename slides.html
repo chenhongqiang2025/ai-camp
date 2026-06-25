@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>AI Camp 2026 · 课件预览 · Richard Chen</title>
 <meta name="description" content="2026 IBM × 大连高新园区 AI 夏令营互动课件（开发预览）" />
 <meta name="theme-color" content="#0b0b0c" />
@@ -152,8 +152,8 @@
   .chap-indicator { position: fixed; top: 16px; right: 20px; font-family: var(--r-code-font); font-size: 11px; color: var(--text-faint); letter-spacing: 0.5px; z-index: 10; pointer-events: none; }
   .chap-indicator b { color: var(--accent-2); margin-right: 6px; }
 
-  /* === Help tip (bottom right, fades after first interact) === */
-  .help-tip { position: fixed; bottom: 22px; right: 70px; font-family: var(--r-code-font); font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.3px; z-index: 5; max-width: 320px; text-align: right; transition: opacity .4s; }
+  /* === Help tip (bottom left, fades after first interact) === */
+  .help-tip { position: fixed; bottom: 18px; left: 20px; font-family: var(--r-code-font); font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.3px; z-index: 5; max-width: 480px; text-align: left; transition: opacity .4s; pointer-events: none; }
   .help-tip kbd { background: var(--bg-2); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border); font-family: inherit; color: var(--text-dim); margin: 0 2px; }
   .help-tip.dim { opacity: 0.25; }
 
