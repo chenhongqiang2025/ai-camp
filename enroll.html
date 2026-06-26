@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI Camp 2026 · 学生入口</title>
+<meta name="description" content="2026 IBM × 大连高新园区 AI 夏令营 · 学生注册入口" />
+<meta name="theme-color" content="#0b0b0c" />
+
+<!-- Fonts via jsdelivr CDN -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/600.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-mono@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/400.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/500.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/600.css">
+
+<style>
+  :root {
+    --bg-0: #0b0b0c;
+    --bg-1: #121214;
+    --bg-2: #1a1a1d;
+    --bg-3: #24242a;
+    --text: #f4f4f4;
+    --text-dim: #a8a8b0;
+    --text-faint: #6b6b75;
+    --accent: #4589ff;
+    --accent-2: #78a9ff;
+    --accent-soft: rgba(69,137,255,0.16);
+    --border: #2a2a30;
+    --success: #42be65;
+    --danger: #fa4d56;
+    --warning: #f1c21b;
+    --font-zh: 'IBM Plex Sans', 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; background: var(--bg-0); color: var(--text); font-family: var(--font-zh); -webkit-font-smoothing: antialiased; }
+  body { display: flex; flex-direction: column; min-height: 100vh; position: relative; }
+
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(69,137,255,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(69,137,255,0.045) 1px, transparent 1px);
+    background-size: 48px 48px; pointer-events: none;
+    mask-image: radial-gradient(ellipse at center, black, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse at center, black, transparent 70%);
+  }
+  body::after {
+    content: ''; position: fixed; top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, var(--accent-soft), transparent 60%);
+    pointer-events: none; filter: blur(40px);
+  }
+
+  /* Top bar */
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 22px 36px; position: relative; z-index: 2; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); letter-spacing: 0.6px; }
+  .brand .dot { width: 9px; height: 9px; background: var(--accent); border-radius: 2px; box-shadow: 0 0 14px var(--accent); }
+  .brand b { color: var(--text); font-weight: 600; }
+  .topbar a { color: var(--text-faint); font-size: 12px; font-family: var(--font-mono); text-decoration: none; }
+  .topbar a:hover { color: var(--accent-2); }
+
+  /* Main card */
+  main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 30px 20px 50px; position: relative; z-index: 2; }
+  .card {
+    width: 100%; max-width: 480px;
+    background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
+    border: 1px solid var(--border); border-radius: 14px;
+    padding: 36px 32px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    animation: rise .35s ease-out;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .card .badge { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px; background: var(--accent-soft); border: 1px solid rgba(69,137,255,0.3); border-radius: 100px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.6px; color: var(--accent-2); margin-bottom: 22px; }
+  .card .badge .dot2 { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(69,137,255,0.6); }
+    70% { box-shadow: 0 0 0 9px rgba(69,137,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(69,137,255,0); }
+  }
+  .card h1 { font-size: 26px; font-weight: 600; line-height: 1.2; margin-bottom: 8px; letter-spacing: -0.5px; }
+  .card .desc { color: var(--text-dim); font-size: 13.5px; line-height: 1.65; margin-bottom: 28px; }
+  .card .desc b { color: var(--text); font-weight: 500; }
+
+  /* Field */
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 12px; color: var(--text-dim); font-weight: 500; margin-bottom: 7px; letter-spacing: 0.2px; }
+  .field label .hint { color: var(--text-faint); font-weight: 400; font-size: 11px; margin-left: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--bg-3); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; font-family: inherit; font-size: 14px; outline: none;
+    transition: border .15s, box-shadow .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(69,137,255,0.15); }
+  .field input.uppercase { text-transform: uppercase; font-family: var(--font-mono); letter-spacing: 2px; font-size: 16px; text-align: center; }
+  .field textarea { resize: vertical; min-height: 70px; line-height: 1.55; }
+  .field .err { color: var(--danger); font-size: 12px; margin-top: 6px; display: none; }
+  .field .err.show { display: block; }
+
+  /* Tags input (multi-select for interests) */
+  .tags-wrap { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+  .tag-chip { padding: 6px 12px; background: var(--bg-3); border: 1px solid var(--border); border-radius: 100px; cursor: pointer; font-size: 12.5px; color: var(--text-dim); user-select: none; transition: all .15s; }
+  .tag-chip:hover { color: var(--text); border-color: var(--border); }
+  .tag-chip.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
+
+  /* Buttons */
+  .btn-row { display: flex; gap: 10px; margin-top: 26px; }
+  button.primary, button.secondary { flex: 1; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; border: 1px solid transparent; transition: all .15s; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { background: var(--accent-2); }
+  button.primary:disabled { background: var(--bg-3); color: var(--text-faint); border-color: var(--border); cursor: not-allowed; }
+  button.secondary { background: transparent; color: var(--text-dim); border-color: var(--border); }
+  button.secondary:hover { color: var(--text); border-color: var(--border); }
+
+  /* Success state */
+  .success-state .icon { font-size: 52px; color: var(--success); margin-bottom: 16px; text-align: center; }
+  .success-state h2 { font-size: 22px; margin-bottom: 8px; text-align: center; }
+  .success-state .me { background: var(--bg-3); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-top: 18px; }
+  .success-state .me .row { display: flex; gap: 10px; padding: 5px 0; font-size: 13px; }
+  .success-state .me .row .k { color: var(--text-faint); width: 60px; flex-shrink: 0; font-family: var(--font-mono); font-size: 11px; padding-top: 2px; }
+  .success-state .me .row .v { color: var(--text); flex: 1; word-break: break-all; }
+
+  /* Footer */
+  footer { padding: 18px 30px; text-align: center; font-size: 11.5px; color: var(--text-faint); font-family: var(--font-mono); letter-spacing: 0.3px; position: relative; z-index: 2; }
+  footer b { color: var(--text-dim); font-weight: 500; }
+
+  /* Mobile */
+  @media (max-width: 540px) {
+    .topbar { padding: 16px 18px; }
+    .card { padding: 28px 22px; border-radius: 12px; }
+    .card h1 { font-size: 22px; }
+    main { padding: 20px 14px 36px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="dot"></span>
+    <span><b>AI Camp 2026</b> · IBM × 大连高新园区</span>
+  </div>
+  <a href="./">← 返回主页</a>
+</header>
+
+<main>
+  <div class="card" id="card">
+    <!-- Filled by JS -->
+  </div>
+</main>
+
+<footer>
+  © 2026 陳宏强 Richard Chen · 教学专用 · <b>FNC 大连</b>
+</footer>
+
+<script>
+/* =================================================================
+   AI Camp · 学生入口
+   - 30 个预生成访问码 fnc-001 ... fnc-030 + 教师码 teacher-2026
+   - 二段表单：码 → 个人信息
+   - 数据存 localStorage（零后端）
+   - 提交后跳转到课件
+   ================================================================= */
+
+const STORE_KEY = 'fnc_camp_student_v1';
+const KB_KEY    = 'fnc_camp_kb_v1';   // 本机已提交过的学生集合（用于 RAG 互动）
+
+// Valid codes: 30 student + 1 teacher
+const VALID_CODES = (function() {
+  const list = ['TEACHER-2026'];
+  for (let i = 1; i <= 30; i++) list.push('FNC-' + String(i).padStart(3, '0'));
+  return list;
+})();
+
+const COLLEGES = [
+  '计算机学院', '软件学院', '电子信息学院', '自动化学院',
+  '机械学院', '化工学院', '管理学院', '数学学院',
+  '物理学院', '生命科学学院', '人文学院', '其他'
+];
+
+const INTERESTS = [
+  '机器学习', '深度学习', '自然语言处理', '计算机视觉',
+  '大模型', 'RAG', '知识图谱', 'Agent / 智能体',
+  '推荐系统', '强化学习', '机器人', '语音识别',
+  '前端开发', '后端开发', '云计算', '产品设计'
+];
+
+const card = document.getElementById('card');
+
+// Stage state
+function getSession() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || 'null'); } catch { return null; } }
+function setSession(s) { localStorage.setItem(STORE_KEY, JSON.stringify(s)); }
+function clearSession() { localStorage.removeItem(STORE_KEY); }
+
+function getKB() { try { return JSON.parse(localStorage.getItem(KB_KEY) || '[]'); } catch { return []; } }
+function addToKB(entry) {
+  const kb = getKB();
+  const idx = kb.findIndex(x => x.code === entry.code);
+  if (idx >= 0) kb[idx] = entry; else kb.push(entry);
+  localStorage.setItem(KB_KEY, JSON.stringify(kb));
+}
+
+function render() {
+  const s = getSession();
+  if (s && s.submitted) renderSuccess(s);
+  else if (s && s.code) renderForm(s);
+  else renderCode();
+}
+
+/* ---------- Stage 1: code entry ---------- */
+function renderCode() {
+  card.innerHTML = `
+    <div class="badge"><span class="dot2"></span>欢迎报名</div>
+    <h1>AI 夏令营 2026 · 学生入口</h1>
+    <p class="desc">请输入讲师在课前发给你的<b>访问码</b>。访问码形如 <code style="background:var(--bg-3);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);">FNC-001</code>。</p>
+    <div class="field">
+      <label>访问码</label>
+      <input id="codeInput" class="uppercase" placeholder="FNC-XXX" autocomplete="off" maxlength="16" />
+      <div id="codeErr" class="err">访问码无效。请确认输入正确（不区分大小写）。</div>
+    </div>
+    <div class="btn-row">
+      <button class="primary" id="codeNext">下一步 →</button>
+    </div>
+  `;
+  const input = document.getElementById('codeInput');
+  const err = document.getElementById('codeErr');
+  const btn = document.getElementById('codeNext');
+  input.focus();
+  function submit() {
+    const code = (input.value || '').trim().toUpperCase();
+    if (!code) return;
+    if (!VALID_CODES.includes(code)) {
+      err.classList.add('show'); input.focus(); return;
+    }
+    err.classList.remove('show');
+    setSession({ code, submitted: false });
+    renderForm({ code });
+  }
+  btn.addEventListener('click', submit);
+  input.addEventListener('keydown', (e) => { if (e.key === 'Enter') submit(); });
+}
+
+/* ---------- Stage 2: personal info ---------- */
+function renderForm(s) {
+  const isTeacher = s.code === 'TEACHER-2026';
+  card.innerHTML = `
+    <div class="badge"><span class="dot2"></span>${isTeacher ? '讲师测试通道' : '已识别 · ' + s.code}</div>
+    <h1>${isTeacher ? '欢迎，讲师' : '告诉我们关于你'}</h1>
+    <p class="desc">${isTeacher ? '你将以讲师身份测试整套流程。' : '这些信息将用于课堂上的<b>知识图谱互动</b>和<b>智能组队推荐</b>。提交后任何时候都可以修改。'}</p>
+
+    <div class="field">
+      <label>姓名或昵称 <span class="hint">让大屏图谱叫你什么</span></label>
+      <input id="fName" placeholder="例如：张三" value="${escapeAttr(s.name||'')}" maxlength="30" />
+    </div>
+
+    <div class="field">
+      <label>学院</label>
+      <select id="fCollege">
+        <option value="">请选择…</option>
+        ${COLLEGES.map(c => `<option value="${c}" ${s.college===c?'selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="field">
+      <label>兴趣方向 <span class="hint">选 1-5 项</span></label>
+      <div class="tags-wrap" id="fTags">
+        ${INTERESTS.map(t => `<span class="tag-chip ${(s.interests||[]).includes(t)?'on':''}" data-t="${t}">${t}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="field">
+      <label>一句话自我介绍 <span class="hint">选填，会用于 RAG 检索互动</span></label>
+      <textarea id="fBio" placeholder="例如：我对大模型在金融场景的落地很感兴趣，希望了解 RAG 的工程实践…">${escapeText(s.bio||'')}</textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="secondary" id="fBack">← 上一步</button>
+      <button class="primary" id="fSubmit">提交 · 进入课件 →</button>
+    </div>
+  `;
+
+  // tag toggling
+  const tagsEl = document.getElementById('fTags');
+  tagsEl.addEventListener('click', (e) => {
+    const chip = e.target.closest('.tag-chip');
+    if (!chip) return;
+    const on = chip.classList.toggle('on');
+    if (on) {
+      const onCount = tagsEl.querySelectorAll('.tag-chip.on').length;
+      if (onCount > 5) { chip.classList.remove('on'); }
+    }
+  });
+
+  document.getElementById('fBack').addEventListener('click', () => { clearSession(); renderCode(); });
+  document.getElementById('fSubmit').addEventListener('click', () => {
+    const name = (document.getElementById('fName').value || '').trim();
+    const college = document.getElementById('fCollege').value;
+    const bio = (document.getElementById('fBio').value || '').trim();
+    const interests = Array.from(tagsEl.querySelectorAll('.tag-chip.on')).map(c => c.dataset.t);
+    if (!name) { alert('请填写姓名/昵称'); return; }
+    if (!college) { alert('请选择学院'); return; }
+    if (!interests.length) { alert('请至少选一个兴趣方向'); return; }
+    const entry = { code: s.code, name, college, interests, bio, submittedAt: new Date().toISOString(), submitted: true };
+    setSession(entry);
+    addToKB(entry);
+    renderSuccess(entry);
+  });
+}
+
+/* ---------- Stage 3: success ---------- */
+function renderSuccess(s) {
+  const isTeacher = s.code === 'TEACHER-2026';
+  card.innerHTML = `
+    <div class="success-state">
+      <div class="icon">✓</div>
+      <h2>${isTeacher ? '讲师测试成功' : '已记录 · 期待与你课堂见面'}</h2>
+      <p class="desc" style="text-align:center;margin-top:8px;">课件入口已为你准备好。点击"进入课件"开始体验，<br>或在开营当天再回来。</p>
+
+      <div class="me">
+        <div class="row"><span class="k">CODE</span><span class="v" style="font-family:var(--font-mono);">${s.code}</span></div>
+        <div class="row"><span class="k">姓名</span><span class="v">${escapeText(s.name)}</span></div>
+        <div class="row"><span class="k">学院</span><span class="v">${escapeText(s.college)}</span></div>
+        <div class="row"><span class="k">兴趣</span><span class="v">${(s.interests||[]).map(escapeText).join(' · ')}</span></div>
+        ${s.bio ? `<div class="row"><span class="k">简介</span><span class="v">${escapeText(s.bio)}</span></div>` : ''}
+      </div>
+
+      <div class="btn-row">
+        <button class="secondary" id="fEdit">修改信息</button>
+        <button class="primary" id="fGo">进入课件 →</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('fEdit').addEventListener('click', () => {
+    const ses = getSession();
+    if (ses) { ses.submitted = false; setSession(ses); }
+    renderForm(s);
+  });
+  document.getElementById('fGo').addEventListener('click', () => { location.href = './slides.html'; });
+}
+
+function escapeText(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeText(s); }
+
+render();
+</script>
+</body>
+</html>
