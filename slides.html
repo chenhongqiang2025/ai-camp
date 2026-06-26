@@ -88,18 +88,23 @@
   .reveal { position: relative; z-index: 1; }
 
   .reveal .slides { text-align: left; }
-  /* Force vertical centering on every slide — belt + suspenders to Reveal's center:true */
-  .reveal .slides > section,
+
+  /* CRITICAL: Apply flex centering ONLY to leaf slides — never to chapter stack containers */
+  /* Leaf top-level: cover and closing (sections with no nested children) */
+  /* Leaf nested: all vertical sub-sections inside chapter stacks */
+  .reveal .slides > section.cover,
+  .reveal .slides > section.closing,
   .reveal .slides > section > section {
     display: flex !important;
-    flex-direction: column;
-    justify-content: center;
-    align-items: stretch;
-    min-height: 700px;
-    padding: 40px 60px;
-    box-sizing: border-box;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: stretch !important;
+    height: 100% !important;
+    padding: 50px 70px !important;
+    box-sizing: border-box !important;
+    overflow: hidden;
   }
-  /* Top-level horizontal section that has nested vertical sections — they take care of themselves; this just provides height */
+  /* Chapter stack containers — must NOT have flex; let Reveal manage stack layout */
   .reveal .slides > section { position: relative; }
   .reveal h1, .reveal h2, .reveal h3 { font-weight: 600; }
   .reveal b { font-weight: 600; }
