@@ -154,6 +154,109 @@
   .interactive-callout p { color: var(--text-dim); font-size: 1.1em; max-width: 640px; line-height: 1.7; }
   .interactive-callout .scan-hint { margin-top: 36px; font-family: var(--r-code-font); font-size: 12px; color: var(--text-faint); letter-spacing: 0.5px; padding: 10px 18px; background: var(--bg-2); border: 1px dashed var(--border); border-radius: 100px; display: inline-flex; align-items: center; gap: 8px; }
 
+  /* ============================================================
+     Content slide patterns — composable for all 14 chapters
+     ============================================================ */
+
+  /* Common content header (chapter context + slide title) */
+  .content-header { margin-bottom: 36px; }
+  .content-header .ctx { font-family: var(--r-code-font); font-size: 12px; letter-spacing: 2.5px; color: var(--accent); margin-bottom: 14px; }
+  .content-header h2 { font-size: 2.2em !important; margin: 0 0 12px !important; line-height: 1.15; color: #fff !important; }
+  .content-header .sub { color: var(--text-dim); font-size: 1em; line-height: 1.6; max-width: 860px; }
+
+  /* Footer takeaway / transition */
+  .takeaway { margin-top: 36px; padding: 14px 18px; background: var(--accent-soft); border-left: 3px solid var(--accent); border-radius: 4px; font-size: 0.92em; color: var(--accent-2); max-width: 800px; }
+  .takeaway b { color: #fff; font-weight: 500; }
+
+  /* PATTERN 1 — Bullet list with leading numbers */
+  .pts { list-style: none; padding: 0; margin: 0; max-width: 880px; }
+  .pts li { display: grid; grid-template-columns: 50px 1fr; gap: 18px; align-items: flex-start; padding: 16px 0; border-bottom: 1px solid var(--border); font-size: 0.95em; line-height: 1.55; color: var(--text); }
+  .pts li:last-child { border-bottom: 0; }
+  .pts li .n { font-family: var(--r-code-font); font-size: 13px; color: var(--accent); letter-spacing: 1px; padding-top: 3px; }
+  .pts li b { color: #fff; font-weight: 600; }
+  .pts li .ex { color: var(--text-dim); font-size: 0.88em; margin-top: 4px; display: block; }
+
+  /* PATTERN 2 — Year hero (big year + caption) */
+  .year-hero { text-align: center; max-width: 900px; margin: 0 auto; }
+  .year-hero .yr { font-size: 8.5em; font-family: var(--r-code-font); color: var(--accent); letter-spacing: -3px; line-height: 0.95; background: linear-gradient(180deg, var(--accent-2) 30%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .year-hero h2 { font-size: 2.4em !important; margin: 18px 0 16px !important; color: #fff !important; line-height: 1.15; }
+  .year-hero p { color: var(--text-dim); font-size: 1.05em; line-height: 1.7; max-width: 660px; margin: 0 auto; }
+  .year-hero .quote { font-style: italic; color: var(--text); font-size: 1.15em; margin-top: 24px; padding: 14px 22px; background: var(--bg-2); border-radius: 6px; border-left: 3px solid var(--accent); display: inline-block; max-width: 720px; text-align: left; }
+
+  /* PATTERN 3 — Horizontal timeline */
+  .timeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 18px; max-width: 1100px; margin: 30px auto 0; position: relative; }
+  .timeline::before { content: ''; position: absolute; top: 14px; left: 5%; right: 5%; height: 1px; background: linear-gradient(90deg, transparent, var(--border) 10%, var(--border) 90%, transparent); pointer-events: none; }
+  .tl-item { position: relative; padding: 30px 8px 0; text-align: center; }
+  .tl-item::before { content: ''; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 14px; height: 14px; background: var(--bg-1); border: 2px solid var(--accent); border-radius: 50%; box-shadow: 0 0 12px var(--accent-soft); }
+  .tl-item.major::before { background: var(--accent); }
+  .tl-item .yr { font-family: var(--r-code-font); font-size: 12px; color: var(--accent); letter-spacing: 1px; margin-bottom: 4px; }
+  .tl-item .ttl { font-size: 0.95em; color: #fff; font-weight: 500; line-height: 1.3; margin-bottom: 4px; }
+  .tl-item .ds { font-size: 0.78em; color: var(--text-dim); line-height: 1.5; }
+
+  /* PATTERN 4 — Two-column compare */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 1100px; }
+  .cmp-side { padding: 22px 24px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; }
+  .cmp-side.warn { border-color: rgba(241,194,27,0.4); background: rgba(241,194,27,0.06); }
+  .cmp-side.good { border-color: rgba(66,190,101,0.4); background: rgba(66,190,101,0.06); }
+  .cmp-side.accent { border-color: rgba(69,137,255,0.4); background: rgba(69,137,255,0.08); }
+  .cmp-side .lbl { font-family: var(--r-code-font); font-size: 11px; letter-spacing: 1.5px; color: var(--text-faint); margin-bottom: 14px; text-transform: uppercase; }
+  .cmp-side.warn .lbl { color: var(--warning); }
+  .cmp-side.good .lbl { color: var(--success); }
+  .cmp-side.accent .lbl { color: var(--accent-2); }
+  .cmp-side h3 { font-size: 1.2em; margin: 0 0 14px; color: #fff; }
+  .cmp-side ul { padding-left: 18px; margin: 0; color: var(--text-dim); font-size: 0.9em; line-height: 1.7; }
+  .cmp-side ul li { margin: 6px 0; }
+
+  /* PATTERN 5 — Big stat callout */
+  .stats-row { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; margin: 20px 0; }
+  .stat-big { text-align: center; padding: 14px 24px; }
+  .stat-big .num { font-size: 4.2em; font-family: var(--r-code-font); font-weight: 600; color: var(--accent); line-height: 1; letter-spacing: -2px; }
+  .stat-big .lbl { color: var(--text-dim); font-size: 0.9em; margin-top: 8px; max-width: 220px; }
+  .stat-big.warn .num { color: var(--warning); }
+  .stat-big.success .num { color: var(--success); }
+  .stat-big.interactive .num { color: var(--interactive); }
+
+  /* PATTERN 6 — Quote slide */
+  .quote-slide { text-align: center; max-width: 920px; margin: 0 auto; }
+  .quote-slide .mark { font-size: 5em; color: var(--accent); line-height: 0.6; font-family: Georgia, serif; opacity: 0.6; margin-bottom: 20px; }
+  .quote-slide blockquote { font-size: 1.7em; font-style: italic; color: #f4f4f4; line-height: 1.5; border: 0; padding: 0; margin: 0 0 30px; font-weight: 300; }
+  .quote-slide .attr { font-family: var(--r-code-font); font-size: 13px; color: var(--text-faint); letter-spacing: 1px; }
+
+  /* PATTERN 7 — Three-card row */
+  .cards-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 1100px; }
+  .card { padding: 22px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; }
+  .card .icon { font-size: 28px; color: var(--accent); margin-bottom: 12px; }
+  .card h3 { font-size: 1.1em; margin: 0 0 10px; color: #fff; }
+  .card p { color: var(--text-dim); font-size: 0.88em; line-height: 1.6; margin: 0; }
+  .card .ft { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border); font-family: var(--r-code-font); font-size: 11px; color: var(--text-faint); letter-spacing: 0.5px; }
+
+  /* PATTERN 8 — Diagram boxes with arrows (RAG/Agent flow) */
+  .flow { display: flex; align-items: center; gap: 10px; flex-wrap: nowrap; justify-content: center; max-width: 1100px; margin: 0 auto; }
+  .flow-step { flex: 1; min-width: 0; padding: 16px 12px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; text-align: center; }
+  .flow-step .ico { font-size: 24px; color: var(--accent); margin-bottom: 8px; }
+  .flow-step .ttl { font-size: 0.88em; color: #fff; font-weight: 500; margin-bottom: 4px; }
+  .flow-step .ds { font-size: 0.74em; color: var(--text-dim); line-height: 1.4; }
+  .flow .arrow { color: var(--text-faint); font-size: 18px; flex-shrink: 0; }
+
+  /* Mobile adjustments for content patterns */
+  @media (max-width: 760px) {
+    .content-header h2 { font-size: 1.6em !important; }
+    .pts li { grid-template-columns: 40px 1fr; gap: 12px; font-size: 0.85em; padding: 10px 0; }
+    .year-hero .yr { font-size: 4.5em; }
+    .year-hero h2 { font-size: 1.6em !important; }
+    .timeline { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .timeline::before { display: none; }
+    .tl-item { padding-top: 26px; }
+    .compare { grid-template-columns: 1fr; gap: 14px; }
+    .cmp-side { padding: 16px; }
+    .stat-big .num { font-size: 3em; }
+    .quote-slide blockquote { font-size: 1.2em; }
+    .cards-3 { grid-template-columns: 1fr; gap: 12px; }
+    .flow { flex-direction: column; gap: 6px; }
+    .flow .arrow { transform: rotate(90deg); }
+    .takeaway { font-size: 0.85em; padding: 10px 12px; }
+  }
+
   /* === Closing === */
   .closing { text-align: center; }
   .closing .thanks { font-size: 6em !important; background: linear-gradient(180deg, #fff 20%, var(--accent-2) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -2px; margin-bottom: 30px !important; color: #fff; }
@@ -238,19 +341,76 @@
           <span class="badge">10 min</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">▦</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>IBM 大连办公室介绍（30 秒）</li>
-          <li>FutureNow Center 在做什么</li>
-          <li>我个人 18 年技术路径</li>
-          <li>大连高新区为什么选择和 IBM 合作</li>
-          <li>本次夏令营你将获得什么</li>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.01 · 01 / 03</div>
+          <h2>IBM 大连 · FutureNow Center China</h2>
+          <p class="sub">把全球前沿 AI 能力，带到大连，带到中国企业落地的第一线</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">01</span><div><b>IBM 中国 ＿ 41 年</b> · 1984 进入中国，现已成为本土最大的国际 AI 服务团队之一<span class="ex">大连办公室聚焦交付与咨询，是 IBM Global Delivery 的重要支点</span></div></li>
+          <li><span class="n">02</span><div><b>FutureNow Center</b> · 把"明天的技术"翻译成"今天能用的方案"<span class="ex">服务范围：金融、制造、零售、能源 — 每个行业都有针对性 GenAI 方案</span></div></li>
+          <li><span class="n">03</span><div><b>FNC 大连</b> · 离客户最近、离应用场景最近的 AI 队伍<span class="ex">本土工程师 + 行业专家 + 设计师 + 数据科学家的混合编队</span></div></li>
         </ul>
         <aside class="notes">
-          这里讲个能拉近距离的小故事，例如自己当年也是从大连本地出去的学生，让学生有亲切感。
+          开场 30 秒：先点出"IBM 在中国 41 年了"——给学生信任感和厚度感。
+          然后简短说 FNC 的使命：把前沿 AI 带到客户身边。
+          最后说 FNC 大连和大家在同一座城市，是身边的 IBM。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.01 · 02 / 03</div>
+          <h2>关于我 · Richard Chen</h2>
+          <p class="sub">技术 + 业务双线，18 年走过研发、架构、解决方案、商务拓展</p>
+        </div>
+        <div class="timeline">
+          <div class="tl-item"><div class="yr">2008</div><div class="ttl">工科启蒙</div><div class="ds">大连本地学校 · 第一行 C 代码</div></div>
+          <div class="tl-item major"><div class="yr">2015</div><div class="ttl">企业架构</div><div class="ds">从工程师到企业级架构师</div></div>
+          <div class="tl-item major"><div class="yr">2019</div><div class="ttl">加入 IBM</div><div class="ds">IBM Consulting · 解决方案架构</div></div>
+          <div class="tl-item"><div class="yr">2022</div><div class="ttl">GenAI 转向</div><div class="ds">ChatGPT 时刻后全面 AI 化</div></div>
+          <div class="tl-item major"><div class="yr">2026</div><div class="ttl">今天</div><div class="ds">FNC 中国 · GenAI 架构 + BD</div></div>
+        </div>
+        <div class="takeaway"><b>我和你站在同一个起点 — 大连。</b> 不同的是，我走了 18 年才看到 GenAI；你直接从 GenAI 开始。这是你的幸运，也是你的责任。</div>
+        <aside class="notes">
+          这一页要拉近和学生的距离 — 强调"我也是大连出去的工科生"。
+          不要堆砌 title，而是讲转折点：什么时候明白技术 + 业务比纯技术更重要。
+          最后的 takeaway 是核心 — 让他们感觉自己的起点比当年的我高。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.01 · 03 / 03</div>
+          <h2>这一天，你会获得什么</h2>
+          <p class="sub">不是听完就忘的讲座 · 是一份能带走、能回看、能动手的能力</p>
+        </div>
+        <div class="cards-3">
+          <div class="card">
+            <div class="icon">◉</div>
+            <h3>看懂"昨天-今天-明天"</h3>
+            <p>从 1950 图灵到 2026 Agent，AI 的来路与去向，你将拥有完整时间轴</p>
+            <div class="ft">CH.02 — CH.05</div>
+          </div>
+          <div class="card">
+            <div class="icon">⟹</div>
+            <h3>亲手体验 6 个核心技术</h3>
+            <p>RAG、知识图谱、Agent、A2A、MCP — 你不是看演示，你是参与者</p>
+            <div class="ft">CH.07 — CH.12</div>
+          </div>
+          <div class="card">
+            <div class="icon">◫</div>
+            <h3>一份永久访问的课件</h3>
+            <p>课件托管在 GitHub Pages，URL 永久有效 — 随时回看，欢迎转给同学</p>
+            <div class="ft">chenhongqiang2025.github.io/ai-camp</div>
+          </div>
+        </div>
+        <div class="takeaway"><b>承诺：</b> 今天结束时，你能用自己的话向室友解释 RAG 和 Agent 是什么。这就够了。</div>
+        <aside class="notes">
+          这一页是"承诺管理" — 给学生明确的期待。
+          强调"亲手体验"和"永久访问"是这堂课区别于普通讲座的两大特点。
+          最后承诺要落地、具体、可验证 — "能向室友解释 RAG"，简单且有标准。
         </aside>
       </section>
     </section>
@@ -266,21 +426,88 @@
           <span class="badge">15 min</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">⌛</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">TIMELINE</div>
-        <ul>
-          <li>1950 · 图灵《计算机器与智能》——"机器能思考吗？"</li>
-          <li>1956 · 达特茅斯会议 —— AI 正式命名</li>
-          <li>1960-70s · 专家系统的黄金年代</li>
-          <li>1974-80 / 1987-93 · 两次 AI 寒冬</li>
-          <li>2006 · 深度学习开始复苏（Hinton）</li>
-          <li>2012 · AlexNet 引爆视觉</li>
-        </ul>
+      <section>
+        <div class="year-hero">
+          <div class="yr">1950</div>
+          <h2>图灵的疑问</h2>
+          <p>艾伦 · 图灵发表《Computing Machinery and Intelligence》，提出后来被称为<b style="color:#fff;">"图灵测试"</b>的判断标准 — 如果一台机器能让你相信它是人，那么它就在某种意义上"思考"</p>
+          <div class="quote">"我们能想象的最远的未来，不过是机器中也涌现出某种属于它们自己的智慧。"</div>
+        </div>
         <aside class="notes">
-          这一章用时间线视觉化呈现，避免单调列举。
-          推荐讲法：每个时间点给出"代表性事件 + 当时人们怎么想"。
+          强调：这是一切的起点。图灵当时连"计算机"都没几台，却已经在问"机器能思考吗"。
+          可以问学生："你觉得 ChatGPT 通过图灵测试了吗？" — 引发思考但不展开。
+        </aside>
+      </section>
+
+      <section>
+        <div class="year-hero">
+          <div class="yr">1956</div>
+          <h2>达特茅斯会议 · AI 正式命名</h2>
+          <p>John McCarthy、Marvin Minsky、Claude Shannon 等学者在达特茅斯学院召开为期 8 周的研讨会 — <b style="color:#fff;">"Artificial Intelligence"</b> 这个词，是在这次会议上被正式提出的</p>
+          <div class="quote">"我们认为，学习的每一个方面或智能的任何其他特性，原则上都可以被精确描述并由机器模拟。"</div>
+        </div>
+        <aside class="notes">
+          强调：这是 AI 的"建国日"。
+          有趣的事实：当时与会者乐观预言"10 年内机器将能做人能做的所有事"——结果，过了快 70 年。
+          这是后面"AI 寒冬"的伏笔。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.02 · 寒冬与复苏</div>
+          <h2>两次 AI 寒冬 · 一次大复兴</h2>
+          <p class="sub">AI 不是一条直线上升，而是经历了过两次"被冷落"才走到今天</p>
+        </div>
+        <div class="compare">
+          <div class="cmp-side warn">
+            <div class="lbl">第一次寒冬 1974-1980</div>
+            <h3>专家系统的失败</h3>
+            <ul>
+              <li>过度乐观预言落空</li>
+              <li>专家系统规则爆炸，难以维护</li>
+              <li>政府削减研究资助（Lighthill 报告）</li>
+              <li>核心矛盾：硬规则无法应对真实世界的不确定性</li>
+            </ul>
+          </div>
+          <div class="cmp-side warn">
+            <div class="lbl">第二次寒冬 1987-1993</div>
+            <h3>第二轮泡沫破裂</h3>
+            <ul>
+              <li>LISP 机商业失败</li>
+              <li>日本"第五代计算机"计划失败</li>
+              <li>专家系统仍未解决根本问题</li>
+              <li>资本和媒体全面撤退</li>
+            </ul>
+          </div>
+        </div>
+        <div class="takeaway"><b>历史教训：</b> 每次寒冬都源于"承诺超出能力"。今天的 GenAI 也面临同样的拐点 — 但这次，我们有了真实可用的产品，不只是承诺。</div>
+        <aside class="notes">
+          这一页要警示学生：技术发展不是直线。
+          关键洞察：每次寒冬的根因都是"承诺与能力的差距"——这是 AI 行业的固有风险。
+          这也是为什么 IBM 强调"可落地"的 GenAI——避免重蹈覆辙。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.02 · 现代复兴</div>
+          <h2>2006 至今 · 深度学习的崛起</h2>
+          <p class="sub">三个关键转折点 · 把 AI 从实验室推向每个人的手机</p>
+        </div>
+        <div class="timeline">
+          <div class="tl-item major"><div class="yr">2006</div><div class="ttl">Hinton DBN</div><div class="ds">深度信念网络，深度学习正名</div></div>
+          <div class="tl-item major"><div class="yr">2012</div><div class="ttl">AlexNet</div><div class="ds">视觉识别正确率突破 GPU + 大数据组合拳</div></div>
+          <div class="tl-item"><div class="yr">2014</div><div class="ttl">GAN</div><div class="ds">生成对抗网络，AI 开始"创造"</div></div>
+          <div class="tl-item major"><div class="yr">2017</div><div class="ttl">Transformer</div><div class="ds">"Attention is all you need" 现代大模型奠基</div></div>
+          <div class="tl-item"><div class="yr">2018</div><div class="ttl">BERT/GPT-1</div><div class="ds">预训练时代开启</div></div>
+          <div class="tl-item major"><div class="yr">2022</div><div class="ttl">ChatGPT</div><div class="ds">AI 真正走进每个人的生活 — 我们在这</div></div>
+        </div>
+        <div class="takeaway"><b>关键词：</b> 算力（GPU）+ 数据（互联网）+ 算法（Transformer） — 三个要素同时成熟，才有了今天</div>
+        <aside class="notes">
+          强调"三要素"是现代 AI 突破的根本。
+          AlexNet 是视觉的 ChatGPT 时刻 — 那年视觉识别正确率一举提升 10 个百分点。
+          Transformer 是分水岭 — 之前的 RNN/CNN 时代结束。
         </aside>
       </section>
     </section>
@@ -296,20 +523,100 @@
           <span class="badge">20 min</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">⊞</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>感知机：最早的人工神经元（用一支笔画出来）</li>
-          <li>反向传播：神经网络如何"学习"</li>
-          <li>CNN：教计算机"看图"</li>
-          <li>RNN：教计算机"读序列"</li>
-          <li>梯度消失 / 残差网络的突破</li>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.03 · 01 / 04 · 起点</div>
+          <h2>感知机 · 第一个人工神经元</h2>
+          <p class="sub">1957 年 Frank Rosenblatt 提出 — 把生物神经元抽象成一行数学</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">输入</span><div><b>x₁ · x₂ · x₃ ...</b> — 一组数字，可以是像素、词的索引、传感器读数<span class="ex">本质：把世界翻译成"数"</span></div></li>
+          <li><span class="n">权重</span><div><b>w₁ · w₂ · w₃ ...</b> — 每个输入的"重要程度"，由训练得来<span class="ex">这是网络"记忆"的全部 — 所谓"AI 模型"就是一堆 w</span></div></li>
+          <li><span class="n">求和</span><div><b>z = Σ wᵢxᵢ + b</b> — 加权求和，再加上一个偏置项<span class="ex">中学数学就能看懂的式子</span></div></li>
+          <li><span class="n">激活</span><div><b>y = σ(z)</b> — 非线性函数（Sigmoid、ReLU），决定神经元是否"激活"<span class="ex">没有这一步，整个网络等价于一个线性回归</span></div></li>
         </ul>
+        <div class="takeaway"><b>核心理解：</b> 现代最大的 LLM (~万亿参数)，本质就是 万亿 个这样的"小神经元"叠在一起 — 每一个的数学都不超出中学范围</div>
         <aside class="notes">
-          数学公式克制使用，用图示和类比为主。
-          可以举"识别猫"这种直观例子。
+          强调："不要被神经网络吓到 — 单个神经元的数学就这么简单。"
+          可以画一下：3 个输入接到 1 个神经元 — 黑板上 30 秒能画清楚。
+          关键洞察：复杂性来自"叠加 + 非线性"，不是某个魔术公式。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.03 · 02 / 04 · 学习</div>
+          <h2>反向传播 · 神经网络如何"学"</h2>
+          <p class="sub">1986 年 Rumelhart · Hinton · Williams 把它推广开 — 这是 90% 现代 AI 的基础算法</p>
+        </div>
+        <div class="flow">
+          <div class="flow-step"><div class="ico">→</div><div class="ttl">前向传播</div><div class="ds">输入经过网络，得到预测</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">×</div><div class="ttl">计算误差</div><div class="ds">预测 vs 真实标签的差距</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">←</div><div class="ttl">反向传播</div><div class="ds">误差沿网络反向传递</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">↓</div><div class="ttl">更新权重</div><div class="ds">每个 w 朝降低误差的方向小幅调整</div></div>
+        </div>
+        <div class="takeaway"><b>类比：</b> 像你考试错题后 — 回头看看哪一步算错了（反向追溯），下次类似题就微调你的"做题习惯"（更新权重）。数百万次迭代，模型就"学会了"。</div>
+        <aside class="notes">
+          类比是教学的关键 — "考试错题" 每个学生都体会过。
+          可以补充：链式法则是数学基础（高数会学到），但这里不展开公式。
+          强调：90% 现代 AI 训练算法都是这个套路，只是在它上面加 trick。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.03 · 03 / 04 · 看图</div>
+          <h2>CNN · 教计算机"看"</h2>
+          <p class="sub">1998 年 Yann LeCun 的 LeNet — 用"卷积"模拟人眼的局部感知</p>
+        </div>
+        <div class="compare">
+          <div class="cmp-side">
+            <div class="lbl">传统全连接</div>
+            <h3>每个像素接每个神经元</h3>
+            <ul>
+              <li>参数爆炸：100×100 图像就是 10000 个输入</li>
+              <li>不利用图像的"空间局部性"</li>
+              <li>训练慢、效果差</li>
+            </ul>
+          </div>
+          <div class="cmp-side good">
+            <div class="lbl">卷积神经网络</div>
+            <h3>用小窗口扫描整张图</h3>
+            <ul>
+              <li><b>卷积层</b>：3×3 窗口提取局部特征</li>
+              <li><b>池化层</b>：压缩信息，保留要点</li>
+              <li>参数共享：同一卷积核扫整图</li>
+              <li>结果：训练快 10×，准确率高 5-10%</li>
+            </ul>
+          </div>
+        </div>
+        <div class="takeaway"><b>影响：</b> 2012 AlexNet 用 CNN 在 ImageNet 大赛上把错误率从 26% 砍到 15.3%，AI 视觉的"ChatGPT 时刻"。今天的人脸识别、自动驾驶视觉、医疗影像 — 都建立在 CNN 上。</div>
+        <aside class="notes">
+          强调："局部性"是 CNN 成功的关键 — 因为图像本身就具有这个属性。
+          类比：人眼看图也不是"一次性"看，而是局部扫描、组合理解。
+          AlexNet 突破的不是算法本身（CNN 1998 就有），而是 GPU + 大数据让它能跑出来。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.03 · 04 / 04 · 序列</div>
+          <h2>RNN · 教计算机"记忆"</h2>
+          <p class="sub">如果 CNN 让计算机"看"，RNN 让计算机"读" — 处理一切有顺序的数据</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">核心</span><div><b>循环结构</b> · 每一步的输出会作为下一步的输入之一<span class="ex">网络有了"上下文"概念 — 这是处理语言、语音、时序数据的基础</span></div></li>
+          <li><span class="n">应用</span><div><b>机器翻译 · 语音识别 · 文本生成</b> · 2014-2017 NLP 的主流架构<span class="ex">Google Translate 早期就是 LSTM (RNN 的改进版) 做的</span></div></li>
+          <li><span class="n">短板</span><div><b>梯度消失 + 顺序计算慢</b> · 难以记住远处信息，无法并行训练<span class="ex">这就是为什么 2017 年 Transformer 一出场就替代了它</span></div></li>
+        </ul>
+        <div class="takeaway"><b>承上启下：</b> RNN 教会了我们一件事 — "顺序"在语言中至关重要。Transformer 用一种更聪明的方式（Attention）解决了同样的问题。下一章我们就讲它。</div>
+        <aside class="notes">
+          RNN 在今天已经被 Transformer 取代，但理解它有助于理解 Transformer 解决的是什么问题。
+          关键洞察：序列建模的核心是"上下文" — Transformer 把这件事做到了极致。
+          下一章 Transformer 是真正的高潮。
         </aside>
       </section>
     </section>
@@ -325,20 +632,100 @@
           <span class="badge">20 min</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">⌬</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>词袋模型 (Bag of Words) —— 最朴素的表示</li>
-          <li>Word2Vec —— "国王 - 男 + 女 = 女王"</li>
-          <li>Seq2Seq + Attention —— 机器翻译的进步</li>
-          <li>Transformer 架构 (2017) —— "Attention is all you need"</li>
-          <li>BERT / GPT —— 两种范式的对比</li>
-        </ul>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.04 · 01 / 04 · 起点</div>
+          <h2>词袋模型 · 最朴素的开始</h2>
+          <p class="sub">2000 年代 NLP 主流方法 — 把一句话当成一袋词，统计频率</p>
+        </div>
+        <div class="compare">
+          <div class="cmp-side warn">
+            <div class="lbl">优点</div>
+            <h3>简单粗暴有效</h3>
+            <ul>
+              <li>实现 10 行代码</li>
+              <li>可解释（每个词的权重清晰）</li>
+              <li>当年的垃圾邮件分类、新闻分类基础</li>
+            </ul>
+          </div>
+          <div class="cmp-side">
+            <div class="lbl">致命缺陷</div>
+            <h3>丢失了"顺序"和"语义"</h3>
+            <ul>
+              <li>"我爱你" 和 "你爱我" 在词袋里完全一样</li>
+              <li>"猫" 和 "犬" 在向量上没有任何相似性</li>
+              <li>同义词、反义词都识别不出来</li>
+              <li>遇到长文本，向量稀疏到几乎全是 0</li>
+            </ul>
+          </div>
+        </div>
+        <div class="takeaway"><b>启示：</b> 计算机要真正"理解"语言，必须捕捉两件事 — <b>顺序</b>（语法）和 <b>语义</b>（词与词的关系）。后面的整个 NLP 史，都是在解这两道题。</div>
         <aside class="notes">
-          Transformer 是核心，需要给学生留下印象。
-          视觉化 Self-Attention 的工作原理。
+          强调词袋是"砖头"，今天 RAG 中的关键词检索本质还是改进版词袋。
+          可以提一句 TF-IDF — 词频 × 反文档频率，给"区分度高的词"更高权重。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.04 · 02 / 04 · 突破</div>
+          <h2>Word2Vec · 语义就是几何</h2>
+          <p class="sub">2013 年 Mikolov · Google — 用一个浅层神经网络，让每个词变成一个 300 维向量</p>
+        </div>
+        <div class="year-hero">
+          <div class="quote" style="font-size: 1.5em; padding: 24px 32px;">
+            king − man + woman ≈ <b style="color: var(--accent-2);">queen</b>
+          </div>
+          <p style="margin-top: 30px;"><b style="color: #fff;">这不是巧合 — 这是数学。</b> Word2Vec 把每个词放到一个 300 维空间，相似的词彼此靠近，<br>语义关系（性别、复数、动词时态）变成了空间中的"方向"</p>
+        </div>
+        <div class="takeaway"><b>颠覆：</b> 这是 NLP 第一次让计算机理解"语义"。每一个 Embedding 模型（包括今天 RAG 用的）都建立在这个洞察之上 — <b>词义可以被数字精确表达</b>。</div>
+        <aside class="notes">
+          这一页是 NLP 史上的"惊艳时刻"——一定要让学生感受这个 "wow"。
+          可以现场让学生猜：tokyo - japan + france = ? (paris)
+          强调：今天所有 RAG 的"语义检索"本质都是 Embedding 的近邻搜索。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.04 · 03 / 04 · Attention</div>
+          <h2>注意力机制 · 让模型自己挑重点</h2>
+          <p class="sub">2014 Bahdanau 在机器翻译中引入 — 网络学会了"哪些输入对当前输出最重要"</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">问题</span><div><b>翻译 "我 喜欢 在 雨天 喝 茶"</b> · RNN 必须把整句话压缩成一个固定向量再翻译<span class="ex">长句子就丢信息 — "雨天" 翻到英文时可能已经被淡忘</span></div></li>
+          <li><span class="n">想法</span><div><b>让翻译每个词时，"回头看"原句</b> · 给每个输入词一个"注意力权重"<span class="ex">翻 "tea" 的时候，"茶" 的权重高；翻 "rainy" 时，"雨天" 的权重高</span></div></li>
+          <li><span class="n">效果</span><div><b>机器翻译质量飞跃</b> · 长句不再失真，2015-2017 成为标配<span class="ex">这是后来 Transformer 的种子 — Attention 太好用了，不如就用 Attention 做一切</span></div></li>
+        </ul>
+        <div class="takeaway"><b>视觉化：</b> 想象一个矩阵 — 行是输出词，列是输入词，每个格子的数值表示"翻这个词时，关注那个词多少" — 这就是 Attention</div>
+        <aside class="notes">
+          Attention 是 Transformer 的核心思想 — 这一页要讲清楚。
+          可以画 attention matrix 的示意图。
+          强调：Attention 不仅用在翻译，今天所有大模型每生成一个词都在用 Attention 回看上下文。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.04 · 04 / 04 · 现代奠基</div>
+          <h2>Transformer · "Attention is all you need"</h2>
+          <p class="sub">2017 年 Google 8 位作者一篇 12 页论文 — 这是现代每一个大模型的祖先</p>
+        </div>
+        <div class="stats-row">
+          <div class="stat-big interactive"><div class="num">2017</div><div class="lbl">论文发表</div></div>
+          <div class="stat-big accent"><div class="num">8</div><div class="lbl">位作者</div></div>
+          <div class="stat-big success"><div class="num">100K+</div><div class="lbl">引用次数 (2026)</div></div>
+        </div>
+        <ul class="pts" style="margin-top: 30px;">
+          <li><span class="n">舍弃</span><div><b>抛弃 RNN，只用 Attention</b><span class="ex">既然 Attention 这么好用，干脆全部用它 — RNN 的顺序计算限制被解除</span></div></li>
+          <li><span class="n">并行</span><div><b>训练时可以同时处理整句话</b><span class="ex">GPU 利用率飞跃 → 可以训练大 10 倍、100 倍的模型 → 大模型时代来了</span></div></li>
+          <li><span class="n">通用</span><div><b>同一架构通吃 NLP、视觉、语音、代码、生物</b><span class="ex">BERT、GPT、Vision Transformer、AlphaFold — 全是 Transformer 的变种</span></div></li>
+        </ul>
+        <div class="takeaway"><b>承上启下：</b> 5 年后的 2022，OpenAI 用这个架构训练出 ChatGPT，世界进入新纪元。下一章我们就到那个时刻。</div>
+        <aside class="notes">
+          这一页是整堂课的"暗线高潮"——理解 Transformer，就理解 99% 的现代 AI。
+          可以提一句：8 位作者已经几乎全部离开 Google，创办了自己的 AI 公司（如 Cohere、Character.ai 等）。
+          这是 AI 史上最值钱的一篇论文。
         </aside>
       </section>
     </section>
@@ -354,19 +741,91 @@
           <span class="badge">15 min</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">✦</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">TIMELINE</div>
-        <ul>
-          <li>2022.11 · ChatGPT 发布</li>
-          <li>2023 · GPT-4 / Claude / 国产大模型崛起</li>
-          <li>2024 · 多模态 / 长上下文 / 推理模型</li>
-          <li>2025-26 · Agent / 工具调用 / 端侧大模型</li>
-          <li>中美开源 / 闭源生态对比</li>
-        </ul>
+      <section>
+        <div class="year-hero">
+          <div class="yr" style="font-size: 6em;">2022.11.30</div>
+          <h2>那个改变一切的日子</h2>
+          <p>OpenAI 在一个晚上悄悄发布了一个聊天工具。最初团队预估"也就几万人会用"。</p>
+        </div>
+        <div class="stats-row" style="margin-top: 50px;">
+          <div class="stat-big"><div class="num">5</div><div class="lbl">天破 100 万用户<br><span style="font-size:0.8em;color:var(--text-faint);">史上最快</span></div></div>
+          <div class="stat-big warn"><div class="num">2</div><div class="lbl">月破 1 亿用户<br><span style="font-size:0.8em;color:var(--text-faint);">超越 TikTok</span></div></div>
+          <div class="stat-big success"><div class="num">∞</div><div class="lbl">改变了多少行业<br><span style="font-size:0.8em;color:var(--text-faint);">仍在持续</span></div></div>
+        </div>
+        <div class="takeaway"><b>历史定位：</b> 这是 AI 第一次走进千家万户的"iPhone 时刻"。在此之前，AI 是科研话题；在此之后，AI 是日用品。</div>
         <aside class="notes">
-          这一章可以现场打开 ChatGPT 或 DeepSeek 做一次真实问答演示，比图片更震撼。
+          可以在这一页打开 chat.openai.com 或 chat.deepseek.com，让学生看一眼实时对话——给出 "wow" 体验。
+          强调：用户增长速度史无前例 — 你这一代学生赶上的时间窗口非常珍贵。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.05 · 02 / 03 · 群雄并起</div>
+          <h2>2023-2026 · 大模型时代的格局</h2>
+          <p class="sub">国际 vs 国内 · 闭源 vs 开源 · 通用 vs 专精 — 一场全球性的技术竞赛</p>
+        </div>
+        <div class="compare">
+          <div class="cmp-side accent">
+            <div class="lbl">国际阵营</div>
+            <h3>OpenAI · Anthropic · Google · Meta</h3>
+            <ul>
+              <li><b>GPT-4 / o1 / GPT-5</b> · OpenAI 通用旗舰</li>
+              <li><b>Claude 4 系列</b> · Anthropic 强推理 + 长上下文</li>
+              <li><b>Gemini Ultra</b> · Google 多模态原生</li>
+              <li><b>Llama 系列</b> · Meta 开源旗舰</li>
+            </ul>
+          </div>
+          <div class="cmp-side good">
+            <div class="lbl">国内阵营</div>
+            <h3>DeepSeek · 通义 · 文心 · 智谱 · Kimi</h3>
+            <ul>
+              <li><b>DeepSeek-R1 / V3</b> · 推理 + 开源黑马</li>
+              <li><b>通义千问 Qwen</b> · 阿里多模态 + 多语言</li>
+              <li><b>文心一言 4.5</b> · 百度行业落地</li>
+              <li><b>智谱 GLM · Kimi</b> · 长上下文 + 学术友好</li>
+            </ul>
+          </div>
+        </div>
+        <div class="takeaway"><b>趋势 2026：</b> 模型同质化加速，差异化在<b>场景落地</b>、<b>数据治理</b>、<b>生态接入（MCP/Agent）</b>。这也是 IBM watsonx 的战略方向 — 第 13 章会讲。</div>
+        <aside class="notes">
+          可以问学生："你们用过哪些？" — 让他们参与，了解他们的实际使用情况。
+          强调中美 AI 并行发展，国内模型在 2025 后已经能与国际第一梯队比肩。
+          DeepSeek 是国内开源的标杆，可以重点提一下。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.05 · 03 / 03 · 当下与未来</div>
+          <h2>2026 · 我们站在哪里？</h2>
+          <p class="sub">三条主线 · 看清未来 2-3 年的发展方向</p>
+        </div>
+        <div class="cards-3">
+          <div class="card">
+            <div class="icon">⚙</div>
+            <h3>推理模型时代</h3>
+            <p>OpenAI o1 / o3、DeepSeek-R1、Claude Thinking — AI 学会了"先想再说"，在数学、代码、科学问题上有质变</p>
+            <div class="ft">关键词：CoT · Self-Refine</div>
+          </div>
+          <div class="card">
+            <div class="icon">◐</div>
+            <h3>多模态原生</h3>
+            <p>不再是"文本 + 图像 + 音频"硬拼，而是同一个模型同时理解所有模态 — Gemini、GPT-5、Claude Vision 都在这条路上</p>
+            <div class="ft">关键词：Native Multimodal</div>
+          </div>
+          <div class="card">
+            <div class="icon">◈</div>
+            <h3>Agent 元年</h3>
+            <p>从"对话机器人"到"会做事的助手" — 自主规划、调用工具、多步执行。Cursor、Devin、Claude Code 是先声</p>
+            <div class="ft">关键词：Agent · Tool Use · MCP</div>
+          </div>
+        </div>
+        <div class="takeaway"><b>给你的判断：</b> 模型能力还会涨，但<b>真正改变世界的是 Agent</b> — AI 从"回答问题"到"完成任务"，这才是生产力革命。后面 Ch.11 我们专门讲。</div>
+        <aside class="notes">
+          这一页给学生一个"高瞻远瞩"的判断——不要陷在某个具体模型里，要看趋势。
+          强调：Agent 是 2026 的主战场，企业级落地最多的方向。
+          这也是为下面 Ch.07 RAG → Ch.11 Agent 主线做铺垫。
         </aside>
       </section>
     </section>
@@ -383,19 +842,81 @@
           <span class="badge accent">铺垫 RAG</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">⚠</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>什么是幻觉：举 3 个真实案例（律师案 / 医疗案 / 学术案）</li>
-          <li>为什么发生：训练原理 + 概率本质</li>
-          <li>幻觉的危害 vs 创造力的关联</li>
-          <li>引出解法：让 AI"查资料再回答" —— RAG</li>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.06 · 01 / 03 · 真实案例</div>
+          <h2>当 AI 一本正经地胡说八道</h2>
+          <p class="sub">不是科幻 — 都是已经发生在真实世界的事件</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">2023</span><div><b>纽约律师案 · Mata v. Avianca</b> · 律师用 ChatGPT 写诉状，引用 6 个完全不存在的判例<span class="ex">案号、日期、引文一应俱全，连法官都查不出来；最终律师被罚款 5000 美元，职业生涯受损</span></div></li>
+          <li><span class="n">2024</span><div><b>医疗 AI 误诊</b> · 某医院辅助诊断系统推荐了一种已被禁用 10 年的药物<span class="ex">原因：模型训练数据截止较早，且没有"知识更新"机制 — 它"记得"过时的医学指南</span></div></li>
+          <li><span class="n">2024</span><div><b>学术虚构案</b> · 研究生论文中 AI 生成的引用文献，有 30% 完全是编造的<span class="ex">连作者名、期刊名、卷期号都"看起来真实"，但实际不存在 — 编辑部被坑了多次</span></div></li>
         </ul>
+        <div class="takeaway"><b>共同特征：</b> AI 不是"故意撒谎" — 它<b>不知道自己不知道</b>。它生成的每个字都是"统计上合理"，但合理 ≠ 正确。</div>
         <aside class="notes">
-          这是承上启下的章节，要为下一章 RAG 做完美铺垫。
-          可以现场让 ChatGPT 编造一个不存在的论文，让学生看到幻觉。
+          这一页可以现场演示一次幻觉：让学生提一个具体冷门问题，看 AI 怎么编造细节。
+          强调：幻觉是当前所有大模型的固有问题，不是"某家做得不好"。
+          这是为下一章 RAG 做最强铺垫。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.06 · 02 / 03 · 根因</div>
+          <h2>为什么大模型会幻觉？</h2>
+          <p class="sub">理解了根因，才能理解 RAG 为什么是必须的</p>
+        </div>
+        <div class="compare">
+          <div class="cmp-side">
+            <div class="lbl">本质 · 概率游戏</div>
+            <h3>每个 Token 都是"猜"的</h3>
+            <ul>
+              <li>大模型工作机制：根据上文预测下一个 token</li>
+              <li>选择的不是"事实"，是"概率最高的下文"</li>
+              <li>如果训练数据里没有正确答案，它会编一个"听起来对"的</li>
+              <li>核心：模型没有"真实世界"的概念</li>
+            </ul>
+          </div>
+          <div class="cmp-side">
+            <div class="lbl">数据 · 切片与压缩</div>
+            <h3>训练数据是"过去的快照"</h3>
+            <ul>
+              <li>知识有截止日期（如 2024.04）</li>
+              <li>训练时数据被压缩进神经网络权重</li>
+              <li>压缩有损 — 细节会丢失或混淆</li>
+              <li>很少见的事实容易被"平均化"成错误版本</li>
+            </ul>
+          </div>
+        </div>
+        <div class="takeaway"><b>洞察：</b> 让大模型"凭记忆答事实问题"，就像让你回答 5 年前看过一遍的书的第几页第几行 — 你会编一个看起来合理的答案。<b>这是架构问题，不是优化问题</b>。</div>
+        <aside class="notes">
+          这一页是承上启下的核心 — 幻觉是架构性问题，不是 "再训练几轮就好了"。
+          类比 "5 年前看的书"很形象 — 让学生理解模型的"记忆"是模糊压缩。
+          这就引出下一章 RAG — 既然记忆不可靠，就外挂一本"百科全书"。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.06 · 03 / 03 · 解法预告</div>
+          <h2>怎么治幻觉？给 AI 一本"百科全书"</h2>
+          <p class="sub">既然模型不能记住一切，那就让它"用的时候查" — 这就是 RAG 的核心思想</p>
+        </div>
+        <div class="flow">
+          <div class="flow-step"><div class="ico">?</div><div class="ttl">用户提问</div><div class="ds">"今年大连最新的 AI 政策是？"</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">⟹</div><div class="ttl">检索资料</div><div class="ds">先去知识库找相关文档</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">+</div><div class="ttl">拼接 Prompt</div><div class="ds">把文档塞给大模型</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">✓</div><div class="ttl">基于事实回答</div><div class="ds">引用具体文档，可追溯</div></div>
+        </div>
+        <div class="takeaway"><b>下一章见真章：</b> 你将<b>亲手</b>参与一次 RAG 流程 — 提交一段你的个人信息，看它如何被"检索 → 拼接 → 回答"。RAG 不是黑盒，是可以拆开看的工程。</div>
+        <aside class="notes">
+          这一页是 Ch.07 互动的"广告" — 让学生期待"亲手参与"。
+          强调 RAG 解决两件事：(1) 引入新知识 (2) 可追溯 — 这两点正是企业级 GenAI 落地的关键。
+          引导学生准备好手机，下一章开始扫码互动。
         </aside>
       </section>
     </section>
@@ -412,29 +933,90 @@
           <span class="badge interactive">⭐ 互动核心</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">⟹</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>RAG 全流程拆解（embed → search → rerank → prompt → generate）</li>
-          <li>向量数据库是什么、长什么样</li>
-          <li>关键词检索 vs 语义检索</li>
-          <li>RAG 失败模式：检索不到 / 检索错 / 用错</li>
-        </ul>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.07 · 01 / 03 · RAG 全流程</div>
+          <h2>RAG 五步法 · 给 AI 装上"百科外挂"</h2>
+          <p class="sub">不是黑盒 — 每一步都可以拆开看、可以调试、可以追溯</p>
+        </div>
+        <div class="flow">
+          <div class="flow-step"><div class="ico">✎</div><div class="ttl">Embed</div><div class="ds">文档切块 → 向量化存储</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">⌕</div><div class="ttl">Search</div><div class="ds">问题向量 → 找最相似的块</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">▦</div><div class="ttl">Rerank</div><div class="ds">细排重要性、过滤无关</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">+</div><div class="ttl">Prompt</div><div class="ds">把检索结果拼进 Prompt</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">✓</div><div class="ttl">Generate</div><div class="ds">大模型基于事实回答</div></div>
+        </div>
+        <div class="takeaway"><b>关键认知：</b> RAG 的核心不是大模型 — 而是<b>检索（Search）</b>。检索找对了，大模型只是个改写工具；检索找错了，大模型也救不了。</div>
+        <aside class="notes">
+          强调："RAG 失败 90% 是检索失败"——这是工程上的关键洞察。
+          可以提一句：今天行业里在卷"更好的 embedding 模型"、"更好的 rerank"。
+        </aside>
+      </section>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.07 · 02 / 03 · 向量检索</div>
+          <h2>向量检索 vs 关键词检索</h2>
+          <p class="sub">为什么 RAG 一定要用向量 — 因为它能"理解"含义</p>
+        </div>
+        <div class="compare">
+          <div class="cmp-side warn">
+            <div class="lbl">关键词检索</div>
+            <h3>"字面匹配"</h3>
+            <ul>
+              <li>问：<b>"今天大连天气怎么样？"</b></li>
+              <li>关键词：天气、大连、今天</li>
+              <li>找到包含这些词的文档 — Google 早期就这么干</li>
+              <li><span style="color: var(--warning);">缺陷：</span>"天气" 找不到讨论 "气候" 的文章；"大连" 找不到 "辽南" 的文章</li>
+            </ul>
+          </div>
+          <div class="cmp-side good">
+            <div class="lbl">向量检索（RAG 用的）</div>
+            <h3>"语义匹配"</h3>
+            <ul>
+              <li>问题被 Embedding 模型转成向量 (300-1536 维)</li>
+              <li>知识库的每个块也是向量</li>
+              <li>用余弦相似度找最近的向量</li>
+              <li><span style="color: var(--success);">优点：</span>"天气" 和 "气候"、"大连" 和 "辽南" 在向量空间彼此靠近 — 自然匹配</li>
+            </ul>
+          </div>
+        </div>
+        <div class="takeaway"><b>本质：</b> Ch.04 讲的 Word2Vec "语义就是几何" — 在 RAG 里被发扬到了极致。<b>向量空间就是知识空间</b>。</div>
+        <aside class="notes">
+          这一页连接到 Ch.04 的 Word2Vec —— 学生应该有"原来这就是用上了"的恍然大悟。
+          可以提一句：向量数据库（如 Pinecone、Milvus、Chroma）就是专为这种检索优化的数据库。
+        </aside>
       </section>
       <section class="interactive-callout">
         <div class="ic-glyph">⟹</div>
-        <h2>互动时间</h2>
-        <p>你在手机上提交一段自我介绍 → AI 把它存进"班级知识库" → 全班一起向它提问 → 看检索如何工作</p>
-        <div class="scan-hint">📱 扫码进入互动 · 大屏实时展示</div>
+        <h2>互动时间 · 让你看见 RAG 真在跑</h2>
+        <p style="margin-bottom: 30px;">扫码进入手机端 → 输入一段自我介绍（姓名 + 学院 + 3 个兴趣）<br>大屏会展示<b style="color:var(--interactive);">检索 → 拼 Prompt → 生成回答</b>的全过程</p>
+        <div class="cards-3" style="max-width: 880px; margin: 0 auto 24px;">
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">①</div>
+            <h3 style="color: var(--interactive);">学生提交</h3>
+            <p>手机扫码 → 输入信息 → 你的内容被向量化存入"班级知识库"</p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">②</div>
+            <h3 style="color: var(--interactive);">老师提问</h3>
+            <p>讲师向大屏提问 "谁喜欢机器学习？" — 系统检索匹配的同学</p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">③</div>
+            <h3 style="color: var(--interactive);">看见全过程</h3>
+            <p>检索结果 + Prompt 拼接 + 最终回答 — 都展示给你看</p>
+          </div>
+        </div>
+        <div class="scan-hint">📱 扫码进入互动 · 大屏实时展示检索过程</div>
         <aside class="notes">
-          关键互动章。需要：
-          1. 学生扫码进入手机端 RAG 体验页
-          2. 学生输入个人介绍（姓名+兴趣+学院）
-          3. 大屏展示"知识库构建中..."的可视化
-          4. 演讲者提问"谁喜欢 X？" → 展示检索过程
-          5. 现场没网的兜底：脚本化预录数据。
+          这是整堂课最关键的"哇"时刻。
+          准备：手机端 RAG 互动页 — 学生输入信息，提交到 localStorage 或 LeanCloud。
+          演示流程：(1) 让学生先全部扫码提交 (2) 大屏展示"知识库构建中"动画 (3) 讲师提问 (4) 高亮检索匹配的学生 (5) 展示 Prompt 拼接 (6) 展示生成的回答。
+          兜底：如果网络/系统故障，切换到剧本模式 — 用预录的 5 个虚拟学生数据演示。
         </aside>
       </section>
     </section>
@@ -451,26 +1033,73 @@
           <span class="badge interactive">⭐ 互动核心</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">◉</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>本体论从哲学到计算机科学</li>
-          <li>RDF 三元组：主语 - 谓语 - 宾语</li>
-          <li>OWL / Schema.org 简介</li>
-          <li>知识图谱 vs 关系数据库 vs 向量库</li>
-          <li>谷歌知识图谱、维基百科数据如何用</li>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.08 · 01 / 03 · 本体论</div>
+          <h2>从哲学到计算机 · 本体论 (Ontology)</h2>
+          <p class="sub">2400 年前亚里士多德问"什么是存在"，今天计算机用它来组织世界知识</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">古代</span><div><b>亚里士多德</b> · 把万物分类成"实体"和"属性"<span class="ex">"狗是一种动物" "动物是一种生物" — 这是分类学的雏形</span></div></li>
+          <li><span class="n">现代</span><div><b>计算机本体论</b> · 把哲学概念变成可计算的数据结构<span class="ex">每个"事物"是节点，"关系"是边，整个领域知识被结构化</span></div></li>
+          <li><span class="n">标准</span><div><b>RDF · OWL · Schema.org</b> · 三层标准让全世界用同一种"知识语言"<span class="ex">Google 搜索结果右边的"知识卡片"就用 Schema.org 数据</span></div></li>
+          <li><span class="n">应用</span><div><b>医疗诊断 · 金融风控 · 推荐系统 · IBM watsonx</b> · 凡是要"推理"的地方都用它<span class="ex">IBM 在医疗本体方面有 20 年积累 — Watson 早期就是建在这上面</span></div></li>
         </ul>
+        <div class="takeaway"><b>核心洞察：</b> 大模型擅长"语言" — 本体擅长"逻辑"。<b>大模型 + 知识图谱 = 既会说又能推理</b>。这就是 IBM 一直坚持的"混合 AI"路线。</div>
+        <aside class="notes">
+          本体论可以从哲学切入 — 让学生感觉这是"古老智慧的现代复活"。
+          强调 IBM 在这个领域的厚度 — Watson 时代积累。
+        </aside>
+      </section>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.08 · 02 / 03 · 三元组</div>
+          <h2>RDF 三元组 · 知识的最小单元</h2>
+          <p class="sub">主语 — 谓语 — 宾语 · 这三个词组成的简单结构，可以表达整个世界</p>
+        </div>
+        <div class="year-hero">
+          <div class="quote" style="font-size: 1.4em; padding: 26px 40px; text-align: left; min-width: 60%;">
+            <div style="margin-bottom: 12px;"><b style="color: var(--accent-2);">张三</b> — <span style="color: var(--text-dim);">是</span> — <b style="color: #fff;">学生</b></div>
+            <div style="margin-bottom: 12px;"><b style="color: var(--accent-2);">张三</b> — <span style="color: var(--text-dim);">就读于</span> — <b style="color: #fff;">计算机学院</b></div>
+            <div style="margin-bottom: 12px;"><b style="color: var(--accent-2);">张三</b> — <span style="color: var(--text-dim);">喜欢</span> — <b style="color: #fff;">机器学习</b></div>
+            <div><b style="color: var(--accent-2);">机器学习</b> — <span style="color: var(--text-dim);">属于</span> — <b style="color: #fff;">人工智能</b></div>
+          </div>
+          <p style="margin-top: 32px;"><b style="color: #fff;">四个三元组</b>，就构成了一个微型知识图谱。<br>千万个这样的三元组，就构成了 Google 知识图谱（5000 亿+ 事实）。</p>
+        </div>
+        <div class="takeaway"><b>关键能力：</b> 给三元组应用"推理规则"，AI 就能推出新事实 — 比如"张三喜欢机器学习" + "机器学习属于人工智能" ⇒ "张三可能对人工智能感兴趣"。<b>这就是知识图谱推理</b>。</div>
+        <aside class="notes">
+          三元组是知识图谱的基本砖头。让学生看到张三的例子，他们会瞬间理解。
+          可以现场让学生说出"我 - 喜欢 - X" — 当场写到黑板。
+          强调推理是知识图谱的真正价值——不只是存储，是"产生新知"。
+        </aside>
       </section>
       <section class="interactive-callout">
         <div class="ic-glyph">◉</div>
-        <h2>互动时间</h2>
-        <p>你提交 姓名 + 学院 + 3 个兴趣 → 自动生成三元组 → 大屏的知识图谱实时长大</p>
+        <h2>互动时间 · 看你的节点出现在大屏</h2>
+        <p style="margin-bottom: 30px;">扫码 → 输入姓名 / 学院 / 3 个兴趣 → 后台<b style="color:var(--interactive);">自动生成三元组</b><br>大屏的力导图<b style="color:var(--interactive);">实时长大</b>，你的名字会以节点形式出现</p>
+        <div class="cards-3" style="max-width: 880px; margin: 0 auto 24px;">
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">◉</div>
+            <h3 style="color: var(--interactive);">你的节点</h3>
+            <p>姓名变成一个图谱节点 — 颜色按学院分组</p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">◐</div>
+            <h3 style="color: var(--interactive);">关系连线</h3>
+            <p>"就读于"、"喜欢" 变成边 — 自动连到学院和兴趣节点</p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">⌬</div>
+            <h3 style="color: var(--interactive);">动态生长</h3>
+            <p>30 个同学的图谱叠加 — 你能看出"AI 兴趣集中在哪个学院"</p>
+          </div>
+        </div>
         <div class="scan-hint">📱 扫码进入互动 · ECharts 力导图动态可视化</div>
         <aside class="notes">
-          这一章是整堂课的视觉高潮。学生看到自己的名字出现在大屏图谱上的瞬间是最震撼的。
-          ECharts 力导图 + 平滑过渡动画。
+          这是整堂课的视觉高潮 — 学生看到自己名字出现在大屏图谱上的瞬间最震撼。
+          准备：ECharts force-directed graph，节点带 hover 显示完整信息。
+          关键时机：让学生看到 "30 个人的图谱" 全貌时停留几秒 — 这种"涌现"的视觉效果很有冲击力。
+          兜底：如果网络断，用预录数据加动画播放。
         </aside>
       </section>
     </section>
@@ -487,25 +1116,50 @@
           <span class="badge interactive">⭐ 互动延伸</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">⌘</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>图算法基础：BFS / DFS / 最短路径</li>
-          <li>共同邻居 / Jaccard 相似度 → 推荐系统</li>
-          <li>PageRank：节点重要性</li>
-          <li>子图推理：从已知推未知</li>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.09 · 01 / 02 · 图算法</div>
+          <h2>图算法 · 让 AI "看见" 你和谁更近</h2>
+          <p class="sub">同样的数据，用对算法，能推理出大模型都想不到的答案</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">距离</span><div><b>最短路径 · BFS/DFS</b> · 两个节点之间最少几步能联通<span class="ex">"六度分隔" — 任何两个人之间不超过 6 个朋友的链接</span></div></li>
+          <li><span class="n">相似</span><div><b>共同邻居 · Jaccard 系数</b> · 你和我有多少共同兴趣 / 共同朋友<span class="ex">这是所有"你可能认识的人"推荐的数学基础</span></div></li>
+          <li><span class="n">重要</span><div><b>PageRank · 中心性</b> · 哪些节点在图中最重要<span class="ex">Google 用它给网页排名，社交网络用它找意见领袖</span></div></li>
+          <li><span class="n">社区</span><div><b>聚类算法 · Louvain</b> · 把整个图自动分成几个"小团体"<span class="ex">大屏的图谱可以自动看出"AI 派 / 算法派 / 应用派"</span></div></li>
         </ul>
+        <div class="takeaway"><b>这才是知识图谱的真本事：</b> 大模型读 30 条三元组很慢，图算法用毫秒就能告诉你 "张三和谁最像、谁是核心、有几个圈子"。</div>
+        <aside class="notes">
+          强调："不是所有问题都靠大模型 — 图算法在结构化数据上比大模型快 1000 倍且更准确。"
+          这是 IBM "混合 AI" 路线的体现 — 工程师要知道什么时候用什么工具。
+        </aside>
       </section>
       <section class="interactive-callout">
         <div class="ic-glyph">⌘</div>
-        <h2>互动时间</h2>
-        <p>大屏点击你的节点 → 高亮和你有共同兴趣的同学 → AI 给出"3 人组队"建议</p>
-        <div class="scan-hint">📱 真人组队推荐演示</div>
+        <h2>互动时间 · 智能组队推荐</h2>
+        <p style="margin-bottom: 30px;">基于第 8 章你们建好的图谱 — <b style="color:var(--interactive);">点击你的节点</b><br>系统瞬间高亮和你最匹配的 2 个同学，并给出"3 人组队"建议</p>
+        <div class="cards-3" style="max-width: 880px; margin: 0 auto 24px;">
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">⌘</div>
+            <h3 style="color: var(--interactive);">点击你的节点</h3>
+            <p>在大屏图谱上找到自己 — 点一下 → 你的节点变成高亮中心</p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">⇉</div>
+            <h3 style="color: var(--interactive);">高亮共同兴趣</h3>
+            <p>所有和你有共同兴趣的同学都被高亮、连线粗细 = 共同度</p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">★</div>
+            <h3 style="color: var(--interactive);">AI 推荐组队</h3>
+            <p>系统推荐 "你应该和李四、王五一组" — 给出理由（兴趣 + 学院 + 互补性）</p>
+          </div>
+        </div>
+        <div class="scan-hint">📱 现场认识彼此 · 真人组队</div>
         <aside class="notes">
-          延续上一章的图谱数据，做"实战级"推理演示。
-          推荐结果引导学生现场认识彼此。
+          这一章的目的不只是技术展示 — 是让学生现场认识彼此、产生连接。
+          推荐结果出来后给 1 分钟让推荐组真的认识一下。
+          这是夏令营留给学生的"社交礼物"。
         </aside>
       </section>
     </section>
@@ -521,19 +1175,96 @@
           <span class="badge">15 min</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">◫</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>MCP 是什么、为什么需要它</li>
-          <li>MCP Server / Client / Host 三角色</li>
-          <li>对比 OpenAI Function Calling</li>
-          <li>演示一个 MCP server（文件系统 / 浏览器）</li>
-          <li>MCP 的生态前景</li>
-        </ul>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.10 · 01 / 03 · 为什么需要</div>
+          <h2>AI 工具调用的"接线乱象"</h2>
+          <p class="sub">每家公司都自己造接线 — 直到 Anthropic 提出 MCP</p>
+        </div>
+        <div class="compare">
+          <div class="cmp-side warn">
+            <div class="lbl">2024 之前 · 群雄割据</div>
+            <h3>每家有自己的"接线方案"</h3>
+            <ul>
+              <li>OpenAI Function Calling — 只 OpenAI 自家用</li>
+              <li>Anthropic Tool Use — 又一套不兼容</li>
+              <li>各种 Agent 框架（LangChain、AutoGen）— 又自己造</li>
+              <li>结果：每个工具都要为每个 AI 写适配 — N × M 灾难</li>
+            </ul>
+          </div>
+          <div class="cmp-side good">
+            <div class="lbl">2024.11 · MCP 出现</div>
+            <h3>Anthropic 提出开放协议</h3>
+            <ul>
+              <li><b>Model Context Protocol</b> — 不绑定任何一家</li>
+              <li>类比：USB-C 的标准化 — 一个接口，所有设备</li>
+              <li>2025 OpenAI 也宣布支持 — 事实标准</li>
+              <li>结果：N + M，不再是 N × M</li>
+            </ul>
+          </div>
+        </div>
+        <div class="takeaway"><b>历史定位：</b> MCP 之于 AI 工具，相当于 HTTP 之于 Web、USB 之于硬件 — 一个开放协议带来生态爆发</div>
         <aside class="notes">
-          MCP 是 2024 末提出的新协议，举例时用 Claude Desktop + 文件系统 server。
+          强调：MCP 不是"又一个 API"，是"协议"——这两个词的区别要讲清楚。
+          类比 HTTP、USB 让学生理解协议的力量。
+          IBM 也是 MCP 的积极支持者——可以稍微提一下。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.10 · 02 / 03 · 三角色架构</div>
+          <h2>MCP 三个角色 · Host / Client / Server</h2>
+          <p class="sub">就像 Web 的"浏览器 / 协议 / 服务器"三层 — 简单清晰</p>
+        </div>
+        <div class="cards-3">
+          <div class="card">
+            <div class="icon">◉</div>
+            <h3>Host · 主机</h3>
+            <p>你直接用的 AI 应用 — Claude Desktop、Cursor、ChatGPT Desktop、VSCode + Cline</p>
+            <div class="ft">类比：Web 浏览器</div>
+          </div>
+          <div class="card">
+            <div class="icon">◐</div>
+            <h3>Client · 客户端</h3>
+            <p>Host 内嵌的 MCP 协议库 — 负责和 Server 用 MCP 语法通信、传递工具调用</p>
+            <div class="ft">类比：HTTP 协议栈</div>
+          </div>
+          <div class="card">
+            <div class="icon">◈</div>
+            <h3>Server · 服务端</h3>
+            <p>提供工具/资源的小程序 — 文件系统、数据库、Git、Slack、企业内 API…</p>
+            <div class="ft">类比：Web 服务器</div>
+          </div>
+        </div>
+        <div class="takeaway"><b>工作流程：</b> 你问 Claude "帮我整理桌面上 5 张图" → Host 把请求发给 Client → Client 用 MCP 协议告诉 "filesystem-server" → Server 干活 → 返回结果给 Claude → Claude 把结果讲给你</div>
+        <aside class="notes">
+          这一页可以现场演示：Claude Desktop + MCP filesystem server — 让学生看 AI 真的去读你电脑上的文件。
+          这是教学中"哇"的瞬间——AI 真的能"动手"了。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.10 · 03 / 03 · 生态</div>
+          <h2>MCP 生态 · 越来越像"AI 应用商店"</h2>
+          <p class="sub">2026 年 6 月，已有 800+ 公开 MCP Server 可用</p>
+        </div>
+        <div class="stats-row">
+          <div class="stat-big accent"><div class="num">800+</div><div class="lbl">公开 MCP Servers</div></div>
+          <div class="stat-big success"><div class="num">100K+</div><div class="lbl">开发者社区</div></div>
+          <div class="stat-big interactive"><div class="num">2026</div><div class="lbl">事实上的工具协议</div></div>
+        </div>
+        <ul class="pts" style="margin-top: 30px;">
+          <li><span class="n">个人</span><div><b>文件系统、浏览器、Git、Notion、Obsidian</b> · 把你常用工具接给 AI<span class="ex">Claude Desktop 配几个 MCP server，能力直接翻倍</span></div></li>
+          <li><span class="n">企业</span><div><b>Slack、Jira、Snowflake、Databricks</b> · 企业内部系统也开始上 MCP<span class="ex">IBM watsonx 也在为客户提供 MCP server 接入企业数据</span></div></li>
+          <li><span class="n">未来</span><div><b>"AI 应用商店"</b> · 类比 Chrome 插件市场 — 一键安装一个 MCP server，立刻扩展能力<span class="ex">下一章我们看到，Agent 离不开 MCP — 两者是绝配</span></div></li>
+        </ul>
+        <div class="takeaway"><b>给你的趋势判断：</b> 学好 MCP，是 2026 入门 AI 工程师的标配技能之一。</div>
+        <aside class="notes">
+          MCP 是 AI 应用层的"标准化革命"——这种转折在历史上不多见。
+          鼓励学生课后试着自己写一个 MCP server（很简单，几十行 Python）。
+          下一章 Ch.11 Agent 会基于 MCP 展开。
         </aside>
       </section>
     </section>
@@ -550,25 +1281,67 @@
           <span class="badge interactive">⭐ 互动演示</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">◈</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>什么是 Agent：感知 - 思考 - 行动循环</li>
-          <li>ReAct 范式：Reasoning + Acting</li>
-          <li>工具调用 / 多步规划</li>
-          <li>记忆 (Memory) 与上下文管理</li>
-          <li>当代 Agent 框架：LangChain / AutoGen / Claude Agents</li>
-        </ul>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.11 · 01 / 02 · 从对话到行动</div>
+          <h2>Agent · AI 长出了"手"</h2>
+          <p class="sub">对话机器人能答问题 — Agent 能完成任务。差别比你想象的大</p>
+        </div>
+        <div class="compare">
+          <div class="cmp-side warn">
+            <div class="lbl">普通 Chatbot</div>
+            <h3>"我能告诉你怎么做"</h3>
+            <ul>
+              <li>你问："帮我订一张明天去北京的机票"</li>
+              <li>它答："你可以打开携程，搜索...点击..."</li>
+              <li>本质：把答案讲给你，让你去做</li>
+              <li>限制：纯文字 — 没有手脚</li>
+            </ul>
+          </div>
+          <div class="cmp-side good">
+            <div class="lbl">Agent</div>
+            <h3>"我帮你做了"</h3>
+            <ul>
+              <li>你说："帮我订一张明天去北京的机票"</li>
+              <li>它：调用航班查询 API → 选最便宜的 → 调用支付 → 完成 → 告诉你订单号</li>
+              <li>本质：分解目标 → 调用工具 → 报告结果</li>
+              <li>能力：有"手"（工具）+ 有"脑"（规划）</li>
+            </ul>
+          </div>
+        </div>
+        <div class="takeaway"><b>关键能力 = 工具调用 + 多步规划：</b> Ch.10 的 MCP 让 Agent 有了标准化的"手"；Agent 自己的核心能力是"用思考决定下一步做什么"。<b>这就是 ReAct 范式：Reasoning + Acting 循环</b>。</div>
+        <aside class="notes">
+          强调 Agent ≠ 更强的 Chatbot — 是完全不同的能力维度。
+          ReAct 范式简化讲：思考一步、动一步、看结果、再思考、再动一步。
+          这是 2026 企业级 AI 落地最热的方向。
+        </aside>
       </section>
       <section class="interactive-callout">
         <div class="ic-glyph">◈</div>
-        <h2>互动时间</h2>
-        <p>一个虚拟 Agent 主动给你的手机发推荐："Hi 张三，你应该和李四聊聊"</p>
-        <div class="scan-hint">📱 看你的手机弹通知</div>
+        <h2>互动时间 · Agent 主动找你聊</h2>
+        <p style="margin-bottom: 30px;">基于前面所有章节积累的数据 — 一个虚拟 Agent 会<b style="color:var(--interactive);">主动给你的手机推送一条建议</b><br>这次你不是问它 — 是它来找你</p>
+        <div class="cards-3" style="max-width: 880px; margin: 0 auto 24px;">
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">◐</div>
+            <h3 style="color: var(--interactive);">Agent 思考</h3>
+            <p>读你的兴趣 + 学院 + 全班图谱 → 决定推荐什么</p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">⇉</div>
+            <h3 style="color: var(--interactive);">Agent 行动</h3>
+            <p>调用通知工具 → 给你手机推一条专属消息</p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color: var(--interactive);">◈</div>
+            <h3 style="color: var(--interactive);">你收到推荐</h3>
+            <p>"Hi 张三，建议你课后找李四聊聊机器学习" — 真人专属、有理由</p>
+          </div>
+        </div>
+        <div class="scan-hint">📱 留意你手机的通知 · 1 分钟内会收到</div>
         <aside class="notes">
-          基于第 9 章的组队推荐，让 Agent 主动 "联系" 学生，强化"Agent 会主动行动"的感觉。
+          这是"Agent 主动联系你"的演示——比起回答问题，"主动联系"是 Agent 区别于 Chatbot 的关键体验。
+          实现：HTML 端轮询 / Server-Sent Events / 简单 WebSocket。
+          或者最简单：学生提交后页面延迟显示一条推荐 — 同样有"它主动找我"的感觉。
         </aside>
       </section>
     </section>
@@ -584,19 +1357,79 @@
           <span class="badge">15 min</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">⇄</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>A2A 协议（Agent-to-Agent）：Google 2025 提出</li>
-          <li>对比单 Agent / Multi-Agent / Agentic Workflow</li>
-          <li>典型场景：客服 + 产品 Agent 协作</li>
-          <li>演示：两个 Agent 帮一个学生匹配最佳组员</li>
-          <li>挑战：信任、协议、责任划分</li>
-        </ul>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.12 · 01 / 03 · 为什么</div>
+          <h2>一个 Agent 不够用了</h2>
+          <p class="sub">真实世界的任务需要"团队"，AI 也一样</p>
+        </div>
+        <div class="compare">
+          <div class="cmp-side warn">
+            <div class="lbl">单 Agent 困境</div>
+            <h3>"一个人扛所有事"</h3>
+            <ul>
+              <li>提示词膨胀 — 一个 prompt 装不下太多角色</li>
+              <li>上下文混乱 — 客服 + 工程 + 销售思路撞车</li>
+              <li>无法并行 — 一步步串行慢</li>
+              <li>难以调试 — 出错不知道哪个环节</li>
+            </ul>
+          </div>
+          <div class="cmp-side good">
+            <div class="lbl">多 Agent 协作</div>
+            <h3>"分工 + 协议沟通"</h3>
+            <ul>
+              <li>每个 Agent 专精一个角色（客服 / 研发 / 销售）</li>
+              <li>各自有独立上下文，思路清晰</li>
+              <li>可以并行工作，效率提升 3-5×</li>
+              <li>易于监控和调试 — 看哪个 Agent 出错</li>
+            </ul>
+          </div>
+        </div>
+        <div class="takeaway"><b>类比公司：</b> 一个全能员工 vs 一个分工明确的团队。GenAI 时代的"团队"，由多个 Agent 组成。但他们怎么沟通？这就是 A2A 要解决的问题。</div>
         <aside class="notes">
-          A2A 是 2025 年的热点，紧扣最新趋势。
+          强调："Agent 多了就需要协议"，这是工程必然。
+          可以举一个真实场景：客户问售前问题 — 售前 Agent 接，但回答涉及技术 — 它要 "@" 技术 Agent 协助。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.12 · 02 / 03 · A2A 协议</div>
+          <h2>Google 2025 · A2A 协议</h2>
+          <p class="sub">Agent-to-Agent Protocol — 让不同 Agent (甚至不同公司的 Agent) 能互相通信、协作</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">发布</span><div><b>Google 2025 年 4 月开源</b> · 与 MCP 互补 — MCP 解决"Agent ↔ 工具"，A2A 解决"Agent ↔ Agent"<span class="ex">不绑定 Google 自家技术栈，是开放协议</span></div></li>
+          <li><span class="n">核心</span><div><b>Agent Card · Capability Discovery · Task Lifecycle</b> · 三大机制让 Agent 互认互助<span class="ex">每个 Agent 公布自己"能做什么"，另一 Agent 可以找它合作</span></div></li>
+          <li><span class="n">现状</span><div><b>2026 已被 50+ 框架采用</b> · Anthropic、Microsoft、IBM、Salesforce 全部支持<span class="ex">和 MCP 一样，正在成为事实标准</span></div></li>
+        </ul>
+        <div class="takeaway"><b>架构格局：</b> MCP（Agent ↔ Tool）+ A2A（Agent ↔ Agent）= 完整的 Agent 互联网协议栈。<b>这是 2026 真正在发生的事</b>。</div>
+        <aside class="notes">
+          A2A 是 2025 年发布的新协议，最新热点。
+          可以提一句：MCP + A2A 共同构成 "Agent 互联网" — 未来 Agent 之间可以像微服务一样组合。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.12 · 03 / 03 · 落地场景</div>
+          <h2>两个 Agent 帮你组队 · 现场演示</h2>
+          <p class="sub">基于今天你们提交的兴趣数据 — 看两个 Agent 协作完成 "智能组队"</p>
+        </div>
+        <div class="flow">
+          <div class="flow-step"><div class="ico">①</div><div class="ttl">分析 Agent</div><div class="ds">读全班兴趣数据，提取相似度</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">⇄</div><div class="ttl">A2A 沟通</div><div class="ds">把候选名单和打分传给推荐 Agent</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">②</div><div class="ttl">推荐 Agent</div><div class="ds">基于多维度（兴趣+学院+互补）排序</div></div>
+          <span class="arrow">→</span>
+          <div class="flow-step"><div class="ico">✓</div><div class="ttl">给每人推送</div><div class="ds">"你最佳搭档是 XXX，因为..."</div></div>
+        </div>
+        <div class="takeaway"><b>感受到了吗：</b> 你<b>就是</b>今天 A2A 的真实使用者。两个 Agent 在后台为你工作 — 这就是 AI 团队协作时代的样子。</div>
+        <aside class="notes">
+          这一页强调"学生是参与者"——把你今天提交的数据真的拿来用。
+          如果第一阶段是零后端模式：用预录的几个虚拟学生数据演示 A2A 推荐。
+          强调：你不是看演讲，是被两个 Agent 服务的真实用户。
         </aside>
       </section>
     </section>
@@ -613,20 +1446,79 @@
           <span class="badge accent">IBM</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">⬢</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">CONTENT OUTLINE</div>
-        <ul>
-          <li>IBM AI 简史：1997 深蓝 → 2011 Watson → 2023 watsonx</li>
-          <li>watsonx 三件套：.ai / .data / .governance</li>
-          <li>Granite 开源模型族</li>
-          <li>典型客户案例（公开脱敏）</li>
-          <li>FNC 在大连为客户做了什么</li>
-        </ul>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.13 · 01 / 03 · IBM AI 简史</div>
+          <h2>IBM 三次 AI 时刻</h2>
+          <p class="sub">从下棋到答题，到企业级 AI 平台 — IBM 一直在 AI 第一线</p>
+        </div>
+        <div class="timeline">
+          <div class="tl-item major"><div class="yr">1997</div><div class="ttl">深蓝战胜卡斯帕罗夫</div><div class="ds">人类历史上第一次 AI 战胜国际象棋世界冠军</div></div>
+          <div class="tl-item major"><div class="yr">2011</div><div class="ttl">Watson 赢 Jeopardy!</div><div class="ds">在美国知识问答节目击败人类冠军，自然语言 AI 里程碑</div></div>
+          <div class="tl-item"><div class="yr">2017</div><div class="ttl">Watson Assistant</div><div class="ds">企业级对话 AI 商业化</div></div>
+          <div class="tl-item major"><div class="yr">2023</div><div class="ttl">watsonx 发布</div><div class="ds">IBM GenAI 平台三件套全面推出</div></div>
+          <div class="tl-item"><div class="yr">2024</div><div class="ttl">Granite 开源</div><div class="ds">IBM 自研基础模型开源 Apache 2.0</div></div>
+          <div class="tl-item major"><div class="yr">2026</div><div class="ttl">企业 Agent 元年</div><div class="ds">FNC 中国 帮客户落地真实业务 Agent</div></div>
+        </div>
+        <div class="takeaway"><b>IBM 的 AI 哲学：</b> 不追逐"最聪明"的模型，追求"<b>最可落地</b>"的方案 — 因为企业要的不是 AI 表演，是真实的业务价值。</div>
         <aside class="notes">
-          ⚠️ 严格只用 IBM 公开材料，遵循 NOTICE.md 边界。
-          可以适度介绍 FutureNow Center 的工作方法。
+          强调 IBM 的 AI 不是噱头 — 1997 深蓝就是真的 AI 突破，比 ChatGPT 早 25 年。
+          这里讲故事感很重要 — 让学生感受 IBM 在 AI 领域的厚度。
+          IBM 的差异化：企业级、可落地、可治理。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.13 · 02 / 03 · watsonx 三件套</div>
+          <h2>watsonx · 企业 GenAI 的完整答案</h2>
+          <p class="sub">三个模块解决企业落地的三个核心问题：开发、数据、治理</p>
+        </div>
+        <div class="cards-3">
+          <div class="card">
+            <div class="icon">◐</div>
+            <h3>watsonx.ai</h3>
+            <p>AI 开发平台 — 提供基础模型（IBM Granite + 第三方）、Prompt Lab、模型微调、推理部署</p>
+            <div class="ft">解决：模型选型 + 调优</div>
+          </div>
+          <div class="card">
+            <div class="icon">⬢</div>
+            <h3>watsonx.data</h3>
+            <p>开放数据底座 — 数据湖 + 数据仓 + 向量数据库统一，企业数据准备好喂给 AI</p>
+            <div class="ft">解决：数据整合 + 向量化</div>
+          </div>
+          <div class="card">
+            <div class="icon">⊕</div>
+            <h3>watsonx.governance</h3>
+            <p>AI 治理 — 模型可追溯、合规审计、偏见检测、版本控制、责任划分</p>
+            <div class="ft">解决：合规 + 风控</div>
+          </div>
+        </div>
+        <div class="takeaway"><b>Granite 系列：</b> IBM 自研开源大模型（3B / 8B / 20B），Apache 2.0 协议、企业级数据训练、可在 IBM 云或私有部署 — <b>不只是用别人的模型，IBM 也造模型</b>。</div>
+        <aside class="notes">
+          watsonx 三件套对应企业 GenAI 三大痛点。
+          强调 governance — 这是 IBM 区别于 OpenAI 等纯模型厂商的关键。
+          Granite 开源是 IBM 对生态的承诺，可以适度强调。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.13 · 03 / 03 · FNC 大连在做什么</div>
+          <h2>FutureNow Center · 把 AI 带到客户身边</h2>
+          <p class="sub">FNC 不是研究院，是落地团队 — 我们交付的是"已经在跑的方案"</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">研判</span><div><b>客户业务诊断</b> · 这个场景真的需要 GenAI 吗？传统方案不够吗？<span class="ex">FNC 的第一价值：帮客户避免"为了 AI 而 AI"</span></div></li>
+          <li><span class="n">设计</span><div><b>方案 + 原型</b> · 在 1-2 周内做出一个能 demo 的原型，让客户"看到"再决定<span class="ex">原型不是 PPT，是真的能跑的小系统</span></div></li>
+          <li><span class="n">交付</span><div><b>共建生产系统</b> · 和客户工程师一起，把原型变成生产级系统<span class="ex">不"做完即走"，FNC 注重技术转移和能力建设</span></div></li>
+          <li><span class="n">案例</span><div><b>金融 / 制造 / 零售</b> · 已有客户案例覆盖（具体名称按 IBM 公开材料）<span class="ex">如果你有想了解的行业，下课可以聊</span></div></li>
+        </ul>
+        <div class="takeaway"><b>个人邀请：</b> 如果你对 IBM 的 GenAI 落地感兴趣，无论是来实习、来面试，还是只想聊聊 — 课后扫码加我。FNC 大连本地团队，离你最近。</div>
+        <aside class="notes">
+          ⚠️ 不展开任何具体客户案例 — 严格按 NOTICE.md 边界。
+          这一页其实也是"招聘 / 关系建立"页 — 强调 FNC 本土团队的存在。
+          可以邀请有意向的学生课后单独交流。
         </aside>
       </section>
     </section>
@@ -642,19 +1534,75 @@
           <span class="badge">15 min</span>
         </div>
       </section>
-      <section class="placeholder">
-        <div class="icon">✦</div>
-        <h3>本章节正在搭建中</h3>
-        <div class="outline-label">FLOW</div>
-        <ul>
-          <li>5 分钟自由 Q&amp;A</li>
-          <li>用学生数据做一次随机抽奖（强化"你的数据真的进系统了"）</li>
-          <li>2 分钟反馈问卷收集</li>
-          <li>结营合影 + 课件 URL 留作纪念</li>
-        </ul>
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.14 · 01 / 03 · 自由提问</div>
+          <h2>问任何问题</h2>
+          <p class="sub">技术、职业、学习路径、IBM、AI 的未来 — 都欢迎</p>
+        </div>
+        <div class="cards-3">
+          <div class="card">
+            <div class="icon">?</div>
+            <h3>技术细节</h3>
+            <p>"刚才 RAG 用的向量数据库是怎么实现的？" "Agent 怎么处理多步失败？" — 我会尽量讲透</p>
+            <div class="ft">5 min</div>
+          </div>
+          <div class="card">
+            <div class="icon">◐</div>
+            <h3>职业路径</h3>
+            <p>"应该先学 PyTorch 还是 LangChain？" "AI 行业最缺什么能力？" — 个人见解</p>
+            <div class="ft">3 min</div>
+          </div>
+          <div class="card">
+            <div class="icon">◈</div>
+            <h3>IBM &amp; 落地</h3>
+            <p>"IBM 在中国的 AI 业务是怎样的？" "FNC 在大连招实习生吗？" — 真实信息</p>
+            <div class="ft">2 min</div>
+          </div>
+        </div>
+        <div class="takeaway"><b>提示：</b> 不要"问别人都已经懂的问题" — 你今天的<b>困惑</b>就是最有价值的提问。错的问题不存在。</div>
         <aside class="notes">
-          抽奖逻辑：用学生提交的姓名做 Math.random，公平且有戏剧效果。
-          奖品可以是 IBM 文创周边。
+          Q&A 时要鼓励问"困惑"——给学生心理安全感。
+          如果冷场，主动抛 1-2 个问题："你们用 AI 学习时遇到过最大的坑是什么？"
+          这部分是与学生建立真实关系的关键。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.14 · 02 / 03 · 抽奖</div>
+          <h2>用你的数据抽奖 · 见证 RAG 的真实存在</h2>
+          <p class="sub">系统会从你们今天提交的所有人里随机抽 3 位 — 让你看到"你的数据真的进系统了"</p>
+        </div>
+        <div class="stats-row">
+          <div class="stat-big interactive"><div class="num">3</div><div class="lbl">幸运儿</div></div>
+          <div class="stat-big accent"><div class="num">∞</div><div class="lbl">公平概率</div></div>
+          <div class="stat-big success"><div class="num">IBM</div><div class="lbl">文创周边</div></div>
+        </div>
+        <div class="takeaway"><b>这一刻你应该感受到：</b> 你的姓名、兴趣、那段自我介绍 — <b>真的进了一个 AI 系统</b>，正在被检索、被推理、被抽中。RAG、KG、Agent 不是 PPT 上的概念，是已经在为你服务的真实技术。</div>
+        <aside class="notes">
+          抽奖前先 build up — "我们用你们今天提交的真实数据"，再触发抽奖动画。
+          抽奖逻辑：本地 Math.random() 从学生列表选 3 人 — 公平且有戏剧效果。
+          IBM 周边：笔记本、贴纸、徽章等。
+        </aside>
+      </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.14 · 03 / 03 · 临别赠言</div>
+          <h2>带走一份永久的礼物</h2>
+          <p class="sub">这份课件 · 这次互动 · 这个 URL — 都是你的，永久有效</p>
+        </div>
+        <ul class="pts">
+          <li><span class="n">URL</span><div><b>https://chenhongqiang2025.github.io/ai-camp</b> · 永久访问，今天的所有内容都在<span class="ex">收藏到浏览器，欢迎以后回看，欢迎转给同学</span></div></li>
+          <li><span class="n">反馈</span><div><b>2 分钟问卷</b> · 帮助下一届做得更好<span class="ex">你的反馈直接影响 2027 年这门课的内容设计</span></div></li>
+          <li><span class="n">联系</span><div><b>课后或线上找我</b> · 实习、合作、技术问题都可以聊<span class="ex">IBM FNC 大连永远欢迎对 AI 真的好奇的人</span></div></li>
+        </ul>
+        <div class="takeaway"><b>最后一句：</b> 今天你只是一个旁观者吗？不 — 你是这次 AI 夏令营的<b>共建者</b>。你的数据、你的提问、你的反馈 — 已经成为了这门课的一部分。<b>感谢你的参与</b>。</div>
+        <aside class="notes">
+          这一页是收尾——给学生一种"参与感和价值感"，不只是听课。
+          课件 URL 用大字突出 — 鼓励他们截图、收藏、转发。
+          这是后续吸引下一批学生 / 招聘 / 关系链路的种子。
         </aside>
       </section>
     </section>
