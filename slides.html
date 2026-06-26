@@ -273,6 +273,63 @@
   .help-tip kbd { background: var(--bg-2); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border); font-family: inherit; color: var(--text-dim); margin: 0 2px; }
   .help-tip.dim { opacity: 0.25; }
 
+  /* ============================================================
+     Review Mode — activated by ?review=1 query param
+     Only the reviewer (Richard) sees these UI elements
+     ============================================================ */
+  .review-toolbar { display: none; }
+  body.review-mode .review-toolbar {
+    display: flex; align-items: center; gap: 10px;
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.88); border: 1px solid var(--accent); border-radius: 100px;
+    padding: 7px 14px; z-index: 200; font-family: var(--r-code-font); font-size: 12px;
+    box-shadow: 0 4px 18px rgba(69,137,255,0.25);
+    backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  }
+  body.review-mode .review-toolbar .rt-info { color: var(--text-dim); margin-right: 4px; }
+  body.review-mode .review-toolbar .rt-info b { color: var(--accent-2); margin-right: 4px; }
+  body.review-mode .review-toolbar button {
+    background: var(--bg-2); color: var(--text); border: 1px solid var(--border);
+    padding: 5px 10px; border-radius: 14px; cursor: pointer; font-family: inherit;
+    font-size: 11.5px; letter-spacing: 0.3px;
+  }
+  body.review-mode .review-toolbar button:hover { background: var(--bg-3); border-color: var(--accent); color: var(--accent-2); }
+  body.review-mode .review-toolbar button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  body.review-mode .review-toolbar button.primary:hover { background: var(--accent-2); }
+  body.review-mode .review-toolbar .has-note { color: var(--success); }
+
+  .review-overlay { display: none; }
+  body.review-mode .review-overlay {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(11,11,12,0.97); border-top: 2px solid var(--accent);
+    padding: 16px 24px 18px; z-index: 250; box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+    transform: translateY(100%); transition: transform .25s ease-out;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  body.review-mode .review-overlay.show { display: block; transform: translateY(0); }
+  body.review-mode .review-overlay .ro-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  body.review-mode .review-overlay .ro-h .ro-title { font-family: var(--r-code-font); font-size: 12px; color: var(--accent-2); letter-spacing: 0.5px; }
+  body.review-mode .review-overlay .ro-h .ro-title b { color: #fff; margin-right: 8px; }
+  body.review-mode .review-overlay .ro-h button { background: transparent; border: 1px solid var(--border); color: var(--text-dim); border-radius: 14px; padding: 4px 12px; font-size: 11px; cursor: pointer; font-family: var(--r-code-font); }
+  body.review-mode .review-overlay textarea {
+    width: 100%; min-height: 130px; max-height: 260px; resize: vertical;
+    background: var(--bg-2); color: #fff; border: 1px solid var(--border);
+    border-radius: 6px; padding: 12px 14px; font-family: var(--r-main-font);
+    font-size: 14px; line-height: 1.6; outline: none; box-sizing: border-box;
+  }
+  body.review-mode .review-overlay textarea:focus { border-color: var(--accent); }
+  body.review-mode .review-overlay .ro-tip { font-size: 10.5px; color: var(--text-faint); margin-top: 6px; font-family: var(--r-code-font); }
+  body.review-mode .review-overlay .ro-tip b { color: var(--success); }
+
+  /* Hide the help-tip and chap-indicator in review mode to give space */
+  body.review-mode .help-tip { display: none !important; }
+
+  @media (max-width: 760px) {
+    body.review-mode .review-toolbar { font-size: 10.5px; padding: 5px 10px; flex-wrap: wrap; max-width: 92vw; justify-content: center; }
+    body.review-mode .review-toolbar .rt-info { display: none; }
+    body.review-mode .review-overlay { padding: 12px 14px 14px; }
+  }
+
   /* === Mobile === */
   @media (max-width: 760px) {
     :root {
@@ -298,6 +355,23 @@
 <body>
 
 <div class="chap-indicator" id="chapIndicator"></div>
+
+<!-- Review Mode UI (only visible when body has .review-mode class, set by ?review=1) -->
+<div class="review-toolbar" id="reviewToolbar">
+  <span class="rt-info"><b id="rtLoc">—</b><span id="rtTitle"></span></span>
+  <button id="rtEdit" class="primary">📝 编辑本页意见</button>
+  <button id="rtExport">⬇ 导出 (<span id="rtCount">0</span>)</button>
+  <button id="rtAll" title="跳到下一条已有意见的幻灯片">↻ 巡查</button>
+  <button id="rtExit" title="退出审核模式">✕</button>
+</div>
+<div class="review-overlay" id="reviewOverlay">
+  <div class="ro-h">
+    <div class="ro-title"><b id="roLoc">—</b><span id="roTitle"></span></div>
+    <button id="roClose">完成 ✓</button>
+  </div>
+  <textarea id="roText" placeholder="对这一页的修改意见、文案调整、视觉建议、口播补充…&#10;自动保存到你浏览器，不会丢。"></textarea>
+  <div class="ro-tip"><b>提示：</b> 写字会自动保存到本地。可在工具栏点"导出"下载所有意见的 Markdown 文件发给我。退出审核模式按 <code>?review=1</code> 参数移除即可。</div>
+</div>
 <div class="help-tip" id="helpTip">
   <kbd>← →</kbd> 翻页 · <kbd>↓</kbd> 章节内子页 · <kbd>S</kbd> 演讲者视图 · <kbd>ESC</kbd> 总览 · <kbd>F</kbd> 全屏
 </div>
@@ -1682,6 +1756,174 @@
   }
   deck.on('slidechanged', dimTip);
   setTimeout(() => tip && tip.classList.add('dim'), 12000);
+
+  // ============================================================
+  // Review Mode — activated by ?review=1
+  // - Floating toolbar at top, overlay textarea at bottom
+  // - Notes per slide, saved to localStorage
+  // - Export as Markdown for handoff to me (claude)
+  // ============================================================
+  const REVIEW_KEY = 'fnc_slides_review_v1';
+  const isReviewMode = new URLSearchParams(location.search).has('review');
+
+  if (isReviewMode) {
+    document.body.classList.add('review-mode');
+
+    const getReviews = () => { try { return JSON.parse(localStorage.getItem(REVIEW_KEY) || '{}'); } catch { return {}; } };
+    const saveReviews = (r) => localStorage.setItem(REVIEW_KEY, JSON.stringify(r));
+
+    const slideId = () => {
+      const i = deck.getIndices();
+      return 'h' + i.h + (typeof i.v === 'number' && i.v > 0 ? '_v' + i.v : '');
+    };
+    const slideLabel = () => {
+      const i = deck.getIndices();
+      const c = chapters[i.h];
+      const main = c ? (c.num + ' · ' + c.title) : ('Slide ' + i.h);
+      return typeof i.v === 'number' && i.v > 0 ? (main + ' · 子页 ' + (i.v + 1)) : main;
+    };
+
+    // UI refs
+    const tb = document.getElementById('reviewToolbar');
+    const ov = document.getElementById('reviewOverlay');
+    const rtLoc = document.getElementById('rtLoc');
+    const rtTitle = document.getElementById('rtTitle');
+    const rtCount = document.getElementById('rtCount');
+    const rtEdit = document.getElementById('rtEdit');
+    const rtExport = document.getElementById('rtExport');
+    const rtAll = document.getElementById('rtAll');
+    const rtExit = document.getElementById('rtExit');
+    const roLoc = document.getElementById('roLoc');
+    const roTitle = document.getElementById('roTitle');
+    const roText = document.getElementById('roText');
+    const roClose = document.getElementById('roClose');
+
+    const refreshToolbar = () => {
+      const r = getReviews();
+      const sid = slideId();
+      const label = slideLabel();
+      const i = deck.getIndices();
+      rtLoc.textContent = (chapters[i.h] && chapters[i.h].num) || ('h' + i.h);
+      rtTitle.textContent = label.replace((chapters[i.h] && chapters[i.h].num + ' · ') || '', '');
+      rtCount.textContent = Object.keys(r).length;
+      if (r[sid]) { rtEdit.classList.add('has-note'); rtEdit.textContent = '📝 已有意见 (编辑)'; }
+      else        { rtEdit.classList.remove('has-note'); rtEdit.textContent = '📝 添加本页意见'; }
+    };
+
+    const openOverlay = () => {
+      const r = getReviews();
+      const sid = slideId();
+      roLoc.textContent = (chapters[deck.getIndices().h] || {num:''}).num || '';
+      roTitle.textContent = slideLabel();
+      roText.value = r[sid] || '';
+      ov.classList.add('show');
+      setTimeout(() => roText.focus(), 280);
+    };
+    const closeOverlay = () => {
+      const r = getReviews();
+      const sid = slideId();
+      const text = roText.value.trim();
+      if (text) r[sid] = text; else delete r[sid];
+      saveReviews(r);
+      ov.classList.remove('show');
+      refreshToolbar();
+    };
+
+    roText.addEventListener('input', () => {
+      const r = getReviews();
+      const sid = slideId();
+      const text = roText.value;
+      if (text.trim()) r[sid] = text; else delete r[sid];
+      saveReviews(r);
+      refreshToolbar();
+    });
+
+    rtEdit.addEventListener('click', openOverlay);
+    roClose.addEventListener('click', closeOverlay);
+
+    // Esc to close overlay (without leaving review mode)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && ov.classList.contains('show')) {
+        e.preventDefault(); e.stopPropagation();
+        closeOverlay();
+      }
+    }, true);
+
+    // Cycle to next slide that has a note (or first if none)
+    rtAll.addEventListener('click', () => {
+      const r = getReviews();
+      const keys = Object.keys(r);
+      if (!keys.length) { alert('还没有任何意见。先在某一页写一条试试。'); return; }
+      const cur = slideId();
+      const idx = keys.indexOf(cur);
+      const nextKey = keys[(idx + 1) % keys.length];
+      const m = nextKey.match(/^h(\d+)(?:_v(\d+))?$/);
+      if (m) deck.slide(parseInt(m[1]), m[2] ? parseInt(m[2]) : 0);
+    });
+
+    // Export all reviews as markdown
+    rtExport.addEventListener('click', () => {
+      const r = getReviews();
+      const keys = Object.keys(r).sort((a, b) => {
+        const pa = a.match(/^h(\d+)(?:_v(\d+))?$/);
+        const pb = b.match(/^h(\d+)(?:_v(\d+))?$/);
+        if (!pa || !pb) return 0;
+        const ha = parseInt(pa[1]), hb = parseInt(pb[1]);
+        if (ha !== hb) return ha - hb;
+        const va = pa[2] ? parseInt(pa[2]) : 0, vb = pb[2] ? parseInt(pb[2]) : 0;
+        return va - vb;
+      });
+      const now = new Date();
+      const ts = now.getFullYear() + '-' +
+        String(now.getMonth()+1).padStart(2,'0') + '-' +
+        String(now.getDate()).padStart(2,'0') + ' ' +
+        String(now.getHours()).padStart(2,'0') + ':' +
+        String(now.getMinutes()).padStart(2,'0');
+      const lines = [
+        '# AI Camp 2026 · 课件审核意见',
+        '',
+        '- 导出时间: ' + ts,
+        '- 共 ' + keys.length + ' 条意见',
+        '- 部署地址: https://chenhongqiang2025.github.io/ai-camp/slides.html',
+        '',
+        '---',
+        ''
+      ];
+      keys.forEach((k) => {
+        const m = k.match(/^h(\d+)(?:_v(\d+))?$/);
+        const h = m ? parseInt(m[1]) : 0;
+        const v = m && m[2] ? parseInt(m[2]) : 0;
+        const c = chapters[h] || { num: 'h'+h, title: '' };
+        const label = c.num + ' · ' + c.title + (v ? ' · 子页 ' + (v+1) : '');
+        const directUrl = 'https://chenhongqiang2025.github.io/ai-camp/slides.html#/' + h + (v ? '/' + v : '');
+        lines.push('## ' + label);
+        lines.push('');
+        lines.push('🔗 ' + directUrl);
+        lines.push('');
+        lines.push('> ' + r[k].split('\n').join('\n> '));
+        lines.push('');
+        lines.push('---');
+        lines.push('');
+      });
+      const md = lines.join('\n');
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      const datestr = ts.slice(0,10);
+      a.download = 'ai-camp-review-' + datestr + '.md';
+      a.click();
+    });
+
+    rtExit.addEventListener('click', () => {
+      const url = new URL(location.href);
+      url.searchParams.delete('review');
+      location.href = url.toString();
+    });
+
+    deck.on('slidechanged', refreshToolbar);
+    deck.on('ready', refreshToolbar);
+    setTimeout(refreshToolbar, 200);
+  }
 </script>
 
 </body>
