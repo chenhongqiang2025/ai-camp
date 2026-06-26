@@ -205,6 +205,37 @@ function addToKB(entry) {
 }
 
 function render() {
+  // First, handle ?seed= param (admin demo data injection)
+  const seedParam = new URLSearchParams(location.search).get('seed');
+  if (seedParam) {
+    try {
+      const json = decodeURIComponent(escape(atob(decodeURIComponent(seedParam))));
+      const arr = JSON.parse(json);
+      if (Array.isArray(arr)) {
+        const kb = getKB();
+        arr.forEach(e => addToKB(e));
+        // Show injection success state
+        card.innerHTML = `
+          <div class="success-state">
+            <div class="icon">⚡</div>
+            <h2>已注入 ${arr.length} 条演示数据</h2>
+            <p class="desc" style="text-align:center;margin-top:8px;">课件的本机知识库已写入 ${arr.length} 个虚拟学生，<br>可在课件互动章节作为脚本演示数据使用。</p>
+            <div class="me">
+              ${arr.map(s => `<div class="row"><span class="k">${s.code}</span><span class="v">${escapeText(s.name)} · ${escapeText(s.college)}</span></div>`).join('')}
+            </div>
+            <div class="btn-row">
+              <button class="secondary" onclick="location.href='./'">返回主页</button>
+              <button class="primary" onclick="location.href='./slides.html'">进入课件 →</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+    } catch (e) {
+      console.warn('Seed parse failed:', e);
+    }
+  }
+
   const s = getSession();
   if (s && s.submitted) renderSuccess(s);
   else if (s && s.code) renderForm(s);
