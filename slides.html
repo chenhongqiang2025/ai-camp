@@ -360,8 +360,8 @@
   /* ============================================================
      KG (Knowledge Graph) — ECharts force-directed container
      ============================================================ */
-  .kg-stage { display: grid; grid-template-columns: 1fr 250px; gap: 14px; max-width: 1180px; margin: 0 auto; padding-right: 70px; /* 给 Reveal 翻页箭头让位 */ }
-  .kg-chart { background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; height: 460px; position: relative; overflow: hidden; }
+  .kg-stage { display: grid; grid-template-columns: 1fr 240px; gap: 14px; max-width: 1200px; margin: 0 auto; padding-right: 60px; /* 给 Reveal 翻页箭头让位 */ }
+  .kg-chart { background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; height: 560px; position: relative; overflow: hidden; }
   .kg-chart canvas { display: block; }
   .kg-side { display: flex; flex-direction: column; gap: 8px; }
   .kg-side .kg-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-size: 13px; }
@@ -2090,12 +2090,32 @@
     const dom = document.getElementById('kgChart');
     if (!dom || typeof echarts === 'undefined') return;
     // Defense: if container has 0 dimensions, retry shortly (Reveal transition not done)
-    if (dom.clientWidth === 0 || dom.clientHeight === 0) {
+    if (dom.clientWidth < 10 || dom.clientHeight < 10) {
       setTimeout(initKG, 150);
       return;
     }
-    if (kgInstance) { kgInstance.dispose(); kgInstance = null; }
-    kgInstance = echarts.init(dom, null, { renderer: 'canvas' });
+    // Reuse instance across slide navigations (避免 dispose/new 与 Reveal 切换时序冲突)
+    if (!kgInstance || kgInstance.isDisposed()) {
+      kgInstance = echarts.init(dom, null, { renderer: 'canvas' });
+      // Bind one-time click handler
+      kgInstance.on('click', (params) => {
+        if (params.dataType === 'node') {
+          kgHighlightNode(params.data.id);
+        } else {
+          kgClearHighlight();
+        }
+      });
+      // Persistent ResizeObserver — auto-resize on container size changes
+      if (typeof ResizeObserver !== 'undefined' && !dom._roBound) {
+        dom._roBound = true;
+        new ResizeObserver(() => {
+          if (kgInstance && !kgInstance.isDisposed()) kgInstance.resize();
+        }).observe(dom);
+      }
+    } else {
+      // Force a resize on every entry, in case container size changed
+      kgInstance.resize();
+    }
 
     let people = loadKBFromStorage();
     if (!people.length) people = DEMO_SEED_KG.slice();  // first time: seed with demo
@@ -2142,21 +2162,10 @@
           lineStyle: { width: 2.5, color: '#78a9ff' }
         }
       }]
-    });
+    }, true);  // notMerge:true — clean data replace, avoid lingering old nodes
 
-    kgInstance.on('click', (params) => {
-      if (params.dataType === 'node') {
-        kgHighlightNode(params.data.id);
-      } else {
-        kgClearHighlight();
-      }
-    });
-
-    // Resize handler
-    if (!window._kgResizeListener) {
-      window.addEventListener('resize', () => kgInstance && kgInstance.resize());
-      window._kgResizeListener = true;
-    }
+    // Belt and suspenders: force one resize shortly after setting data
+    setTimeout(() => kgInstance && !kgInstance.isDisposed() && kgInstance.resize(), 80);
   }
 
   function kgInjectDemo() {
