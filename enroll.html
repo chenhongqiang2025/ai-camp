@@ -285,9 +285,9 @@ function renderCode() {
 function renderForm(s) {
   const isTeacher = s.code === 'TEACHER-2026';
   card.innerHTML = `
-    <div class="badge"><span class="dot2"></span>${isTeacher ? '讲师测试通道' : '已识别 · ' + s.code}</div>
-    <h1>${isTeacher ? '欢迎，讲师' : '告诉我们关于你'}</h1>
-    <p class="desc">${isTeacher ? '你将以讲师身份测试整套流程。' : '这些信息将用于课堂上的<b>知识图谱互动</b>和<b>智能组队推荐</b>。提交后任何时候都可以修改。'}</p>
+    <div class="badge"><span class="dot2"></span>${isTeacher ? '讲师 · 课前预演' : '已识别 · ' + s.code}</div>
+    <h1>${isTeacher ? '讲师 · 课前预演通道' : '告诉我们关于你'}</h1>
+    <p class="desc">${isTeacher ? '以讲师身份完整走一遍学员流程，确认每一步都顺畅。预演数据可用于现场演示兜底。' : '这些信息将用于课堂上的<b>知识图谱互动</b>和<b>智能组队推荐</b>。提交后任何时候都可以修改。'}</p>
 
     <div class="field">
       <label>姓名或昵称 <span class="hint">让大屏图谱叫你什么</span></label>
@@ -364,8 +364,8 @@ function renderSuccess(s) {
   card.innerHTML = `
     <div class="success-state">
       <div class="icon">✓</div>
-      <h2>${isTeacher ? '讲师测试成功' : '已记录 · 期待与你课堂见面'}</h2>
-      <p class="desc" style="text-align:center;margin-top:8px;">${isTeacher ? '你现在可以测试讲师工作台。' : '请把<b>"我的信息"</b>复制并发送到课程微信群<br>这样讲师就能在大屏的"校园关系网"看到你的节点。'}</p>
+      <h2>${isTeacher ? '✓ 讲师预演通过' : '已记录 · 期待与你课堂见面'}</h2>
+      <p class="desc" style="text-align:center;margin-top:8px;">${isTeacher ? '所有流程已跑通。可继续测试课件、KG 图谱、AI 推理助手等下游环节。' : '请把<b>"我的信息"</b>复制并发送到课程微信群<br>这样讲师就能在大屏的"校园关系网"看到你的节点。'}</p>
 
       <div class="me">
         <div class="row"><span class="k">CODE</span><span class="v" style="font-family:var(--font-mono);">${s.code}</span></div>

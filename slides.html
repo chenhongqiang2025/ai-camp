@@ -269,6 +269,7 @@
   /* === Chapter indicator (top right) === */
   .chap-indicator { position: fixed; top: 16px; right: 20px; font-family: var(--r-code-font); font-size: 11px; color: var(--text-faint); letter-spacing: 0.5px; z-index: 10; pointer-events: none; }
   .chap-indicator b { color: var(--accent-2); margin-right: 6px; }
+  body.hide-chap-indicator .chap-indicator { display: none !important; }
 
   /* === Help tip (bottom left, fades after first interact) === */
   .help-tip { position: fixed; bottom: 18px; left: 20px; font-family: var(--r-code-font); font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.3px; z-index: 5; max-width: 480px; text-align: left; transition: opacity .4s; pointer-events: none; }
@@ -370,10 +371,15 @@
     position: relative;
     overflow: hidden;
   }
+  .kg-full-slide .kg-particles {
+    position: absolute !important; inset: 0 !important;
+    z-index: 1; pointer-events: none;
+  }
   .kg-full-slide .kg-chart {
     position: absolute !important; inset: 0 !important;
     border: 0; border-radius: 0; height: auto !important;
     background: radial-gradient(ellipse at center, #0f0f12, #050506);
+    z-index: 2;
   }
   .kg-full-slide .kg-chart canvas { display: block; }
   /* Floating overlays */
@@ -1428,28 +1434,31 @@
         </aside>
       </section>
       <section data-state="kg-stage" id="slide-kg" class="kg-full-slide">
-        <!-- Full-bleed chart (background) -->
+        <!-- Particle drift layer (background) -->
+        <canvas class="kg-particles" id="kgParticles"></canvas>
+
+        <!-- Full-bleed chart -->
         <div class="kg-chart" id="kgChart"></div>
 
         <!-- Floating overlay: title (top-left) -->
         <div class="kg-overlay kg-h">
           <div class="ctx">CH.08 · 03 / 03 · ⭐ 实时校园关系网</div>
-          <h2>这是你们 20 个人 · 的关系网</h2>
-          <div class="sub">每个节点 = 一位同学 · 每条线 = 共同兴趣或同学院</div>
+          <h2 id="kgTitle">同学们的关系网</h2>
+          <div class="sub">每个节点 = 一位同学 · 每条线 = 共同兴趣或同学院 · <span id="kgLiveBadge" style="color:var(--success);font-family:var(--r-code-font);font-size:11px;">● 实时监听中</span></div>
         </div>
 
         <!-- Floating overlay: stats (top-right) -->
         <div class="kg-overlay kg-stats">
           <div class="kg-stat"><span class="num people" id="kgPeople">0</span><span class="label">同学</span></div>
           <div class="kg-stat"><span class="num edges" id="kgEdges">0</span><span class="label">关系</span></div>
-          <div class="kg-stat"><span class="num clusters" id="kgClusters">0</span><span class="label">聚类</span></div>
+          <div class="kg-stat"><span class="num clusters" id="kgClusters">0</span><span class="label">学院</span></div>
         </div>
 
         <!-- Floating overlay: action toolbar (bottom-center) -->
         <div class="kg-overlay kg-actions">
-          <button class="primary" onclick="kgInjectDemo()">▶ 注入演示</button>
-          <button onclick="kgRefreshFromKB()">↻ 重载 KB</button>
-          <button onclick="kgHighlightRandom()">★ 高亮一位</button>
+          <button class="primary" onclick="kgInjectDemo()">▶ 加载演示数据</button>
+          <button onclick="kgRefreshFromKB()">↻ 刷新学生数据</button>
+          <button onclick="kgHighlightRandom()">★ 随机高亮</button>
           <button onclick="kgClearHighlight()">清除高亮</button>
         </div>
 
@@ -2056,10 +2065,10 @@
   function updateIndicator() {
     const idx = deck.getIndices().h;
     const c = chapters[idx];
-    // Hide on full-bleed slides (KG) to avoid overlay collision
     const cur = deck.getCurrentSlide();
+    // Full-bleed slides (KG / quote stages) hide the chapter indicator to avoid overlap
     const isFullBleed = cur && (cur.classList.contains('kg-full-slide') || cur.classList.contains('quote-stage'));
-    if (indicator) indicator.style.display = isFullBleed ? 'none' : '';
+    document.body.classList.toggle('hide-chap-indicator', !!isFullBleed);
     if (c) indicator.innerHTML = '<b>' + c.num + '</b>' + c.title;
   }
   deck.on('slidechanged', updateIndicator);
@@ -2086,12 +2095,121 @@
   let kgData = { people: [], colleges: new Set(), interests: new Set() };
   let kgHighlighted = null;
 
+  // ===== Particle drift background — gives "data flowing" cinematic feel =====
+  let kgParticlesAnim = null;
+  function startKGParticles() {
+    const canvas = document.getElementById('kgParticles');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w = 0, h = 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      w = rect.width; h = rect.height;
+      canvas.width = w * dpr; canvas.height = h * dpr;
+      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+      ctx.scale(dpr, dpr);
+    }
+    resize();
+    // Re-resize on container changes
+    if (typeof ResizeObserver !== 'undefined' && !canvas._roBound) {
+      canvas._roBound = true;
+      new ResizeObserver(() => { resize(); }).observe(canvas);
+    }
+
+    const NUM = 70;
+    const palette = [[120,169,255,0.55], [192,139,255,0.5], [255,255,255,0.35]];
+    const particles = Array.from({ length: NUM }, () => {
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      return {
+        x: Math.random() * w, y: Math.random() * h,
+        vx: (Math.random() - 0.5) * 0.18,
+        vy: (Math.random() - 0.5) * 0.18,
+        r: 0.6 + Math.random() * 1.6,
+        col: c,
+        twinkle: Math.random() * Math.PI * 2
+      };
+    });
+
+    if (kgParticlesAnim) cancelAnimationFrame(kgParticlesAnim);
+    function tick() {
+      ctx.clearRect(0, 0, w, h);
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+        if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+        p.twinkle += 0.018;
+        const alpha = p.col[3] * (0.55 + 0.45 * Math.sin(p.twinkle));
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${alpha})`;
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},0.7)`;
+        ctx.fill();
+      });
+      // Connect nearby particles with faint lines (constellation effect)
+      ctx.shadowBlur = 0;
+      for (let i = 0; i < NUM; i++) {
+        for (let j = i + 1; j < NUM; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d < 90) {
+            ctx.strokeStyle = `rgba(120,169,255,${(1 - d/90) * 0.08})`;
+            ctx.lineWidth = 0.5;
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+      kgParticlesAnim = requestAnimationFrame(tick);
+    }
+    tick();
+  }
+
+  // ===== Live-listener visual feedback =====
+  function flashLiveBadge() {
+    const el = document.getElementById('kgLiveBadge');
+    if (!el) return;
+    const orig = el.innerHTML;
+    const origColor = el.style.color;
+    el.innerHTML = '✨ 新数据已同步';
+    el.style.color = 'var(--accent-2)';
+    setTimeout(() => { el.innerHTML = orig; el.style.color = origColor; }, 2500);
+  }
+
+  // ===== Dynamic title — real count vs demo count =====
+  function updateKGTitle(people) {
+    const el = document.getElementById('kgTitle');
+    if (!el) return;
+    const real = people.filter(p => p.code && !p.code.startsWith('DEMO-'));
+    const demo = people.filter(p => p.code && p.code.startsWith('DEMO-'));
+    if (real.length && demo.length) {
+      el.innerHTML = `这是你们 <span style="color:var(--accent-2);">${real.length} 位</span>同学 <span style="color:var(--text-faint);font-size:0.65em;font-weight:400;">+ ${demo.length} 位演示节点</span>`;
+    } else if (real.length) {
+      el.innerHTML = `这是你们 <span style="color:var(--accent-2);">${real.length} 位</span>同学 · 的关系网`;
+    } else {
+      el.innerHTML = `<span style="color:var(--interactive);">${demo.length} 位</span>演示同学 · 的关系网 <span style="color:var(--text-faint);font-size:0.55em;font-weight:400;">（学员未提交，使用预演数据）</span>`;
+    }
+  }
+
+  // 12 位仿真学生 · 学院多样 · 兴趣有重叠也有差异 · 适合演示关系推理
   const DEMO_SEED_KG = [
-    { code:'DEMO-A1', name:'张明远', college:'计算机学院', interests:['机器学习','RAG','大模型'] },
-    { code:'DEMO-A2', name:'李知微', college:'软件学院',    interests:['知识图谱','Agent','NLP'] },
-    { code:'DEMO-A3', name:'王雪松', college:'电子信息学院',interests:['深度学习','计算机视觉','强化学习'] },
-    { code:'DEMO-A4', name:'陈静怡', college:'管理学院',    interests:['推荐系统','产品设计','大模型'] },
-    { code:'DEMO-A5', name:'刘启航', college:'数学学院',    interests:['机器学习','深度学习','大模型'] }
+    { code:'DEMO-A01', name:'张明远', college:'计算机学院',   interests:['机器学习','RAG','大模型'],         bio:'本科做过推荐系统实习，关注 LLM 工程化落地。' },
+    { code:'DEMO-A02', name:'李知微', college:'软件学院',     interests:['知识图谱','Agent / 智能体','NLP'], bio:'毕设做的是医疗知识图谱。' },
+    { code:'DEMO-A03', name:'王雪松', college:'电子信息学院', interests:['深度学习','计算机视觉','强化学习'],bio:'参与过自动驾驶感知项目。' },
+    { code:'DEMO-A04', name:'陈静怡', college:'管理学院',     interests:['推荐系统','产品设计','大模型'],     bio:'对 AI 产品的伦理与体验感兴趣。' },
+    { code:'DEMO-A05', name:'刘启航', college:'数学学院',     interests:['机器学习','深度学习','大模型'],     bio:'数学背景，做过 Transformer 复现实验。' },
+    { code:'DEMO-A06', name:'赵思颖', college:'计算机学院',   interests:['NLP','大模型','RAG'],               bio:'金融科技公司算法实习中。' },
+    { code:'DEMO-A07', name:'孙浩然', college:'软件学院',     interests:['Agent / 智能体','大模型'],          bio:'痴迷 Agent 工作流，重度用 Claude Code。' },
+    { code:'DEMO-A08', name:'周梦琪', college:'数据科学学院', interests:['机器学习','推荐系统','计算机视觉'], bio:'Kaggle 银牌，准备入职互联网大厂算法岗。' },
+    { code:'DEMO-A09', name:'吴志远', college:'自动化学院',   interests:['强化学习','深度学习'],               bio:'机器人方向，想用 LLM 辅助具身智能。' },
+    { code:'DEMO-A10', name:'郑佳怡', college:'管理学院',     interests:['产品设计','大模型','知识图谱'],     bio:'关心企业级 AI 应用落地。' },
+    { code:'DEMO-A11', name:'冯子墨', college:'电子信息学院', interests:['计算机视觉','深度学习'],             bio:'做过无人机视觉项目，关注多模态大模型。' },
+    { code:'DEMO-A12', name:'黄文琪', college:'软件学院',     interests:['RAG','知识图谱','NLP'],              bio:'大三在校生，对 IBM watsonx 平台很感兴趣。' }
   ];
 
   function loadKBFromStorage() {
@@ -2231,6 +2349,7 @@
     document.getElementById('kgPeople').textContent = people.length;
     document.getElementById('kgEdges').textContent = links.length;
     document.getElementById('kgClusters').textContent = collegeSet.size;
+    updateKGTitle(people);
 
     kgInstance.setOption({
       backgroundColor: 'transparent',
@@ -2503,7 +2622,7 @@
   deck.on('slidechanged', (e) => {
     const cur = e.currentSlide;
     if (cur && cur.id === 'slide-kg') {
-      setTimeout(initKG, 120);
+      setTimeout(() => { initKG(); startKGParticles(); }, 120);
       setTimeout(() => kgInstance && kgInstance.resize(), 500);  // 二次 resize 防容器尺寸延迟
     }
   });
@@ -2516,6 +2635,7 @@
       const curSlide = deck.getCurrentSlide();
       if (curSlide && curSlide.id === 'slide-kg') {
         initKG();
+        flashLiveBadge();
       }
     }
   });
