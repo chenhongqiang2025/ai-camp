@@ -360,28 +360,51 @@
   /* ============================================================
      KG (Knowledge Graph) — ECharts force-directed container
      ============================================================ */
-  .kg-stage { display: grid; grid-template-columns: 1fr 240px; gap: 14px; max-width: 1200px; margin: 0 auto; padding-right: 60px; /* 给 Reveal 翻页箭头让位 */ }
-  .kg-chart { background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; height: 560px; position: relative; overflow: hidden; }
-  .kg-chart canvas { display: block; }
-  .kg-side { display: flex; flex-direction: column; gap: 8px; }
-  .kg-side .kg-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-size: 13px; }
-  .kg-side .kg-card .label { font-family: var(--r-code-font); font-size: 10.5px; color: var(--text-faint); letter-spacing: 1.2px; margin-bottom: 6px; text-transform: uppercase; }
-  .kg-side .kg-card .num { font-size: 1.8em; font-family: var(--r-code-font); color: var(--accent-2); font-weight: 600; line-height: 1; }
-  .kg-side .kg-card.warn .num { color: var(--warning); }
-  .kg-side .kg-card.success .num { color: var(--success); }
-  .kg-side .kg-card.interactive .num { color: var(--interactive); }
-  .kg-side .kg-actions button {
-    width: 100%; margin-top: 8px;
-    background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
-    padding: 9px 12px; border-radius: 6px; cursor: pointer;
-    font-family: inherit; font-size: 12px; transition: all .15s;
+  /* KG full-bleed slide: chart fills the slide, header/stats/actions are floating overlays (Google Maps 风) */
+  .reveal .slides > section > section.kg-full-slide {
+    padding: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 720px !important;
+    position: relative;
+    overflow: hidden;
   }
-  .kg-side .kg-actions button:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
-  .kg-side .kg-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .kg-side .kg-actions button.primary:hover { background: var(--accent-2); }
+  .kg-full-slide .kg-chart {
+    position: absolute !important; inset: 0 !important;
+    border: 0; border-radius: 0; height: auto !important;
+    background: radial-gradient(ellipse at center, #0f0f12, #050506);
+  }
+  .kg-full-slide .kg-chart canvas { display: block; }
+  /* Floating overlays */
+  .kg-overlay { position: absolute; z-index: 10; background: rgba(11,11,12,0.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(69,137,255,0.25); border-radius: 10px; box-shadow: 0 6px 22px rgba(0,0,0,0.5); }
+  .kg-overlay.kg-h { top: 18px; left: 24px; padding: 12px 18px; max-width: 60%; }
+  .kg-overlay.kg-h .ctx { font-family: var(--r-code-font); font-size: 11px; color: var(--accent); letter-spacing: 2px; margin-bottom: 5px; }
+  .kg-overlay.kg-h h2 { font-size: 1.5em !important; margin: 0 !important; color: #fff !important; line-height: 1.2; font-weight: 600; }
+  .kg-overlay.kg-h .sub { font-size: 11.5px; color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
+  .kg-overlay.kg-stats { top: 18px; right: 24px; display: flex; gap: 6px; padding: 8px 10px; }
+  .kg-overlay.kg-stats .kg-stat { padding: 6px 14px; min-width: 60px; text-align: center; border-right: 1px solid var(--border); }
+  .kg-overlay.kg-stats .kg-stat:last-child { border-right: 0; }
+  .kg-overlay.kg-stats .num { display: block; font-family: var(--r-code-font); font-size: 1.5em; font-weight: 600; line-height: 1; }
+  .kg-overlay.kg-stats .num.people { color: var(--accent-2); }
+  .kg-overlay.kg-stats .num.edges { color: var(--success); }
+  .kg-overlay.kg-stats .num.clusters { color: var(--warning); }
+  .kg-overlay.kg-stats .label { font-size: 10px; color: var(--text-faint); letter-spacing: 0.5px; margin-top: 4px; display: block; }
+  .kg-overlay.kg-actions { bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; padding: 8px 12px; border-radius: 100px; }
+  .kg-overlay.kg-actions button { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 7px 16px; border-radius: 100px; cursor: pointer; font-family: inherit; font-size: 12.5px; white-space: nowrap; transition: all .15s; }
+  .kg-overlay.kg-actions button:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
+  .kg-overlay.kg-actions button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .kg-overlay.kg-actions button.primary:hover { background: var(--accent-2); }
+  .kg-overlay.kg-tip { bottom: 22px; right: 70px; padding: 8px 14px; font-size: 11px; color: var(--text-faint); font-family: var(--r-code-font); max-width: 260px; }
+  .kg-overlay.kg-tip b { color: var(--text-dim); }
   @media (max-width: 900px) {
-    .kg-stage { grid-template-columns: 1fr; }
-    .kg-chart { height: 380px; }
+    .kg-overlay.kg-h { left: 12px; top: 10px; max-width: 80%; padding: 8px 12px; }
+    .kg-overlay.kg-h h2 { font-size: 1.1em !important; }
+    .kg-overlay.kg-stats { right: 12px; top: 10px; flex-wrap: wrap; }
+    .kg-overlay.kg-stats .num { font-size: 1.1em; }
+    .kg-overlay.kg-actions { bottom: 12px; flex-wrap: wrap; justify-content: center; padding: 6px 8px; }
+    .kg-overlay.kg-actions button { font-size: 11px; padding: 5px 10px; }
+    .kg-overlay.kg-tip { display: none; }
   }
 
   /* ============================================================
@@ -1353,51 +1376,45 @@
           强调推理是知识图谱的真正价值——不只是存储，是"产生新知"。
         </aside>
       </section>
-      <section data-state="kg-stage" id="slide-kg">
-        <div class="content-header">
+      <section data-state="kg-stage" id="slide-kg" class="kg-full-slide">
+        <!-- Full-bleed chart (background) -->
+        <div class="kg-chart" id="kgChart"></div>
+
+        <!-- Floating overlay: title (top-left) -->
+        <div class="kg-overlay kg-h">
           <div class="ctx">CH.08 · 03 / 03 · ⭐ 实时校园关系网</div>
           <h2>这是你们 20 个人 · 的关系网</h2>
-          <p class="sub" style="margin-bottom: 18px;">每个节点 = 一位同学 · 每条线 = 共同兴趣或同学院 · 数据来自你们刚刚的提交</p>
+          <div class="sub">每个节点 = 一位同学 · 每条线 = 共同兴趣或同学院</div>
         </div>
-        <div class="kg-stage">
-          <div class="kg-chart" id="kgChart"></div>
-          <div class="kg-side">
-            <div class="kg-card interactive">
-              <div class="label">同学节点</div>
-              <div class="num" id="kgPeople">0</div>
-            </div>
-            <div class="kg-card success">
-              <div class="label">关系连线</div>
-              <div class="num" id="kgEdges">0</div>
-            </div>
-            <div class="kg-card warn">
-              <div class="label">兴趣聚类</div>
-              <div class="num" id="kgClusters">0</div>
-            </div>
-            <div class="kg-actions">
-              <button class="primary" onclick="kgInjectDemo()">▶ 注入演示数据</button>
-              <button onclick="kgRefreshFromKB()">↻ 从本机 KB 重新加载</button>
-              <button onclick="kgHighlightRandom()">★ 高亮一位同学</button>
-              <button onclick="kgClearHighlight()">清除高亮</button>
-            </div>
-            <div style="font-size: 11px; color: var(--text-faint); padding: 10px 4px; line-height: 1.7;">
-              <b>讲师操作：</b><br>
-              · 点节点 → 高亮 2 跳邻居<br>
-              · 点空白 → 全景<br>
-              · 拖动节点重新布局
-            </div>
-          </div>
+
+        <!-- Floating overlay: stats (top-right) -->
+        <div class="kg-overlay kg-stats">
+          <div class="kg-stat"><span class="num people" id="kgPeople">0</span><span class="label">同学</span></div>
+          <div class="kg-stat"><span class="num edges" id="kgEdges">0</span><span class="label">关系</span></div>
+          <div class="kg-stat"><span class="num clusters" id="kgClusters">0</span><span class="label">聚类</span></div>
         </div>
+
+        <!-- Floating overlay: action toolbar (bottom-center) -->
+        <div class="kg-overlay kg-actions">
+          <button class="primary" onclick="kgInjectDemo()">▶ 注入演示</button>
+          <button onclick="kgRefreshFromKB()">↻ 重载 KB</button>
+          <button onclick="kgHighlightRandom()">★ 高亮一位</button>
+          <button onclick="kgClearHighlight()">清除高亮</button>
+        </div>
+
+        <!-- Floating overlay: tip (bottom-right) -->
+        <div class="kg-overlay kg-tip">
+          <b>讲师操作：</b><br>· 点节点 → 高亮 2 跳邻居<br>· 拖动 / 滚轮 / 平移
+        </div>
+
         <aside class="notes">
           【舞台剧本 · 8 分钟 · 整堂课最高潮】
-          1) 翻到这一页时，先点"▶ 注入演示数据"，5 个虚拟学生先垫底（避免空图）。
-          2) 然后从本机 KB 加载真实学生（前面 enroll 时提交过的）。
+          1) 翻到这一页时，先点"▶ 注入演示"，5 个虚拟学生先垫底。
+          2) 然后从批量导入页面 enroll.html?import=1 把微信群学生 JSON 都导入，回来点"↻ 重载 KB"。
           3) 镜头停留 5 秒让学生看："这是你们 20 个人，刚才提交的信息，现在已经是一张关系网了。"
-          4) 点一个学生节点（或用"★ 高亮一位同学"按钮随机高亮）："看，AI 推理出 张三 和 李四 都喜欢机器学习。"
-          5) 让张三李四现场打招呼。
-          6) 切换聚类视图 → 学生看到自己所属的圈子。
-          7) "这就是知识图谱。**世界由实体和关系构成，AI 从中推理出新认识。**"
-          ↘ 翻到 Ch.09 多跳推理深入演示
+          4) 点"★ 高亮一位同学"或直接点节点：让 AI 演示推理出共同兴趣的人。
+          5) 让被高亮的同学现场打招呼。
+          6) "这就是知识图谱。**世界由实体和关系构成，AI 从中推理出新认识。**"
         </aside>
       </section>
     </section>
