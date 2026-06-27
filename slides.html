@@ -21,6 +21,8 @@
 <!-- Reveal.js — load black theme first to get proper dark background baseline, then we override with IBM Carbon palette -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
+<!-- ECharts for force-directed campus knowledge graph -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 
 <style>
   :root {
@@ -272,6 +274,115 @@
   .help-tip { position: fixed; bottom: 18px; left: 20px; font-family: var(--r-code-font); font-size: 10.5px; color: var(--text-faint); letter-spacing: 0.3px; z-index: 5; max-width: 480px; text-align: left; transition: opacity .4s; pointer-events: none; }
   .help-tip kbd { background: var(--bg-2); padding: 1px 6px; border-radius: 3px; border: 1px solid var(--border); font-family: inherit; color: var(--text-dim); margin: 0 2px; }
   .help-tip.dim { opacity: 0.25; }
+
+  /* ============================================================
+     Quote Stage — Richard 的金句独立幕（黑底满屏剧场感）
+     用于「胡说八道」和「给 AI 一本书」两个金句
+     ============================================================ */
+  .quote-stage { text-align: center; padding: 0 !important; }
+  .quote-stage .qs-mark { font-size: 4.5em; line-height: 0.6; color: var(--accent); opacity: 0.35; font-family: Georgia, serif; margin-bottom: 24px; letter-spacing: -8px; }
+  .quote-stage .qs-text {
+    font-size: 3em !important;
+    line-height: 1.35;
+    font-weight: 600;
+    background: linear-gradient(180deg, #fff 25%, #b8b8c0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
+    max-width: 1100px;
+    margin: 0 auto 36px;
+    text-align: center;
+    color: #fff;
+  }
+  .quote-stage .qs-author { font-family: var(--r-code-font); font-size: 14px; color: var(--text-faint); letter-spacing: 0.8px; }
+  .quote-stage .qs-author b { color: var(--accent-2); font-weight: 500; }
+  .quote-stage .qs-pulse-line {
+    width: 80px; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 22px auto;
+    animation: pulse-line 2s ease-in-out infinite;
+  }
+  @keyframes pulse-line {
+    0%, 100% { opacity: 0.3; transform: scaleX(0.5); }
+    50% { opacity: 1; transform: scaleX(1.2); }
+  }
+  @media (max-width: 760px) {
+    .quote-stage .qs-text { font-size: 1.6em !important; }
+    .quote-stage .qs-mark { font-size: 3em; margin-bottom: 14px; }
+  }
+
+  /* ============================================================
+     Fake Chat UI — RAG demo "before / after" 对比
+     ============================================================ */
+  .chat-frame {
+    max-width: 880px; margin: 0 auto;
+    background: var(--bg-1); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .chat-head {
+    padding: 10px 16px; background: var(--bg-2);
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--r-code-font); font-size: 12px; color: var(--text-dim);
+  }
+  .chat-head .dots { display: flex; gap: 5px; }
+  .chat-head .dot { width: 9px; height: 9px; border-radius: 50%; }
+  .chat-head .dot:nth-child(1) { background: #ff5f57; }
+  .chat-head .dot:nth-child(2) { background: #febc2e; }
+  .chat-head .dot:nth-child(3) { background: #28c840; }
+  .chat-head .mode { margin-left: auto; padding: 2px 9px; border-radius: 10px; font-size: 11px; letter-spacing: 0.5px; }
+  .chat-head .mode.warn { background: rgba(241,194,27,0.18); color: var(--warning); border: 1px solid rgba(241,194,27,0.4); }
+  .chat-head .mode.good { background: rgba(66,190,101,0.18); color: var(--success); border: 1px solid rgba(66,190,101,0.4); }
+  .chat-body { padding: 18px 22px; }
+  .msg { display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-start; }
+  .msg .avatar { width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+  .msg.user .avatar { background: var(--accent); color: #fff; }
+  .msg.ai .avatar { background: var(--bg-3); color: var(--text-dim); border: 1px solid var(--border); }
+  .msg .bubble {
+    background: var(--bg-2); border: 1px solid var(--border);
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 14px; line-height: 1.55; max-width: 720px;
+  }
+  .msg.user .bubble { background: var(--accent-soft); border-color: rgba(69,137,255,0.3); }
+  .msg.ai-fake .bubble { border-color: rgba(241,194,27,0.4); }
+  .msg.ai-fake .bubble .mark { display: inline-block; background: rgba(241,194,27,0.18); color: var(--warning); padding: 1px 6px; border-radius: 3px; font-size: 11px; margin-left: 6px; font-family: var(--r-code-font); }
+  .msg.ai-real .bubble { border-color: rgba(66,190,101,0.4); }
+  .msg.ai-real .bubble .cite { display: inline-block; background: rgba(69,137,255,0.18); color: var(--accent-2); padding: 1px 6px; border-radius: 3px; font-size: 11px; margin: 0 3px; font-family: var(--r-code-font); cursor: help; }
+  .msg .bubble .sources { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 11.5px; color: var(--text-dim); }
+  .msg .bubble .sources .src { display: block; margin: 3px 0; font-family: var(--r-code-font); }
+  .chat-verdict { margin-top: 18px; padding: 14px 18px; border-radius: 8px; text-align: center; font-size: 1em; }
+  .chat-verdict.bad { background: rgba(250,77,86,0.1); border: 1px solid rgba(250,77,86,0.4); color: var(--danger); }
+  .chat-verdict.bad b { color: #fff; }
+  .chat-verdict.good { background: rgba(66,190,101,0.1); border: 1px solid rgba(66,190,101,0.4); color: var(--success); }
+  .chat-verdict.good b { color: #fff; }
+
+  /* ============================================================
+     KG (Knowledge Graph) — ECharts force-directed container
+     ============================================================ */
+  .kg-stage { display: grid; grid-template-columns: 1fr 280px; gap: 18px; max-width: 1180px; margin: 0 auto; }
+  .kg-chart { background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; height: 540px; position: relative; overflow: hidden; }
+  .kg-chart canvas { display: block; }
+  .kg-side { display: flex; flex-direction: column; gap: 10px; }
+  .kg-side .kg-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-size: 13px; }
+  .kg-side .kg-card .label { font-family: var(--r-code-font); font-size: 10.5px; color: var(--text-faint); letter-spacing: 1.2px; margin-bottom: 6px; text-transform: uppercase; }
+  .kg-side .kg-card .num { font-size: 1.8em; font-family: var(--r-code-font); color: var(--accent-2); font-weight: 600; line-height: 1; }
+  .kg-side .kg-card.warn .num { color: var(--warning); }
+  .kg-side .kg-card.success .num { color: var(--success); }
+  .kg-side .kg-card.interactive .num { color: var(--interactive); }
+  .kg-side .kg-actions button {
+    width: 100%; margin-top: 8px;
+    background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
+    padding: 9px 12px; border-radius: 6px; cursor: pointer;
+    font-family: inherit; font-size: 12px; transition: all .15s;
+  }
+  .kg-side .kg-actions button:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
+  .kg-side .kg-actions button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .kg-side .kg-actions button.primary:hover { background: var(--accent-2); }
+  @media (max-width: 900px) {
+    .kg-stage { grid-template-columns: 1fr; }
+    .kg-chart { height: 380px; }
+  }
 
   /* ============================================================
      Review Mode — activated by ?review=1 query param
@@ -991,6 +1102,23 @@
       </section>
     </section>
 
+    <!-- ========== ★ QUOTE STAGE 1 · 「胡说八道」 ========== -->
+    <section class="quote-stage">
+      <div class="qs-mark">"</div>
+      <div class="qs-text">AI，会一本正经地<br>胡说八道。</div>
+      <div class="qs-pulse-line"></div>
+      <div class="qs-author">—— <b>陳宏强 Richard Chen</b> · 2023 给 IBM 全球团队讲 AI 时</div>
+      <aside class="notes">
+        【舞台剧本 · 2 分钟纯感受】
+        翻到这一页时停顿 3 秒。环顾全场。
+        然后讲："你们有没有这种经历——你问 ChatGPT 一个具体的事，它给你回答得头头是道，你查了一下，发现……全！是！编！的！"
+        再停顿。指着大屏说："我 2023 年给 IBM 全球同事讲 AI 的时候，我说了一句话——"
+        让屏幕的字"飞入眼帘"两秒。
+        然后说："那怎么办呢？我们来看 RAG。"
+        ↘ 翻到 Ch.07 RAG
+      </aside>
+    </section>
+
     <!-- ========== CHAPTER 07 · INTERACTIVE ========== -->
     <section>
       <section class="chapter-title">
@@ -1005,90 +1133,172 @@
       </section>
       <section>
         <div class="content-header">
-          <div class="ctx">CH.07 · 01 / 03 · RAG 全流程</div>
-          <h2>RAG 五步法 · 给 AI 装上"百科外挂"</h2>
-          <p class="sub">不是黑盒 — 每一步都可以拆开看、可以调试、可以追溯</p>
+          <div class="ctx">CH.07 · 01 / 04 · 没有 RAG 的 AI</div>
+          <h2>先问 AI 一个它"应该不知道"的事</h2>
+          <p class="sub">看看 AI 在没有外挂"百科全书"时，会怎样应对</p>
         </div>
-        <div class="flow">
-          <div class="flow-step"><div class="ico">✎</div><div class="ttl">Embed</div><div class="ds">文档切块 → 向量化存储</div></div>
-          <span class="arrow">→</span>
-          <div class="flow-step"><div class="ico">⌕</div><div class="ttl">Search</div><div class="ds">问题向量 → 找最相似的块</div></div>
-          <span class="arrow">→</span>
-          <div class="flow-step"><div class="ico">▦</div><div class="ttl">Rerank</div><div class="ds">细排重要性、过滤无关</div></div>
-          <span class="arrow">→</span>
-          <div class="flow-step"><div class="ico">+</div><div class="ttl">Prompt</div><div class="ds">把检索结果拼进 Prompt</div></div>
-          <span class="arrow">→</span>
-          <div class="flow-step"><div class="ico">✓</div><div class="ttl">Generate</div><div class="ds">大模型基于事实回答</div></div>
+        <div class="chat-frame">
+          <div class="chat-head">
+            <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            <span>AI Chat · No RAG</span>
+            <span class="mode warn">⚠️ 无外挂知识库</span>
+          </div>
+          <div class="chat-body">
+            <div class="msg user">
+              <div class="avatar">你</div>
+              <div class="bubble">大连高新园区 2026 年新出的"青年 AI 人才培育"政策具体补贴金额是多少？</div>
+            </div>
+            <div class="msg ai ai-fake">
+              <div class="avatar">AI</div>
+              <div class="bubble">
+                根据《大连高新园区青年 AI 人才培育实施方案（高新发〔2026〕17 号）<span class="mark">文件编号编的</span>》第三条，
+                对入选人才提供 <b>每人最高 50 万元生活补贴</b><span class="mark">金额编的</span>，
+                以及 <b>三年免租办公空间</b><span class="mark">条款编的</span>，
+                由"大连高新人才办"<span class="mark">机构名编的</span>统一发放。
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="takeaway"><b>关键认知：</b> RAG 的核心不是大模型 — 而是<b>检索（Search）</b>。检索找对了，大模型只是个改写工具；检索找错了，大模型也救不了。</div>
+        <div class="chat-verdict bad">
+          ⚠️ 看起来<b>头头是道</b>、引用具体、有文号、有金额…… 但 <b>全是编的</b>。
+        </div>
         <aside class="notes">
-          强调："RAG 失败 90% 是检索失败"——这是工程上的关键洞察。
-          可以提一句：今天行业里在卷"更好的 embedding 模型"、"更好的 rerank"。
+          【舞台剧本 · 8 分钟】
+          1) 先问全场："你们有谁知道大连高新园区今年最新的 AI 人才政策？" — 让学生意识到这是一个"AI 应该不知道"的具体问题。
+          2) 然后说："好，我们看 AI 怎么回答。" 翻屏。
+          3) 让学生先看 AI 的回答（停顿 5 秒），有学生会点头表示"听起来对啊"。
+          4) 然后慢慢说："文件编号——我编的。补贴金额——我编的。办公空间——我编的。这个'高新人才办'——根本不存在。"
+          5) 学生哗然 → 你揭穿："这就是**幻觉**。"
+          6) 翻到下一页（金句 1）做沉淀。
         </aside>
       </section>
+
       <section>
         <div class="content-header">
-          <div class="ctx">CH.07 · 02 / 03 · 向量检索</div>
-          <h2>向量检索 vs 关键词检索</h2>
-          <p class="sub">为什么 RAG 一定要用向量 — 因为它能"理解"含义</p>
+          <div class="ctx">CH.07 · 02 / 04 · 解法</div>
+          <h2>那……给它一本书</h2>
+          <p class="sub">RAG = Retrieval-Augmented Generation · 检索增强生成</p>
         </div>
-        <div class="compare">
-          <div class="cmp-side warn">
-            <div class="lbl">关键词检索</div>
-            <h3>"字面匹配"</h3>
-            <ul>
-              <li>问：<b>"今天大连天气怎么样？"</b></li>
-              <li>关键词：天气、大连、今天</li>
-              <li>找到包含这些词的文档 — Google 早期就这么干</li>
-              <li><span style="color: var(--warning);">缺陷：</span>"天气" 找不到讨论 "气候" 的文章；"大连" 找不到 "辽南" 的文章</li>
-            </ul>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;max-width:1000px;margin:0 auto;align-items:center;">
+          <div>
+            <div style="font-size: 6em; line-height: 1; text-align: center;">📖</div>
+            <div style="text-align:center;color:var(--text-dim);margin-top:14px;font-size:0.95em;">一本它本来不知道的书</div>
           </div>
-          <div class="cmp-side good">
-            <div class="lbl">向量检索（RAG 用的）</div>
-            <h3>"语义匹配"</h3>
-            <ul>
-              <li>问题被 Embedding 模型转成向量 (300-1536 维)</li>
-              <li>知识库的每个块也是向量</li>
-              <li>用余弦相似度找最近的向量</li>
-              <li><span style="color: var(--success);">优点：</span>"天气" 和 "气候"、"大连" 和 "辽南" 在向量空间彼此靠近 — 自然匹配</li>
-            </ul>
+          <div>
+            <div style="font-size: 1.4em; color: #fff; line-height: 1.6; margin-bottom: 14px;">
+              不用再训练它<br>
+              不用再让它"记住"<br>
+              <b style="color: var(--accent-2);">用的时候，让它去查</b>
+            </div>
+            <div style="font-family: var(--r-code-font); font-size: 13px; color: var(--text-faint); line-height: 1.7; background: var(--bg-2); padding: 12px 14px; border-radius: 6px; border-left: 3px solid var(--accent);">
+              问题 → <b style="color:var(--accent-2);">检索</b> → 找到相关段落 → 把段落 + 原问题<br>
+              一起喂给 AI → AI <b style="color:var(--accent-2);">基于事实</b>回答
+            </div>
           </div>
         </div>
-        <div class="takeaway"><b>本质：</b> Ch.04 讲的 Word2Vec "语义就是几何" — 在 RAG 里被发扬到了极致。<b>向量空间就是知识空间</b>。</div>
+        <div class="takeaway"><b>本质：</b> RAG 不改 AI 的"大脑"，只是给它一本可随时翻阅的"参考书"。最朴素的想法，最有效的工程。</div>
         <aside class="notes">
-          这一页连接到 Ch.04 的 Word2Vec —— 学生应该有"原来这就是用上了"的恍然大悟。
-          可以提一句：向量数据库（如 Pinecone、Milvus、Chroma）就是专为这种检索优化的数据库。
+          【舞台剧本 · 3 分钟】
+          这一页是过渡，承接金句 1 后的余韵。
+          "我们能不能不要让 AI 凭记忆答？能不能给它一本书，让它先查再答？"
+          "这就是 RAG —— 一个非常朴素，但改变了整个 GenAI 产业落地的想法。"
+          翻到下一页：同样的问题，开 RAG 再试一次。
         </aside>
       </section>
+
+      <section>
+        <div class="content-header">
+          <div class="ctx">CH.07 · 03 / 04 · 有了 RAG 的 AI</div>
+          <h2>同一个问题 · 同一个 AI · 这次有了"书"</h2>
+          <p class="sub">看看检索增强后，回答怎么变了</p>
+        </div>
+        <div class="chat-frame">
+          <div class="chat-head">
+            <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            <span>AI Chat · With RAG</span>
+            <span class="mode good">✓ 已挂载知识库</span>
+          </div>
+          <div class="chat-body">
+            <div class="msg user">
+              <div class="avatar">你</div>
+              <div class="bubble">大连高新园区 2026 年新出的"青年 AI 人才培育"政策具体补贴金额是多少？</div>
+            </div>
+            <div class="msg ai ai-real">
+              <div class="avatar">AI</div>
+              <div class="bubble">
+                根据当前知识库检索结果：截至我所拥有的资料 <span class="cite">📖 source-1</span>，
+                <b>目前并未检索到</b>大连高新园区 2026 年针对"青年 AI 人才培育"的具体补贴金额条款。
+                建议直接咨询<b>大连高新园区科技人才局</b>（公开联系电话 0411-xxxxxxxx <span class="cite">📖 source-2</span>）以获取最新政策口径。
+                <div class="sources">
+                  <span class="src">📖 source-1 · 《大连高新园区 2025 年人才工作综述》第 4 章 · 不含 2026 数据</span>
+                  <span class="src">📖 source-2 · 大连高新园区官网 · 联系方式公开页</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chat-verdict good">
+          ✓ 不知道就说不知道，并<b>引用具体出处</b>。这才是<b>可信任的 AI</b>。
+        </div>
+        <aside class="notes">
+          【舞台剧本 · 7 分钟】
+          1) "同一个问题，同一个 AI。这次我们事先把大连高新园区**真实的公开文档**喂给它。"
+          2) 让学生看新回答（停顿）："注意它没编！它说'我没查到 2026 的数据'。"
+          3) 重点指出引用："source-1、source-2 — 这是真实文档的页码。"
+          4) "**RAG 不是让 AI 变聪明，是让 AI 变诚实。**"
+          5) 然后切到下一页让学生互动 — 自己提交一个想问的问题。
+        </aside>
+      </section>
+
       <section class="interactive-callout">
         <div class="ic-glyph">⟹</div>
-        <h2>互动时间 · 让你看见 RAG 真在跑</h2>
-        <p style="margin-bottom: 30px;">扫码进入手机端 → 输入一段自我介绍（姓名 + 学院 + 3 个兴趣）<br>大屏会展示<b style="color:var(--interactive);">检索 → 拼 Prompt → 生成回答</b>的全过程</p>
+        <h2>轮到你 · 提交一个你想问的问题</h2>
+        <p style="margin-bottom: 30px;">扫码进入手机端 → 输入「你想问 AI 但担心它会瞎编的问题」<br>大屏会挑 3 个，<b style="color:var(--interactive);">现场跑一遍"无 RAG vs 有 RAG"</b>对比</p>
         <div class="cards-3" style="max-width: 880px; margin: 0 auto 24px;">
           <div class="card">
             <div class="icon" style="color: var(--interactive);">①</div>
-            <h3 style="color: var(--interactive);">学生提交</h3>
-            <p>手机扫码 → 输入信息 → 你的内容被向量化存入"班级知识库"</p>
+            <h3 style="color: var(--interactive);">你提交问题</h3>
+            <p>"今年大连人才补贴多少？" "IBM 大连一年招几个应届？" 都行</p>
           </div>
           <div class="card">
             <div class="icon" style="color: var(--interactive);">②</div>
-            <h3 style="color: var(--interactive);">老师提问</h3>
-            <p>讲师向大屏提问 "谁喜欢机器学习？" — 系统检索匹配的同学</p>
+            <h3 style="color: var(--interactive);">大屏挑 3 个</h3>
+            <p>讲师选 3 个有代表性的问题，分别开/关 RAG 跑</p>
           </div>
           <div class="card">
             <div class="icon" style="color: var(--interactive);">③</div>
-            <h3 style="color: var(--interactive);">看见全过程</h3>
-            <p>检索结果 + Prompt 拼接 + 最终回答 — 都展示给你看</p>
+            <h3 style="color: var(--interactive);">亲眼看对比</h3>
+            <p>无 RAG 编一个答案 vs 有 RAG 引用源 — 一目了然</p>
           </div>
         </div>
-        <div class="scan-hint">📱 扫码进入互动 · 大屏实时展示检索过程</div>
+        <div class="scan-hint">📱 扫码 · 提交一个你担心 AI 会瞎编的问题</div>
         <aside class="notes">
-          这是整堂课最关键的"哇"时刻。
-          准备：手机端 RAG 互动页 — 学生输入信息，提交到 localStorage 或 LeanCloud。
-          演示流程：(1) 让学生先全部扫码提交 (2) 大屏展示"知识库构建中"动画 (3) 讲师提问 (4) 高亮检索匹配的学生 (5) 展示 Prompt 拼接 (6) 展示生成的回答。
-          兜底：如果网络/系统故障，切换到剧本模式 — 用预录的 5 个虚拟学生数据演示。
+          【舞台剧本 · 12 分钟】
+          1) 引导扫码（已经做过 enroll 的学生用同一个码进互动端，admin 已经预埋脚本数据兜底）。
+          2) 给学生 90 秒提交问题。
+          3) 选 3 个最有代表性/最有趣的现场跑。
+          4) 如果学生没提交问题或问题太烂 → 用 admin 注入的 5 个预设问题。
+          5) 收尾："**所以以后用 AI 工作的时候，记得问一句：你查的什么来源？** 这就是工程师的素养。"
         </aside>
       </section>
+    </section>
+
+    <!-- ========== ★ QUOTE STAGE 2 · 「给 AI 一本书」 ========== -->
+    <section class="quote-stage">
+      <div class="qs-mark">"</div>
+      <div class="qs-text">RAG 就像给 AI 一本书，<br>再问它不知道的事，<br>它每次都去查一下这本书<br>再回答。</div>
+      <div class="qs-pulse-line"></div>
+      <div class="qs-author">—— <b>陳宏强 Richard Chen</b> · RAG 出来后我给 IBM 同事的解释</div>
+      <aside class="notes">
+        【舞台剧本 · 2 分钟纯感受】
+        翻到这一页时停顿 5 秒，让学生消化。
+        然后讲："RAG 这个词翻译过来叫'检索增强生成'，听起来很学术。"
+        "但其实它就是这一句话——我 RAG 出来那年给 IBM 同事讲的。"
+        指着屏幕的金句："给 AI 一本书。它就不会胡说八道了。"
+        停顿。
+        然后过渡："但是……AI 真正变厉害，不只是因为'有书'。还因为它学会了**理解关系**。下一个超级有意思的东西叫——**知识图谱**。"
+        ↘ 翻到 Ch.08 KG
+      </aside>
     </section>
 
     <!-- ========== CHAPTER 08 · INTERACTIVE ========== -->
@@ -1143,33 +1353,51 @@
           强调推理是知识图谱的真正价值——不只是存储，是"产生新知"。
         </aside>
       </section>
-      <section class="interactive-callout">
-        <div class="ic-glyph">◉</div>
-        <h2>互动时间 · 看你的节点出现在大屏</h2>
-        <p style="margin-bottom: 30px;">扫码 → 输入姓名 / 学院 / 3 个兴趣 → 后台<b style="color:var(--interactive);">自动生成三元组</b><br>大屏的力导图<b style="color:var(--interactive);">实时长大</b>，你的名字会以节点形式出现</p>
-        <div class="cards-3" style="max-width: 880px; margin: 0 auto 24px;">
-          <div class="card">
-            <div class="icon" style="color: var(--interactive);">◉</div>
-            <h3 style="color: var(--interactive);">你的节点</h3>
-            <p>姓名变成一个图谱节点 — 颜色按学院分组</p>
-          </div>
-          <div class="card">
-            <div class="icon" style="color: var(--interactive);">◐</div>
-            <h3 style="color: var(--interactive);">关系连线</h3>
-            <p>"就读于"、"喜欢" 变成边 — 自动连到学院和兴趣节点</p>
-          </div>
-          <div class="card">
-            <div class="icon" style="color: var(--interactive);">⌬</div>
-            <h3 style="color: var(--interactive);">动态生长</h3>
-            <p>30 个同学的图谱叠加 — 你能看出"AI 兴趣集中在哪个学院"</p>
+      <section data-state="kg-stage" id="slide-kg">
+        <div class="content-header">
+          <div class="ctx">CH.08 · 03 / 03 · ⭐ 实时校园关系网</div>
+          <h2>这是你们 20 个人 · 的关系网</h2>
+          <p class="sub" style="margin-bottom: 18px;">每个节点 = 一位同学 · 每条线 = 共同兴趣或同学院 · 数据来自你们刚刚的提交</p>
+        </div>
+        <div class="kg-stage">
+          <div class="kg-chart" id="kgChart"></div>
+          <div class="kg-side">
+            <div class="kg-card interactive">
+              <div class="label">同学节点</div>
+              <div class="num" id="kgPeople">0</div>
+            </div>
+            <div class="kg-card success">
+              <div class="label">关系连线</div>
+              <div class="num" id="kgEdges">0</div>
+            </div>
+            <div class="kg-card warn">
+              <div class="label">兴趣聚类</div>
+              <div class="num" id="kgClusters">0</div>
+            </div>
+            <div class="kg-actions">
+              <button class="primary" onclick="kgInjectDemo()">▶ 注入演示数据</button>
+              <button onclick="kgRefreshFromKB()">↻ 从本机 KB 重新加载</button>
+              <button onclick="kgHighlightRandom()">★ 高亮一位同学</button>
+              <button onclick="kgClearHighlight()">清除高亮</button>
+            </div>
+            <div style="font-size: 11px; color: var(--text-faint); padding: 10px 4px; line-height: 1.7;">
+              <b>讲师操作：</b><br>
+              · 点节点 → 高亮 2 跳邻居<br>
+              · 点空白 → 全景<br>
+              · 拖动节点重新布局
+            </div>
           </div>
         </div>
-        <div class="scan-hint">📱 扫码进入互动 · ECharts 力导图动态可视化</div>
         <aside class="notes">
-          这是整堂课的视觉高潮 — 学生看到自己名字出现在大屏图谱上的瞬间最震撼。
-          准备：ECharts force-directed graph，节点带 hover 显示完整信息。
-          关键时机：让学生看到 "30 个人的图谱" 全貌时停留几秒 — 这种"涌现"的视觉效果很有冲击力。
-          兜底：如果网络断，用预录数据加动画播放。
+          【舞台剧本 · 8 分钟 · 整堂课最高潮】
+          1) 翻到这一页时，先点"▶ 注入演示数据"，5 个虚拟学生先垫底（避免空图）。
+          2) 然后从本机 KB 加载真实学生（前面 enroll 时提交过的）。
+          3) 镜头停留 5 秒让学生看："这是你们 20 个人，刚才提交的信息，现在已经是一张关系网了。"
+          4) 点一个学生节点（或用"★ 高亮一位同学"按钮随机高亮）："看，AI 推理出 张三 和 李四 都喜欢机器学习。"
+          5) 让张三李四现场打招呼。
+          6) 切换聚类视图 → 学生看到自己所属的圈子。
+          7) "这就是知识图谱。**世界由实体和关系构成，AI 从中推理出新认识。**"
+          ↘ 翻到 Ch.09 多跳推理深入演示
         </aside>
       </section>
     </section>
@@ -1756,6 +1984,238 @@
   }
   deck.on('slidechanged', dimTip);
   setTimeout(() => tip && tip.classList.add('dim'), 12000);
+
+  // ============================================================
+  // KG Force-Directed Graph (Ch.08 子页 3)
+  // - 从本机 localStorage 'fnc_camp_kb_v1' 读取学生数据
+  // - 学生 / 学院 / 兴趣 三类节点，三类边
+  // - 支持注入演示数据、高亮、点击 2 跳邻居
+  // ============================================================
+  let kgInstance = null;
+  let kgData = { people: [], colleges: new Set(), interests: new Set() };
+  let kgHighlighted = null;
+
+  const DEMO_SEED_KG = [
+    { code:'DEMO-A1', name:'张明远', college:'计算机学院', interests:['机器学习','RAG','大模型'] },
+    { code:'DEMO-A2', name:'李知微', college:'软件学院',    interests:['知识图谱','Agent','NLP'] },
+    { code:'DEMO-A3', name:'王雪松', college:'电子信息学院',interests:['深度学习','计算机视觉','强化学习'] },
+    { code:'DEMO-A4', name:'陈静怡', college:'管理学院',    interests:['推荐系统','产品设计','大模型'] },
+    { code:'DEMO-A5', name:'刘启航', college:'数学学院',    interests:['机器学习','深度学习','大模型'] }
+  ];
+
+  function loadKBFromStorage() {
+    try {
+      const raw = localStorage.getItem('fnc_camp_kb_v1');
+      const arr = JSON.parse(raw || '[]');
+      return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
+  }
+
+  function buildGraphData(people) {
+    const collegeSet = new Set();
+    const interestSet = new Set();
+    people.forEach(p => {
+      if (p.college) collegeSet.add(p.college);
+      (p.interests || []).forEach(i => interestSet.add(i));
+    });
+
+    const colors = {
+      person:    '#4589ff',
+      college:   '#f1c21b',
+      interest:  '#c08bff'
+    };
+    const nodes = [];
+    const links = [];
+
+    people.forEach((p, idx) => {
+      nodes.push({
+        id: 'p_' + (p.code || idx),
+        name: p.name || '学生' + (idx+1),
+        category: 0,
+        symbolSize: 26,
+        itemStyle: { color: colors.person, borderColor: '#fff', borderWidth: 1.5 },
+        label: { show: true, color: '#fff', fontSize: 11, fontWeight: 500 },
+        _meta: p
+      });
+    });
+    Array.from(collegeSet).forEach((c, idx) => {
+      nodes.push({
+        id: 'c_' + idx,
+        name: c,
+        category: 1,
+        symbolSize: 36,
+        itemStyle: { color: colors.college, opacity: 0.9 },
+        label: { show: true, color: '#1a1a1d', fontSize: 11, fontWeight: 600 }
+      });
+    });
+    Array.from(interestSet).forEach((i, idx) => {
+      nodes.push({
+        id: 'i_' + idx,
+        name: i,
+        category: 2,
+        symbolSize: 22,
+        itemStyle: { color: colors.interest, opacity: 0.85 },
+        label: { show: true, color: '#fff', fontSize: 10 }
+      });
+    });
+
+    people.forEach((p, idx) => {
+      const personId = 'p_' + (p.code || idx);
+      // person -> college
+      if (p.college) {
+        const cIdx = Array.from(collegeSet).indexOf(p.college);
+        if (cIdx >= 0) {
+          links.push({
+            source: personId, target: 'c_' + cIdx,
+            lineStyle: { color: 'rgba(241,194,27,0.35)', width: 1.2, curveness: 0.05 }
+          });
+        }
+      }
+      // person -> interests
+      (p.interests || []).forEach(itr => {
+        const iIdx = Array.from(interestSet).indexOf(itr);
+        if (iIdx >= 0) {
+          links.push({
+            source: personId, target: 'i_' + iIdx,
+            lineStyle: { color: 'rgba(192,139,255,0.35)', width: 1, curveness: 0.05 }
+          });
+        }
+      });
+    });
+
+    return { nodes, links, collegeSet, interestSet };
+  }
+
+  function initKG() {
+    const dom = document.getElementById('kgChart');
+    if (!dom || typeof echarts === 'undefined') return;
+    if (kgInstance) { kgInstance.dispose(); kgInstance = null; }
+    kgInstance = echarts.init(dom, null, { renderer: 'canvas' });
+
+    let people = loadKBFromStorage();
+    if (!people.length) people = DEMO_SEED_KG.slice();  // first time: seed with demo
+    const { nodes, links, collegeSet, interestSet } = buildGraphData(people);
+
+    document.getElementById('kgPeople').textContent = people.length;
+    document.getElementById('kgEdges').textContent = links.length;
+    document.getElementById('kgClusters').textContent = collegeSet.size;
+
+    kgInstance.setOption({
+      backgroundColor: 'transparent',
+      tooltip: {
+        formatter: (p) => {
+          if (p.dataType !== 'node') return '';
+          if (p.data.category === 0) {
+            const m = p.data._meta || {};
+            return `<b>${p.data.name}</b><br>学院：${m.college || '—'}<br>兴趣：${(m.interests||[]).join(' / ')}`;
+          }
+          if (p.data.category === 1) return `🏫 学院：${p.data.name}`;
+          return `🏷 兴趣：${p.data.name}`;
+        },
+        backgroundColor: 'rgba(11,11,12,0.95)',
+        borderColor: '#4589ff',
+        textStyle: { color: '#f4f4f4', fontSize: 12 }
+      },
+      legend: [{
+        data: ['同学', '学院', '兴趣'],
+        textStyle: { color: '#a8a8b0', fontSize: 11 },
+        right: 10, top: 10, orient: 'vertical', itemGap: 8,
+        icon: 'circle'
+      }],
+      series: [{
+        type: 'graph',
+        layout: 'force',
+        force: { repulsion: 180, edgeLength: [40, 100], gravity: 0.08 },
+        roam: true,
+        draggable: true,
+        focusNodeAdjacency: false,
+        nodes, links,
+        categories: [{ name: '同学' }, { name: '学院' }, { name: '兴趣' }],
+        emphasis: {
+          focus: 'adjacency',
+          itemStyle: { borderColor: '#fff', borderWidth: 2.5 },
+          lineStyle: { width: 2.5, color: '#78a9ff' }
+        }
+      }]
+    });
+
+    kgInstance.on('click', (params) => {
+      if (params.dataType === 'node') {
+        kgHighlightNode(params.data.id);
+      } else {
+        kgClearHighlight();
+      }
+    });
+
+    // Resize handler
+    if (!window._kgResizeListener) {
+      window.addEventListener('resize', () => kgInstance && kgInstance.resize());
+      window._kgResizeListener = true;
+    }
+  }
+
+  function kgInjectDemo() {
+    // Merge demo students with existing KB
+    const cur = loadKBFromStorage();
+    const codes = new Set(cur.map(s => s.code));
+    DEMO_SEED_KG.forEach(s => { if (!codes.has(s.code)) cur.push(s); });
+    localStorage.setItem('fnc_camp_kb_v1', JSON.stringify(cur));
+    initKG();
+  }
+
+  function kgRefreshFromKB() {
+    initKG();
+  }
+
+  function kgHighlightNode(id) {
+    if (!kgInstance) return;
+    kgHighlighted = id;
+    const opt = kgInstance.getOption();
+    const adj = new Set([id]);
+    opt.series[0].links.forEach(e => {
+      if (e.source === id) adj.add(e.target);
+      if (e.target === id) adj.add(e.source);
+    });
+    opt.series[0].nodes = opt.series[0].nodes.map(n => ({
+      ...n,
+      itemStyle: { ...n.itemStyle, opacity: adj.has(n.id) ? 1 : 0.15 },
+      label: { ...n.label, opacity: adj.has(n.id) ? 1 : 0.2 }
+    }));
+    opt.series[0].links = opt.series[0].links.map(e => ({
+      ...e,
+      lineStyle: { ...e.lineStyle, opacity: (e.source === id || e.target === id) ? 1 : 0.05, width: (e.source === id || e.target === id) ? 2.5 : 1 }
+    }));
+    kgInstance.setOption(opt);
+  }
+
+  function kgHighlightRandom() {
+    if (!kgInstance) return;
+    const opt = kgInstance.getOption();
+    const people = opt.series[0].nodes.filter(n => n.category === 0);
+    if (!people.length) return;
+    const pick = people[Math.floor(Math.random() * people.length)];
+    kgHighlightNode(pick.id);
+  }
+
+  function kgClearHighlight() {
+    if (!kgInstance) return;
+    kgHighlighted = null;
+    initKG();  // simplest: full re-render
+  }
+
+  // Expose globally for inline onclick
+  window.kgInjectDemo = kgInjectDemo;
+  window.kgRefreshFromKB = kgRefreshFromKB;
+  window.kgHighlightRandom = kgHighlightRandom;
+  window.kgClearHighlight = kgClearHighlight;
+
+  // Init KG when its slide becomes visible
+  deck.on('slidechanged', (e) => {
+    const cur = e.currentSlide;
+    if (cur && cur.id === 'slide-kg') {
+      setTimeout(initKG, 100);
+    }
+  });
 
   // ============================================================
   // Review Mode — activated by ?review=1
