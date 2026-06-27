@@ -360,10 +360,10 @@
   /* ============================================================
      KG (Knowledge Graph) — ECharts force-directed container
      ============================================================ */
-  .kg-stage { display: grid; grid-template-columns: 1fr 280px; gap: 18px; max-width: 1180px; margin: 0 auto; }
-  .kg-chart { background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; height: 540px; position: relative; overflow: hidden; }
+  .kg-stage { display: grid; grid-template-columns: 1fr 250px; gap: 14px; max-width: 1180px; margin: 0 auto; padding-right: 70px; /* 给 Reveal 翻页箭头让位 */ }
+  .kg-chart { background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; height: 460px; position: relative; overflow: hidden; }
   .kg-chart canvas { display: block; }
-  .kg-side { display: flex; flex-direction: column; gap: 10px; }
+  .kg-side { display: flex; flex-direction: column; gap: 8px; }
   .kg-side .kg-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-size: 13px; }
   .kg-side .kg-card .label { font-family: var(--r-code-font); font-size: 10.5px; color: var(--text-faint); letter-spacing: 1.2px; margin-bottom: 6px; text-transform: uppercase; }
   .kg-side .kg-card .num { font-size: 1.8em; font-family: var(--r-code-font); color: var(--accent-2); font-weight: 600; line-height: 1; }
@@ -2089,6 +2089,11 @@
   function initKG() {
     const dom = document.getElementById('kgChart');
     if (!dom || typeof echarts === 'undefined') return;
+    // Defense: if container has 0 dimensions, retry shortly (Reveal transition not done)
+    if (dom.clientWidth === 0 || dom.clientHeight === 0) {
+      setTimeout(initKG, 150);
+      return;
+    }
     if (kgInstance) { kgInstance.dispose(); kgInstance = null; }
     kgInstance = echarts.init(dom, null, { renderer: 'canvas' });
 
@@ -2213,9 +2218,33 @@
   deck.on('slidechanged', (e) => {
     const cur = e.currentSlide;
     if (cur && cur.id === 'slide-kg') {
-      setTimeout(initKG, 100);
+      setTimeout(initKG, 120);
+      setTimeout(() => kgInstance && kgInstance.resize(), 500);  // 二次 resize 防容器尺寸延迟
     }
   });
+
+  // Auto-refresh KG when localStorage 'fnc_camp_kb_v1' changes
+  // Triggers on: (1) student submits in another tab/window of same browser
+  //              (2) admin "inject demo data" URL was opened in another tab
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'fnc_camp_kb_v1') {
+      const curSlide = deck.getCurrentSlide();
+      if (curSlide && curSlide.id === 'slide-kg') {
+        initKG();
+      }
+    }
+  });
+
+  // ResizeObserver: if Reveal scales the slide, ECharts needs to know
+  if (typeof ResizeObserver !== 'undefined') {
+    const ro = new ResizeObserver(() => {
+      if (kgInstance) kgInstance.resize();
+    });
+    setTimeout(() => {
+      const dom = document.getElementById('kgChart');
+      if (dom) ro.observe(dom);
+    }, 1000);
+  }
 
   // ============================================================
   // Review Mode — activated by ?review=1
