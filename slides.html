@@ -380,22 +380,73 @@
   .kg-overlay { position: absolute; z-index: 10; background: rgba(11,11,12,0.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(69,137,255,0.25); border-radius: 10px; box-shadow: 0 6px 22px rgba(0,0,0,0.5); }
   .kg-overlay.kg-h { top: 18px; left: 24px; padding: 12px 18px; max-width: 60%; }
   .kg-overlay.kg-h .ctx { font-family: var(--r-code-font); font-size: 11px; color: var(--accent); letter-spacing: 2px; margin-bottom: 5px; }
-  .kg-overlay.kg-h h2 { font-size: 1.5em !important; margin: 0 !important; color: #fff !important; line-height: 1.2; font-weight: 600; }
-  .kg-overlay.kg-h .sub { font-size: 11.5px; color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
+  .kg-overlay.kg-h h2 { font-size: 1.95em !important; margin: 0 !important; color: #fff !important; line-height: 1.15; font-weight: 600; letter-spacing: -0.5px; }
+  .kg-overlay.kg-h .sub { font-size: 13.5px; color: var(--text-dim); margin-top: 8px; line-height: 1.5; }
   .kg-overlay.kg-stats { top: 18px; right: 24px; display: flex; gap: 6px; padding: 8px 10px; }
   .kg-overlay.kg-stats .kg-stat { padding: 6px 14px; min-width: 60px; text-align: center; border-right: 1px solid var(--border); }
   .kg-overlay.kg-stats .kg-stat:last-child { border-right: 0; }
-  .kg-overlay.kg-stats .num { display: block; font-family: var(--r-code-font); font-size: 1.5em; font-weight: 600; line-height: 1; }
+  .kg-overlay.kg-stats .num { display: block; font-family: var(--r-code-font); font-size: 2em; font-weight: 600; line-height: 1; }
   .kg-overlay.kg-stats .num.people { color: var(--accent-2); }
   .kg-overlay.kg-stats .num.edges { color: var(--success); }
   .kg-overlay.kg-stats .num.clusters { color: var(--warning); }
   .kg-overlay.kg-stats .label { font-size: 10px; color: var(--text-faint); letter-spacing: 0.5px; margin-top: 4px; display: block; }
   .kg-overlay.kg-actions { bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; padding: 8px 12px; border-radius: 100px; }
-  .kg-overlay.kg-actions button { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 7px 16px; border-radius: 100px; cursor: pointer; font-family: inherit; font-size: 12.5px; white-space: nowrap; transition: all .15s; }
+  .kg-overlay.kg-actions button { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 9px 20px; border-radius: 100px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; white-space: nowrap; transition: all .15s; }
   .kg-overlay.kg-actions button:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
   .kg-overlay.kg-actions button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
   .kg-overlay.kg-actions button.primary:hover { background: var(--accent-2); }
-  .kg-overlay.kg-tip { bottom: 22px; right: 70px; padding: 8px 14px; font-size: 11px; color: var(--text-faint); font-family: var(--r-code-font); max-width: 260px; }
+  /* AI Bot — bottom right of KG slide */
+  .kg-bot { position: absolute; bottom: 24px; right: 80px; z-index: 14; }
+  .kg-bot-toggle {
+    width: 56px; height: 56px;
+    border-radius: 50%; border: 0;
+    background: linear-gradient(135deg, var(--accent), var(--interactive));
+    color: #fff; font-size: 26px; cursor: pointer;
+    box-shadow: 0 6px 22px rgba(192,139,255,0.45), 0 0 0 0 rgba(192,139,255,0.6);
+    transition: all .2s; display: flex; align-items: center; justify-content: center;
+    animation: bot-pulse 2.4s infinite;
+  }
+  @keyframes bot-pulse {
+    0%, 100% { box-shadow: 0 6px 22px rgba(192,139,255,0.45), 0 0 0 0 rgba(192,139,255,0.6); }
+    50% { box-shadow: 0 6px 22px rgba(192,139,255,0.45), 0 0 0 14px rgba(192,139,255,0); }
+  }
+  .kg-bot-toggle:hover { transform: scale(1.08); }
+  .kg-bot-panel {
+    display: none;
+    position: absolute;
+    bottom: 70px; right: 0;
+    width: 360px;
+    background: rgba(11,11,12,0.94);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(192,139,255,0.4);
+    border-radius: 14px;
+    box-shadow: 0 10px 36px rgba(0,0,0,0.6);
+    overflow: hidden;
+  }
+  .kg-bot.open .kg-bot-panel { display: block; animation: bot-in .25s ease-out; }
+  @keyframes bot-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .kg-bot-h { padding: 12px 16px; background: linear-gradient(135deg, rgba(69,137,255,0.18), rgba(192,139,255,0.18)); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+  .kg-bot-h .ttl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; font-weight: 500; }
+  .kg-bot-h .ttl .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); }
+  .kg-bot-h button.close { background: transparent; border: 0; color: var(--text-dim); font-size: 16px; cursor: pointer; padding: 0 4px; }
+  .kg-bot-h button.close:hover { color: #fff; }
+  .kg-bot-msgs { padding: 14px 16px; max-height: 240px; min-height: 80px; overflow-y: auto; }
+  .kg-bot-msg { padding: 9px 13px; margin-bottom: 8px; border-radius: 10px; font-size: 13px; line-height: 1.65; }
+  .kg-bot-msg.ai { background: rgba(192,139,255,0.1); border: 1px solid rgba(192,139,255,0.3); color: #f4f4f4; }
+  .kg-bot-msg.ai b { color: var(--interactive); }
+  .kg-bot-msg.user { background: var(--accent-soft); border: 1px solid rgba(69,137,255,0.3); color: var(--accent-2); margin-left: 30px; text-align: right; font-size: 12px; }
+  .kg-bot-msg.thinking { color: var(--text-faint); font-style: italic; }
+  .kg-bot-chips { padding: 10px 14px 14px; border-top: 1px dashed var(--border); }
+  .kg-bot-chips .label { font-family: var(--r-code-font); font-size: 10px; color: var(--text-faint); letter-spacing: 1.2px; margin-bottom: 8px; }
+  .kg-bot-chips .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .kg-bot-chips button { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 6px 11px; border-radius: 100px; cursor: pointer; font-size: 11.5px; font-family: inherit; transition: all .15s; }
+  .kg-bot-chips button:hover { background: rgba(192,139,255,0.15); border-color: var(--interactive); color: var(--interactive); }
+  @media (max-width: 900px) {
+    .kg-bot { bottom: 70px; right: 16px; }
+    .kg-bot-panel { width: 280px; }
+  }
+
+  .kg-overlay.kg-tip { bottom: 22px; right: 70px; padding: 8px 14px; font-size: 11px; color: var(--text-faint); font-family: var(--r-code-font); max-width: 260px; display: none; /* moved into bot tooltip */ }
   .kg-overlay.kg-tip b { color: var(--text-dim); }
   @media (max-width: 900px) {
     .kg-overlay.kg-h { left: 12px; top: 10px; max-width: 80%; padding: 8px 12px; }
@@ -1402,9 +1453,28 @@
           <button onclick="kgClearHighlight()">清除高亮</button>
         </div>
 
-        <!-- Floating overlay: tip (bottom-right) -->
-        <div class="kg-overlay kg-tip">
-          <b>讲师操作：</b><br>· 点节点 → 高亮 2 跳邻居<br>· 拖动 / 滚轮 / 平移
+        <!-- AI 推理对话机器人 (bottom-right) -->
+        <div class="kg-bot" id="kgBot">
+          <button class="kg-bot-toggle" onclick="toggleKGBot()" title="点击与 AI 助手对话 — 基于图谱推理">🤖</button>
+          <div class="kg-bot-panel">
+            <div class="kg-bot-h">
+              <span class="ttl"><span class="dot"></span> KG 推理助手 · 不是 LLM</span>
+              <button class="close" onclick="toggleKGBot()">✕</button>
+            </div>
+            <div class="kg-bot-msgs" id="kgBotMsgs">
+              <div class="kg-bot-msg ai">你好，我能基于这张图谱回答你的问题。<br>下面任选一个试试 👇</div>
+            </div>
+            <div class="kg-bot-chips">
+              <div class="label">推理任务示例 · 完全本地计算</div>
+              <div class="chips">
+                <button onclick="askKG('similar')">🔍 谁和谁最相似？</button>
+                <button onclick="askKG('central')">⭐ 谁是中心人物？</button>
+                <button onclick="askKG('aiCollege')">🎓 哪个学院最热衷 AI？</button>
+                <button onclick="askKG('team')">👥 推荐 3 人组队</button>
+                <button onclick="askKG('cross')">🌐 跨学院共同兴趣</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <aside class="notes">
@@ -1986,6 +2056,10 @@
   function updateIndicator() {
     const idx = deck.getIndices().h;
     const c = chapters[idx];
+    // Hide on full-bleed slides (KG) to avoid overlay collision
+    const cur = deck.getCurrentSlide();
+    const isFullBleed = cur && (cur.classList.contains('kg-full-slide') || cur.classList.contains('quote-stage'));
+    if (indicator) indicator.style.display = isFullBleed ? 'none' : '';
     if (c) indicator.innerHTML = '<b>' + c.num + '</b>' + c.title;
   }
   deck.on('slidechanged', updateIndicator);
@@ -2049,9 +2123,15 @@
         id: 'p_' + (p.code || idx),
         name: p.name || '学生' + (idx+1),
         category: 0,
-        symbolSize: 26,
-        itemStyle: { color: colors.person, borderColor: '#fff', borderWidth: 1.5 },
-        label: { show: true, color: '#fff', fontSize: 11, fontWeight: 500 },
+        symbolSize: 34,
+        itemStyle: {
+          color: colors.person,
+          borderColor: '#fff',
+          borderWidth: 2,
+          shadowBlur: 18,
+          shadowColor: 'rgba(69,137,255,0.85)'
+        },
+        label: { show: true, color: '#fff', fontSize: 13, fontWeight: 500 },
         _meta: p
       });
     });
@@ -2060,9 +2140,14 @@
         id: 'c_' + idx,
         name: c,
         category: 1,
-        symbolSize: 36,
-        itemStyle: { color: colors.college, opacity: 0.9 },
-        label: { show: true, color: '#1a1a1d', fontSize: 11, fontWeight: 600 }
+        symbolSize: 44,
+        itemStyle: {
+          color: colors.college,
+          opacity: 0.95,
+          shadowBlur: 16,
+          shadowColor: 'rgba(241,194,27,0.7)'
+        },
+        label: { show: true, color: '#1a1a1d', fontSize: 12, fontWeight: 700 }
       });
     });
     Array.from(interestSet).forEach((i, idx) => {
@@ -2070,9 +2155,14 @@
         id: 'i_' + idx,
         name: i,
         category: 2,
-        symbolSize: 22,
-        itemStyle: { color: colors.interest, opacity: 0.85 },
-        label: { show: true, color: '#fff', fontSize: 10 }
+        symbolSize: 26,
+        itemStyle: {
+          color: colors.interest,
+          opacity: 0.9,
+          shadowBlur: 14,
+          shadowColor: 'rgba(192,139,255,0.7)'
+        },
+        label: { show: true, color: '#fff', fontSize: 11 }
       });
     });
 
@@ -2167,17 +2257,23 @@
       series: [{
         type: 'graph',
         layout: 'force',
-        force: { repulsion: 180, edgeLength: [40, 100], gravity: 0.08 },
+        force: { repulsion: 240, edgeLength: [60, 140], gravity: 0.06, friction: 0.4 },
         roam: true,
         draggable: true,
         focusNodeAdjacency: false,
         nodes, links,
         categories: [{ name: '同学' }, { name: '学院' }, { name: '兴趣' }],
+        // Particle flow effect on edges — gives the "data flowing" feel
+        edgeSymbol: ['none', 'none'],
+        lineStyle: { width: 1, curveness: 0.1 },
         emphasis: {
           focus: 'adjacency',
-          itemStyle: { borderColor: '#fff', borderWidth: 2.5 },
-          lineStyle: { width: 2.5, color: '#78a9ff' }
-        }
+          itemStyle: { borderColor: '#fff', borderWidth: 3, shadowBlur: 30 },
+          lineStyle: { width: 3, color: '#78a9ff' }
+        },
+        animation: true,
+        animationDuration: 1500,
+        animationEasingUpdate: 'quinticInOut'
       }]
     }, true);  // notMerge:true — clean data replace, avoid lingering old nodes
 
@@ -2239,6 +2335,169 @@
   window.kgRefreshFromKB = kgRefreshFromKB;
   window.kgHighlightRandom = kgHighlightRandom;
   window.kgClearHighlight = kgClearHighlight;
+
+  // ============================================================
+  // KG 推理助手 (chatbot) — 纯本地图算法，不调 LLM
+  // 5 个推理任务：相似度、中心度、聚类、推荐、跨域
+  // ============================================================
+  function toggleKGBot() {
+    const bot = document.getElementById('kgBot');
+    if (bot) bot.classList.toggle('open');
+  }
+  window.toggleKGBot = toggleKGBot;
+
+  function pushBotMsg(html, klass) {
+    const el = document.getElementById('kgBotMsgs');
+    if (!el) return null;
+    const msg = document.createElement('div');
+    msg.className = 'kg-bot-msg ' + (klass || 'ai');
+    msg.innerHTML = html;
+    el.appendChild(msg);
+    el.scrollTop = el.scrollHeight;
+    return msg;
+  }
+
+  const KG_QUERIES = {
+    similar:   '🔍 谁和谁最相似？',
+    central:   '⭐ 谁是中心人物？',
+    aiCollege: '🎓 哪个学院最热衷 AI？',
+    team:      '👥 推荐 3 人组队',
+    cross:     '🌐 跨学院共同兴趣'
+  };
+
+  function askKG(qid) {
+    pushBotMsg(KG_QUERIES[qid] || qid, 'user');
+    const thinkingMsg = pushBotMsg('⚙️ 正在基于图谱推理 ...', 'ai thinking');
+    setTimeout(() => {
+      const people = loadKBFromStorage();
+      let result;
+      try {
+        if (qid === 'similar')   result = kgQ_mostSimilar(people);
+        if (qid === 'central')   result = kgQ_centralNode(people);
+        if (qid === 'aiCollege') result = kgQ_aiCollege(people);
+        if (qid === 'team')      result = kgQ_recommend(people);
+        if (qid === 'cross')     result = kgQ_crossCollege(people);
+      } catch (e) { result = { text: '推理出错：' + e.message }; }
+      thinkingMsg.classList.remove('thinking');
+      thinkingMsg.innerHTML = (typeof result === 'string') ? result : (result.text || '没找到答案');
+      if (result && result.highlightId) {
+        kgHighlightNode(result.highlightId);
+      } else if (result && result.highlightIds && result.highlightIds.length) {
+        kgHighlightNodes(result.highlightIds);
+      }
+    }, 700);
+  }
+  window.askKG = askKG;
+
+  // Highlight multiple nodes
+  function kgHighlightNodes(ids) {
+    if (!kgInstance || !ids || !ids.length) return;
+    const idSet = new Set(ids);
+    const opt = kgInstance.getOption();
+    const adj = new Set(ids);
+    opt.series[0].links.forEach(e => {
+      if (idSet.has(e.source) || idSet.has(e.target)) { adj.add(e.source); adj.add(e.target); }
+    });
+    opt.series[0].nodes = opt.series[0].nodes.map(n => ({
+      ...n,
+      itemStyle: { ...n.itemStyle, opacity: adj.has(n.id) ? 1 : 0.15 },
+      label: { ...n.label, opacity: adj.has(n.id) ? 1 : 0.2 }
+    }));
+    opt.series[0].links = opt.series[0].links.map(e => ({
+      ...e,
+      lineStyle: { ...e.lineStyle, opacity: (idSet.has(e.source) || idSet.has(e.target)) ? 1 : 0.05, width: (idSet.has(e.source) || idSet.has(e.target)) ? 2.5 : 1 }
+    }));
+    kgInstance.setOption(opt);
+  }
+
+  // === 5 推理函数 — 完全本地 ===
+  function jaccard(a, b) {
+    const A = new Set(a || []), B = new Set(b || []);
+    const inter = [...A].filter(x => B.has(x)).length;
+    const union = new Set([...A, ...B]).size;
+    return union ? inter / union : 0;
+  }
+
+  function kgQ_mostSimilar(students) {
+    if (students.length < 2) return '同学不够 2 人。先点 ▶ 注入演示 或 ↻ 重载 KB';
+    let best = { sim: -1 };
+    for (let i = 0; i < students.length; i++) {
+      for (let j = i + 1; j < students.length; j++) {
+        const s = jaccard(students[i].interests, students[j].interests);
+        if (s > best.sim) {
+          const shared = (students[i].interests || []).filter(x => (students[j].interests || []).includes(x));
+          best = { sim: s, a: students[i], b: students[j], shared };
+        }
+      }
+    }
+    if (best.sim <= 0) return '没找到共同兴趣的同学对（数据太分散）';
+    return {
+      text: `最像的一对：<b>${best.a.name}</b>（${best.a.college}）和 <b>${best.b.name}</b>（${best.b.college}）<br>相似度 ${(best.sim*100).toFixed(0)}%，都喜欢：<b>${best.shared.join('、')}</b>`,
+      highlightIds: ['p_' + best.a.code, 'p_' + best.b.code]
+    };
+  }
+
+  function kgQ_centralNode(students) {
+    if (!students.length) return '还没数据。';
+    const ranked = students.map(s => ({
+      s, deg: (s.interests || []).length + (s.college ? 1 : 0)
+    })).sort((a, b) => b.deg - a.deg);
+    const top = ranked[0];
+    return {
+      text: `中心人物是 <b>${top.s.name}</b>（${top.s.college}）<br>连接度 <b>${top.deg}</b>（${(top.s.interests||[]).length} 个兴趣 + 1 个学院），<br>整个图谱里"信息流最汇聚"的节点`,
+      highlightId: 'p_' + top.s.code
+    };
+  }
+
+  function kgQ_aiCollege(students) {
+    const AI_TERMS = new Set(['机器学习','深度学习','大模型','RAG','自然语言处理','计算机视觉','强化学习','Agent / 智能体','知识图谱']);
+    const stats = {};
+    students.forEach(s => {
+      if (!s.college) return;
+      if (!stats[s.college]) stats[s.college] = { count: 0, people: 0 };
+      stats[s.college].people++;
+      (s.interests || []).forEach(i => { if (AI_TERMS.has(i)) stats[s.college].count++; });
+    });
+    const ranked = Object.entries(stats).sort((a, b) => b[1].count - a[1].count);
+    if (!ranked.length) return '还没数据。';
+    const [name, info] = ranked[0];
+    return {
+      text: `最热衷 AI 的学院是 <b>${name}</b>：<br>${info.people} 个同学，累计提交 <b>${info.count}</b> 个 AI 相关兴趣标签<br>平均每人 ${(info.count/info.people).toFixed(1)} 个 AI 兴趣`
+    };
+  }
+
+  function kgQ_recommend(students) {
+    if (students.length < 3) return '同学不够 3 人，无法推荐组队。';
+    const me = students[Math.floor(Math.random() * students.length)];
+    const others = students.filter(s => s.code !== me.code).map(s => ({
+      s, sim: jaccard(me.interests, s.interests)
+    })).sort((a, b) => b.sim - a.sim);
+    const t1 = others[0], t2 = others[1];
+    return {
+      text: `<b>${me.name}</b>（${me.college}）的推荐组队：<br>① <b>${t1.s.name}</b>（${t1.s.college}）— 相似度 ${(t1.sim*100).toFixed(0)}%<br>② <b>${t2.s.name}</b>（${t2.s.college}）— 相似度 ${(t2.sim*100).toFixed(0)}%<br><br>💡 跨学院互补 + 兴趣重叠，组队最稳`,
+      highlightIds: ['p_' + me.code, 'p_' + t1.s.code, 'p_' + t2.s.code]
+    };
+  }
+
+  function kgQ_crossCollege(students) {
+    const interestColleges = {};
+    students.forEach(s => {
+      if (!s.college) return;
+      (s.interests || []).forEach(i => {
+        if (!interestColleges[i]) interestColleges[i] = new Set();
+        interestColleges[i].add(s.college);
+      });
+    });
+    const ranked = Object.entries(interestColleges)
+      .map(([interest, set]) => ({ interest, colleges: [...set] }))
+      .filter(x => x.colleges.length >= 2)
+      .sort((a, b) => b.colleges.length - a.colleges.length);
+    if (!ranked.length) return '还没出现跨学院共同兴趣（数据不够多）';
+    const top = ranked[0];
+    return {
+      text: `跨学院最广的兴趣是 <b>${top.interest}</b>：<br>横跨 <b>${top.colleges.length}</b> 个学院 — ${top.colleges.join('、')}<br><br>💡 这是真正的"跨学科领域"，未来交叉创新最有可能的方向`
+    };
+  }
 
   // Init KG when its slide becomes visible
   deck.on('slidechanged', (e) => {
