@@ -205,6 +205,12 @@ function addToKB(entry) {
 }
 
 function render() {
+  // Special teacher-only mode: ?import=1 batch import students from WeChat group
+  if (new URLSearchParams(location.search).get('import') === '1') {
+    renderImportMode();
+    return;
+  }
+
   // First, handle ?seed= param (admin demo data injection)
   const seedParam = new URLSearchParams(location.search).get('seed');
   if (seedParam) {
@@ -345,11 +351,21 @@ function renderForm(s) {
 /* ---------- Stage 3: success ---------- */
 function renderSuccess(s) {
   const isTeacher = s.code === 'TEACHER-2026';
+  // Compact JSON of this single student — used by 复制我的信息 button
+  const compactJSON = JSON.stringify({
+    code: s.code,
+    name: s.name,
+    college: s.college,
+    interests: s.interests || [],
+    bio: s.bio || '',
+    submittedAt: s.submittedAt
+  });
+
   card.innerHTML = `
     <div class="success-state">
       <div class="icon">✓</div>
       <h2>${isTeacher ? '讲师测试成功' : '已记录 · 期待与你课堂见面'}</h2>
-      <p class="desc" style="text-align:center;margin-top:8px;">课件入口已为你准备好。点击"进入课件"开始体验，<br>或在开营当天再回来。</p>
+      <p class="desc" style="text-align:center;margin-top:8px;">${isTeacher ? '你现在可以测试讲师工作台。' : '请把<b>"我的信息"</b>复制并发送到课程微信群<br>这样讲师就能在大屏的"校园关系网"看到你的节点。'}</p>
 
       <div class="me">
         <div class="row"><span class="k">CODE</span><span class="v" style="font-family:var(--font-mono);">${s.code}</span></div>
@@ -359,7 +375,12 @@ function renderSuccess(s) {
         ${s.bio ? `<div class="row"><span class="k">简介</span><span class="v">${escapeText(s.bio)}</span></div>` : ''}
       </div>
 
-      <div class="btn-row">
+      ${!isTeacher ? `
+      <button id="fCopyInfo" class="primary" style="width:100%;margin-top:14px;padding:12px 16px;font-size:14px;font-weight:500;">📋 复制我的信息 · 发到课程微信群</button>
+      <div style="font-size:11.5px;color:var(--text-faint);margin-top:8px;text-align:center;line-height:1.6;">点一下就把你的信息复制到剪贴板。<br>切到微信，长按粘贴到群里即可。</div>
+      ` : ''}
+
+      <div class="btn-row" style="margin-top:18px;">
         <button class="secondary" id="fEdit">修改信息</button>
         <button class="primary" id="fGo">进入课件 →</button>
       </div>
@@ -371,6 +392,135 @@ function renderSuccess(s) {
     renderForm(s);
   });
   document.getElementById('fGo').addEventListener('click', () => { location.href = './slides.html'; });
+
+  const copyBtn = document.getElementById('fCopyInfo');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(compactJSON).then(() => {
+        copyBtn.textContent = '✓ 已复制 · 切微信粘贴';
+        copyBtn.style.background = 'var(--success)';
+        copyBtn.style.borderColor = 'var(--success)';
+        setTimeout(() => {
+          copyBtn.textContent = '📋 复制我的信息 · 发到课程微信群';
+          copyBtn.style.background = '';
+          copyBtn.style.borderColor = '';
+        }, 2500);
+      }).catch(() => {
+        // Fallback: show in prompt
+        prompt('请手动复制下面这行 JSON，粘贴到微信群：', compactJSON);
+      });
+    });
+  }
+}
+
+/* ---------- Special: ?import=1 mode (teacher batch import students) ---------- */
+function renderImportMode() {
+  document.querySelector('.topbar a').textContent = '← 返回主页';
+  card.innerHTML = `
+    <div class="badge"><span class="dot2"></span>讲师 · 批量导入</div>
+    <h1>📥 批量导入学生数据</h1>
+    <p class="desc">把课程微信群里学生粘贴的 <b>JSON 行</b>一次性贴到下面，点"解析 + 导入"。<br>支持：每行一个 JSON 对象、单个 JSON 数组、混合粘贴。</p>
+
+    <div class="field">
+      <label>粘贴学生 JSON（一行一个）<span class="hint">从微信群复制即可</span></label>
+      <textarea id="impText" placeholder='{"code":"FNC-001","name":"张三","college":"计算机学院","interests":["机器学习","RAG"],"bio":"..."}
+{"code":"FNC-002","name":"李四","college":"软件学院","interests":["知识图谱"],"bio":"..."}
+{"code":"FNC-003","name":"王五","college":"管理学院","interests":["产品设计","大模型"],"bio":"..."}' style="min-height:180px;font-family:var(--font-mono);font-size:12px;line-height:1.5;"></textarea>
+      <div id="impErr" class="err">解析失败 · 检查 JSON 格式</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="secondary" id="impCancel">取消</button>
+      <button class="primary" id="impDo">解析 + 导入</button>
+    </div>
+
+    <div id="impResult" style="margin-top:18px;display:none;"></div>
+
+    <div style="margin-top:24px;padding:12px 14px;background:var(--bg-3);border-radius:6px;border-left:3px solid var(--accent);font-size:12px;color:var(--text-dim);line-height:1.7;">
+      <b style="color:var(--text);">💡 提示：</b><br>
+      · 导入只写入 <b>这台演示机</b>的 localStorage<br>
+      · 同 code 的学生会被新数据覆盖（学生修改后重发也 OK）<br>
+      · 导入完成后，回到课件 <code>slides.html#/10/3</code>，KG 图谱自动出节点<br>
+      · 想清空全部学生：admin → 学生数据 → 清空
+    </div>
+  `;
+
+  document.getElementById('impCancel').addEventListener('click', () => {
+    location.href = './';
+  });
+
+  document.getElementById('impDo').addEventListener('click', () => {
+    const text = (document.getElementById('impText').value || '').trim();
+    const errEl = document.getElementById('impErr');
+    const resEl = document.getElementById('impResult');
+    errEl.classList.remove('show');
+    if (!text) { errEl.textContent = '请先粘贴 JSON 内容'; errEl.classList.add('show'); return; }
+
+    const parsed = parseStudentJSON(text);
+    if (!parsed.students.length) {
+      errEl.textContent = '没有解析出有效学生（' + parsed.errors.length + ' 行解析失败）';
+      errEl.classList.add('show');
+      return;
+    }
+
+    // Merge to KB (overwrite by code)
+    const kb = getKB();
+    let added = 0, updated = 0;
+    parsed.students.forEach(s => {
+      const idx = kb.findIndex(x => x.code === s.code);
+      if (idx >= 0) { kb[idx] = s; updated++; }
+      else { kb.push(s); added++; }
+    });
+    localStorage.setItem(KB_KEY, JSON.stringify(kb));
+
+    resEl.style.display = 'block';
+    resEl.innerHTML = `
+      <div style="padding:14px 16px;background:rgba(66,190,101,0.1);border:1px solid var(--success);border-radius:8px;color:var(--success);">
+        ✓ <b style="color:#fff;">导入完成</b>　·　新增 <b style="color:#fff;">${added}</b> 条　·　更新 <b style="color:#fff;">${updated}</b> 条
+        ${parsed.errors.length ? `<br><span style="color:var(--warning);font-size:11px;">⚠ ${parsed.errors.length} 行无法解析已跳过</span>` : ''}
+      </div>
+      <div class="btn-row" style="margin-top:12px;">
+        <button class="secondary" onclick="location.href='./enroll.html?import=1'">继续导入</button>
+        <button class="primary" onclick="location.href='./slides.html#/10/3'">查看 KG 图谱 →</button>
+      </div>
+    `;
+  });
+}
+
+function parseStudentJSON(text) {
+  const students = [];
+  const errors = [];
+
+  // Try 1: parse as whole (array or single object)
+  try {
+    const obj = JSON.parse(text);
+    if (Array.isArray(obj)) { obj.forEach(s => students.push(s)); return { students, errors }; }
+    if (typeof obj === 'object' && obj !== null && obj.code) { students.push(obj); return { students, errors }; }
+  } catch (e) { /* fall through to line-by-line */ }
+
+  // Try 2: line-by-line
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  lines.forEach((line, i) => {
+    try {
+      const obj = JSON.parse(line);
+      if (Array.isArray(obj)) obj.forEach(o => o && o.code && students.push(o));
+      else if (typeof obj === 'object' && obj && obj.code) students.push(obj);
+      else errors.push({ line: i+1, reason: 'no code field' });
+    } catch (e) { errors.push({ line: i+1, reason: e.message }); }
+  });
+
+  // Validate + normalize
+  const valid = students.filter(s => s.code && s.name).map(s => ({
+    code: s.code,
+    name: s.name,
+    college: s.college || '其他',
+    interests: Array.isArray(s.interests) ? s.interests : [],
+    bio: s.bio || '',
+    submittedAt: s.submittedAt || new Date().toISOString(),
+    submitted: true
+  }));
+
+  return { students: valid, errors };
 }
 
 function escapeText(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
