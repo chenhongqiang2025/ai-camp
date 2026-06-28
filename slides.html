@@ -384,18 +384,16 @@
   .kg-full-slide .kg-chart canvas { display: block; }
   /* Floating overlays */
   .kg-overlay { position: absolute; z-index: 10; background: rgba(11,11,12,0.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(69,137,255,0.25); border-radius: 10px; box-shadow: 0 6px 22px rgba(0,0,0,0.5); }
-  .kg-overlay.kg-h { top: 18px; left: 24px; padding: 12px 18px; max-width: 60%; }
-  .kg-overlay.kg-h .ctx { font-family: var(--r-code-font); font-size: 11px; color: var(--accent); letter-spacing: 2px; margin-bottom: 5px; }
-  .kg-overlay.kg-h h2 { font-size: 1.95em !important; margin: 0 !important; color: #fff !important; line-height: 1.15; font-weight: 600; letter-spacing: -0.5px; }
-  .kg-overlay.kg-h .sub { font-size: 13.5px; color: var(--text-dim); margin-top: 8px; line-height: 1.5; }
-  .kg-overlay.kg-stats { top: 18px; right: 24px; display: flex; gap: 6px; padding: 8px 10px; }
-  .kg-overlay.kg-stats .kg-stat { padding: 6px 14px; min-width: 60px; text-align: center; border-right: 1px solid var(--border); }
-  .kg-overlay.kg-stats .kg-stat:last-child { border-right: 0; }
-  .kg-overlay.kg-stats .num { display: block; font-family: var(--r-code-font); font-size: 2em; font-weight: 600; line-height: 1; }
-  .kg-overlay.kg-stats .num.people { color: var(--accent-2); }
-  .kg-overlay.kg-stats .num.edges { color: var(--success); }
-  .kg-overlay.kg-stats .num.clusters { color: var(--warning); }
-  .kg-overlay.kg-stats .label { font-size: 10px; color: var(--text-faint); letter-spacing: 0.5px; margin-top: 4px; display: block; }
+  /* Slim status bar OUTSIDE chart (above) — replaces former floating title + stats */
+  .kg-full-slide .kg-statusbar {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 0 8px;
+    font-family: var(--r-code-font); font-size: 13px;
+    color: var(--text-dim);
+  }
+  .kg-full-slide .kg-statusbar .kg-title-mini { letter-spacing: 1px; }
+  .kg-full-slide .kg-statusbar .kg-title-mini b { color: #fff; margin-right: 10px; font-weight: 600; letter-spacing: 0; }
+  .kg-full-slide .kg-statusbar #kgLiveBadge { color: var(--success); font-size: 11.5px; }
   .kg-overlay.kg-actions { bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; padding: 8px 12px; border-radius: 100px; }
   .kg-overlay.kg-actions button { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 9px 20px; border-radius: 100px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; white-space: nowrap; transition: all .15s; }
   .kg-overlay.kg-actions button:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
@@ -455,10 +453,7 @@
   .kg-overlay.kg-tip { bottom: 22px; right: 70px; padding: 8px 14px; font-size: 11px; color: var(--text-faint); font-family: var(--r-code-font); max-width: 260px; display: none; /* moved into bot tooltip */ }
   .kg-overlay.kg-tip b { color: var(--text-dim); }
   @media (max-width: 900px) {
-    .kg-overlay.kg-h { left: 12px; top: 10px; max-width: 80%; padding: 8px 12px; }
-    .kg-overlay.kg-h h2 { font-size: 1.1em !important; }
-    .kg-overlay.kg-stats { right: 12px; top: 10px; flex-wrap: wrap; }
-    .kg-overlay.kg-stats .num { font-size: 1.1em; }
+    .kg-full-slide .kg-statusbar { font-size: 11px; padding: 0 0 6px; }
     .kg-overlay.kg-actions { bottom: 12px; flex-wrap: wrap; justify-content: center; padding: 6px 8px; }
     .kg-overlay.kg-actions button { font-size: 11px; padding: 5px 10px; }
     .kg-overlay.kg-tip { display: none; }
@@ -1434,25 +1429,21 @@
         </aside>
       </section>
       <section data-state="kg-stage" id="slide-kg" class="kg-full-slide">
-        <!-- Particle drift layer (background) -->
+        <!-- Slim status bar OUTSIDE chart (top thin strip) -->
+        <div class="kg-statusbar">
+          <span class="kg-title-mini"><b>KG 知识图谱演示</b> <span id="kgLiveBadge">● 实时监听中</span></span>
+        </div>
+
+        <!-- Particle drift layer (background, inside chart only) -->
         <canvas class="kg-particles" id="kgParticles"></canvas>
 
         <!-- Full-bleed chart -->
         <div class="kg-chart" id="kgChart"></div>
 
-        <!-- Floating overlay: title (top-left) -->
-        <div class="kg-overlay kg-h">
-          <div class="ctx">CH.08 · 03 / 03 · ⭐ 实时校园关系网</div>
-          <h2 id="kgTitle">同学们的关系网</h2>
-          <div class="sub">每个节点 = 一位同学 · 每条线 = 共同兴趣或同学院 · <span id="kgLiveBadge" style="color:var(--success);font-family:var(--r-code-font);font-size:11px;">● 实时监听中</span></div>
-        </div>
-
-        <!-- Floating overlay: stats (top-right) -->
-        <div class="kg-overlay kg-stats">
-          <div class="kg-stat"><span class="num people" id="kgPeople">0</span><span class="label">同学</span></div>
-          <div class="kg-stat"><span class="num edges" id="kgEdges">0</span><span class="label">关系</span></div>
-          <div class="kg-stat"><span class="num clusters" id="kgClusters">0</span><span class="label">学院</span></div>
-        </div>
+        <!-- Hidden counts (kept for JS but not rendered as overlay) -->
+        <span id="kgPeople" style="display:none;">0</span>
+        <span id="kgEdges" style="display:none;">0</span>
+        <span id="kgClusters" style="display:none;">0</span>
 
         <!-- Floating overlay: action toolbar (bottom-center) -->
         <div class="kg-overlay kg-actions">
@@ -1467,7 +1458,7 @@
           <button class="kg-bot-toggle" onclick="toggleKGBot()" title="点击与 AI 助手对话 — 基于图谱推理">🤖</button>
           <div class="kg-bot-panel">
             <div class="kg-bot-h">
-              <span class="ttl"><span class="dot"></span> KG 推理助手 · 不是 LLM</span>
+              <span class="ttl"><span class="dot"></span> KG 推理演示助手</span>
               <button class="close" onclick="toggleKGBot()">✕</button>
             </div>
             <div class="kg-bot-msgs" id="kgBotMsgs">
@@ -2181,20 +2172,8 @@
     setTimeout(() => { el.innerHTML = orig; el.style.color = origColor; }, 2500);
   }
 
-  // ===== Dynamic title — real count vs demo count =====
-  function updateKGTitle(people) {
-    const el = document.getElementById('kgTitle');
-    if (!el) return;
-    const real = people.filter(p => p.code && !p.code.startsWith('DEMO-'));
-    const demo = people.filter(p => p.code && p.code.startsWith('DEMO-'));
-    if (real.length && demo.length) {
-      el.innerHTML = `这是你们 <span style="color:var(--accent-2);">${real.length} 位</span>同学 <span style="color:var(--text-faint);font-size:0.65em;font-weight:400;">+ ${demo.length} 位演示节点</span>`;
-    } else if (real.length) {
-      el.innerHTML = `这是你们 <span style="color:var(--accent-2);">${real.length} 位</span>同学 · 的关系网`;
-    } else {
-      el.innerHTML = `<span style="color:var(--interactive);">${demo.length} 位</span>演示同学 · 的关系网 <span style="color:var(--text-faint);font-size:0.55em;font-weight:400;">（学员未提交，使用预演数据）</span>`;
-    }
-  }
+  // Title is now static in HTML ("KG 知识图谱演示" + 实时监听 badge), no dynamic updates needed.
+  function updateKGTitle() { /* no-op kept for back-compat with existing callsite */ }
 
   // 12 位仿真学生 · 学院多样 · 兴趣有重叠也有差异 · 适合演示关系推理
   const DEMO_SEED_KG = [
