@@ -21,8 +21,12 @@
 <!-- Reveal.js — load black theme first to get proper dark background baseline, then we override with IBM Carbon palette -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
-<!-- ECharts for force-directed campus knowledge graph -->
-<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<!-- 3D force-directed graph stack — Three.js + 3d-force-graph + sprite text
+     替换 ECharts，与 Richard 的 IBM-Ontology-POC-Platform 同源技术栈（three.js）
+     带原生粒子流：linkDirectionalParticles -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.155/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three-spritetext@1/dist/three-spritetext.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1/dist/3d-force-graph.min.js"></script>
 
 <style>
   :root {
@@ -2207,122 +2211,66 @@
       (p.interests || []).forEach(i => interestSet.add(i));
     });
 
-    const colors = {
-      person:    '#4589ff',
-      college:   '#f1c21b',
-      interest:  '#c08bff'
+    const COL = {
+      person:   '#4589ff',
+      college:  '#f1c21b',
+      interest: '#c08bff'
     };
     const nodes = [];
     const links = [];
 
+    // category: 0=person 1=college 2=interest — used for FG3D coloring & highlighting
     people.forEach((p, idx) => {
       nodes.push({
         id: 'p_' + (p.code || idx),
         name: p.name || '学生' + (idx+1),
         category: 0,
-        symbolSize: 34,
-        itemStyle: {
-          color: colors.person,
-          borderColor: '#fff',
-          borderWidth: 2,
-          shadowBlur: 18,
-          shadowColor: 'rgba(69,137,255,0.85)'
-        },
-        label: { show: true, color: '#fff', fontSize: 13, fontWeight: 500 },
+        color: COL.person,
+        size: 6,
         _meta: p
       });
     });
     Array.from(collegeSet).forEach((c, idx) => {
-      nodes.push({
-        id: 'c_' + idx,
-        name: c,
-        category: 1,
-        symbolSize: 44,
-        itemStyle: {
-          color: colors.college,
-          opacity: 0.95,
-          shadowBlur: 16,
-          shadowColor: 'rgba(241,194,27,0.7)'
-        },
-        label: { show: true, color: '#1a1a1d', fontSize: 12, fontWeight: 700 }
-      });
+      nodes.push({ id: 'c_' + idx, name: c, category: 1, color: COL.college, size: 8 });
     });
     Array.from(interestSet).forEach((i, idx) => {
-      nodes.push({
-        id: 'i_' + idx,
-        name: i,
-        category: 2,
-        symbolSize: 26,
-        itemStyle: {
-          color: colors.interest,
-          opacity: 0.9,
-          shadowBlur: 14,
-          shadowColor: 'rgba(192,139,255,0.7)'
-        },
-        label: { show: true, color: '#fff', fontSize: 11 }
-      });
+      nodes.push({ id: 'i_' + idx, name: i, category: 2, color: COL.interest, size: 5 });
     });
 
     people.forEach((p, idx) => {
       const personId = 'p_' + (p.code || idx);
-      // person -> college
       if (p.college) {
         const cIdx = Array.from(collegeSet).indexOf(p.college);
-        if (cIdx >= 0) {
-          links.push({
-            source: personId, target: 'c_' + cIdx,
-            lineStyle: { color: 'rgba(241,194,27,0.35)', width: 1.2, curveness: 0.05 }
-          });
-        }
+        if (cIdx >= 0) links.push({ source: personId, target: 'c_' + cIdx, type: 'college' });
       }
-      // person -> interests
       (p.interests || []).forEach(itr => {
         const iIdx = Array.from(interestSet).indexOf(itr);
-        if (iIdx >= 0) {
-          links.push({
-            source: personId, target: 'i_' + iIdx,
-            lineStyle: { color: 'rgba(192,139,255,0.35)', width: 1, curveness: 0.05 }
-          });
-        }
+        if (iIdx >= 0) links.push({ source: personId, target: 'i_' + iIdx, type: 'interest' });
       });
     });
 
     return { nodes, links, collegeSet, interestSet };
   }
 
+  // Highlight state for 3D force graph
+  let kgHL_nodes = new Set();
+  let kgHL_links = new Set();
+
   function initKG() {
     const dom = document.getElementById('kgChart');
-    if (!dom || typeof echarts === 'undefined') return;
-    // Defense: if container has 0 dimensions, retry shortly (Reveal transition not done)
+    if (!dom) return;
+    if (typeof ForceGraph3D === 'undefined' || typeof THREE === 'undefined') {
+      // Libraries not loaded yet — retry shortly
+      setTimeout(initKG, 200);
+      return;
+    }
     if (dom.clientWidth < 10 || dom.clientHeight < 10) {
       setTimeout(initKG, 150);
       return;
     }
-    // Reuse instance across slide navigations (避免 dispose/new 与 Reveal 切换时序冲突)
-    if (!kgInstance || kgInstance.isDisposed()) {
-      kgInstance = echarts.init(dom, null, { renderer: 'canvas' });
-      // Bind one-time click handler
-      kgInstance.on('click', (params) => {
-        if (params.dataType === 'node') {
-          kgHighlightNode(params.data.id);
-        } else {
-          kgClearHighlight();
-        }
-      });
-      // Persistent ResizeObserver — auto-resize on container size changes
-      if (typeof ResizeObserver !== 'undefined' && !dom._roBound) {
-        dom._roBound = true;
-        new ResizeObserver(() => {
-          if (kgInstance && !kgInstance.isDisposed()) kgInstance.resize();
-        }).observe(dom);
-      }
-    } else {
-      // Force a resize on every entry, in case container size changed
-      kgInstance.resize();
-    }
 
     let people = loadKBFromStorage();
-    if (!people.length) people = DEMO_SEED_KG.slice();  // first time: seed with demo
+    if (!people.length) people = DEMO_SEED_KG.slice();
     const { nodes, links, collegeSet, interestSet } = buildGraphData(people);
 
     document.getElementById('kgPeople').textContent = people.length;
@@ -2330,53 +2278,95 @@
     document.getElementById('kgClusters').textContent = collegeSet.size;
     updateKGTitle(people);
 
-    kgInstance.setOption({
-      backgroundColor: 'transparent',
-      tooltip: {
-        formatter: (p) => {
-          if (p.dataType !== 'node') return '';
-          if (p.data.category === 0) {
-            const m = p.data._meta || {};
-            return `<b>${p.data.name}</b><br>学院：${m.college || '—'}<br>兴趣：${(m.interests||[]).join(' / ')}`;
+    // First-time init: build the 3D scene
+    if (!kgInstance) {
+      kgInstance = ForceGraph3D({ controlType: 'orbit' })(dom)
+        .backgroundColor('rgba(0,0,0,0)')
+        .showNavInfo(false)
+        .width(dom.clientWidth)
+        .height(dom.clientHeight)
+        .nodeRelSize(5)
+        .nodeOpacity(0.95)
+        .nodeColor(n => {
+          if (kgHL_nodes.size === 0) return n.color;
+          return kgHL_nodes.has(n.id) ? n.color : 'rgba(80,82,95,0.22)';
+        })
+        .linkOpacity(0.35)
+        .linkWidth(l => kgHL_links.has(l) ? 1.6 : 0.4)
+        .linkColor(l => {
+          if (kgHL_links.size === 0) {
+            return l.type === 'college' ? 'rgba(241,194,27,0.55)' : 'rgba(192,139,255,0.55)';
           }
-          if (p.data.category === 1) return `🏫 学院：${p.data.name}`;
-          return `🏷 兴趣：${p.data.name}`;
-        },
-        backgroundColor: 'rgba(11,11,12,0.95)',
-        borderColor: '#4589ff',
-        textStyle: { color: '#f4f4f4', fontSize: 12 }
-      },
-      legend: [{
-        data: ['同学', '学院', '兴趣'],
-        textStyle: { color: '#a8a8b0', fontSize: 11 },
-        right: 10, top: 10, orient: 'vertical', itemGap: 8,
-        icon: 'circle'
-      }],
-      series: [{
-        type: 'graph',
-        layout: 'force',
-        force: { repulsion: 240, edgeLength: [60, 140], gravity: 0.06, friction: 0.4 },
-        roam: true,
-        draggable: true,
-        focusNodeAdjacency: false,
-        nodes, links,
-        categories: [{ name: '同学' }, { name: '学院' }, { name: '兴趣' }],
-        // Particle flow effect on edges — gives the "data flowing" feel
-        edgeSymbol: ['none', 'none'],
-        lineStyle: { width: 1, curveness: 0.1 },
-        emphasis: {
-          focus: 'adjacency',
-          itemStyle: { borderColor: '#fff', borderWidth: 3, shadowBlur: 30 },
-          lineStyle: { width: 3, color: '#78a9ff' }
-        },
-        animation: true,
-        animationDuration: 1500,
-        animationEasingUpdate: 'quinticInOut'
-      }]
-    }, true);  // notMerge:true — clean data replace, avoid lingering old nodes
+          return kgHL_links.has(l) ? '#78a9ff' : 'rgba(120,130,150,0.08)';
+        })
+        // ⭐ 真正的粒子流 — 沿边流动
+        .linkDirectionalParticles(l => kgHL_links.has(l) ? 5 : 1)
+        .linkDirectionalParticleSpeed(0.006)
+        .linkDirectionalParticleWidth(2.5)
+        .linkDirectionalParticleColor(l => kgHL_links.has(l) ? '#ffffff' : (l.type === 'college' ? '#f1c21b' : '#c08bff'))
+        // 节点文字 sprite
+        .nodeThreeObject(node => {
+          const sprite = new SpriteText(node.name);
+          sprite.color = '#ffffff';
+          sprite.fontFace = 'IBM Plex Sans, Noto Sans SC, sans-serif';
+          sprite.fontWeight = '500';
+          sprite.textHeight = node.category === 0 ? 4 : (node.category === 1 ? 4.5 : 3);
+          sprite.material.depthWrite = false;
+          sprite.backgroundColor = node.category === 0 ? 'rgba(11,11,12,0.55)' : null;
+          sprite.padding = node.category === 0 ? 2 : 0;
+          sprite.borderRadius = 3;
+          return sprite;
+        })
+        .nodeThreeObjectExtend(true)
+        .onNodeClick(node => {
+          kgHighlightNode(node.id);
+          // 镜头聚焦该节点
+          const dist = 110;
+          const ratio = 1 + dist / (Math.hypot(node.x || 1, node.y || 1, node.z || 1) || 1);
+          kgInstance.cameraPosition(
+            { x: (node.x || 0) * ratio, y: (node.y || 0) * ratio, z: (node.z || 0) * ratio },
+            node, 1200
+          );
+        })
+        .onBackgroundClick(() => kgClearHighlight());
 
-    // Belt and suspenders: force one resize shortly after setting data
-    setTimeout(() => kgInstance && !kgInstance.isDisposed() && kgInstance.resize(), 80);
+      // 持久 ResizeObserver — 容器尺寸变化自动同步
+      if (typeof ResizeObserver !== 'undefined' && !dom._roBound) {
+        dom._roBound = true;
+        new ResizeObserver(() => {
+          if (kgInstance) {
+            kgInstance.width(dom.clientWidth);
+            kgInstance.height(dom.clientHeight);
+          }
+        }).observe(dom);
+      }
+    } else {
+      // 复用实例，刷新数据
+      kgInstance.width(dom.clientWidth);
+      kgInstance.height(dom.clientHeight);
+    }
+
+    kgInstance.graphData({ nodes, links });
+
+    // 二次 resize 兜底
+    setTimeout(() => {
+      if (kgInstance) {
+        kgInstance.width(dom.clientWidth);
+        kgInstance.height(dom.clientHeight);
+      }
+    }, 80);
+  }
+
+  // 触发渲染刷新（修改高亮状态后重新应用颜色函数）
+  function _kgRedraw() {
+    if (!kgInstance) return;
+    // Re-apply same functions to trigger redraw
+    kgInstance
+      .nodeColor(kgInstance.nodeColor())
+      .linkColor(kgInstance.linkColor())
+      .linkWidth(kgInstance.linkWidth())
+      .linkDirectionalParticles(kgInstance.linkDirectionalParticles())
+      .linkDirectionalParticleColor(kgInstance.linkDirectionalParticleColor());
   }
 
   function kgInjectDemo() {
@@ -2392,40 +2382,40 @@
     initKG();
   }
 
+  function _idOf(end) { return typeof end === 'object' ? end.id : end; }
+
   function kgHighlightNode(id) {
     if (!kgInstance) return;
-    kgHighlighted = id;
-    const opt = kgInstance.getOption();
-    const adj = new Set([id]);
-    opt.series[0].links.forEach(e => {
-      if (e.source === id) adj.add(e.target);
-      if (e.target === id) adj.add(e.source);
+    kgHL_nodes = new Set([id]);
+    kgHL_links = new Set();
+    const data = kgInstance.graphData();
+    data.links.forEach(l => {
+      const s = _idOf(l.source), t = _idOf(l.target);
+      if (s === id) { kgHL_nodes.add(t); kgHL_links.add(l); }
+      if (t === id) { kgHL_nodes.add(s); kgHL_links.add(l); }
     });
-    opt.series[0].nodes = opt.series[0].nodes.map(n => ({
-      ...n,
-      itemStyle: { ...n.itemStyle, opacity: adj.has(n.id) ? 1 : 0.15 },
-      label: { ...n.label, opacity: adj.has(n.id) ? 1 : 0.2 }
-    }));
-    opt.series[0].links = opt.series[0].links.map(e => ({
-      ...e,
-      lineStyle: { ...e.lineStyle, opacity: (e.source === id || e.target === id) ? 1 : 0.05, width: (e.source === id || e.target === id) ? 2.5 : 1 }
-    }));
-    kgInstance.setOption(opt);
+    _kgRedraw();
   }
 
   function kgHighlightRandom() {
     if (!kgInstance) return;
-    const opt = kgInstance.getOption();
-    const people = opt.series[0].nodes.filter(n => n.category === 0);
-    if (!people.length) return;
-    const pick = people[Math.floor(Math.random() * people.length)];
+    const peopleNodes = kgInstance.graphData().nodes.filter(n => n.category === 0);
+    if (!peopleNodes.length) return;
+    const pick = peopleNodes[Math.floor(Math.random() * peopleNodes.length)];
     kgHighlightNode(pick.id);
+    // 同时镜头聚焦
+    const dist = 110;
+    const ratio = 1 + dist / (Math.hypot(pick.x || 1, pick.y || 1, pick.z || 1) || 1);
+    kgInstance.cameraPosition(
+      { x: (pick.x || 0) * ratio, y: (pick.y || 0) * ratio, z: (pick.z || 0) * ratio },
+      pick, 1200
+    );
   }
 
   function kgClearHighlight() {
-    if (!kgInstance) return;
-    kgHighlighted = null;
-    initKG();  // simplest: full re-render
+    kgHL_nodes = new Set();
+    kgHL_links = new Set();
+    _kgRedraw();
   }
 
   // Expose globally for inline onclick
@@ -2487,25 +2477,19 @@
   }
   window.askKG = askKG;
 
-  // Highlight multiple nodes
+  // Highlight multiple nodes (用于 AI 助手推荐组队等多节点结果)
   function kgHighlightNodes(ids) {
     if (!kgInstance || !ids || !ids.length) return;
     const idSet = new Set(ids);
-    const opt = kgInstance.getOption();
-    const adj = new Set(ids);
-    opt.series[0].links.forEach(e => {
-      if (idSet.has(e.source) || idSet.has(e.target)) { adj.add(e.source); adj.add(e.target); }
+    kgHL_nodes = new Set(ids);
+    kgHL_links = new Set();
+    const data = kgInstance.graphData();
+    data.links.forEach(l => {
+      const s = _idOf(l.source), t = _idOf(l.target);
+      if (idSet.has(s)) { kgHL_nodes.add(t); kgHL_links.add(l); }
+      if (idSet.has(t)) { kgHL_nodes.add(s); kgHL_links.add(l); }
     });
-    opt.series[0].nodes = opt.series[0].nodes.map(n => ({
-      ...n,
-      itemStyle: { ...n.itemStyle, opacity: adj.has(n.id) ? 1 : 0.15 },
-      label: { ...n.label, opacity: adj.has(n.id) ? 1 : 0.2 }
-    }));
-    opt.series[0].links = opt.series[0].links.map(e => ({
-      ...e,
-      lineStyle: { ...e.lineStyle, opacity: (idSet.has(e.source) || idSet.has(e.target)) ? 1 : 0.05, width: (idSet.has(e.source) || idSet.has(e.target)) ? 2.5 : 1 }
-    }));
-    kgInstance.setOption(opt);
+    _kgRedraw();
   }
 
   // === 5 推理函数 — 完全本地 ===
