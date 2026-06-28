@@ -21,11 +21,9 @@
 <!-- Reveal.js — load black theme first to get proper dark background baseline, then we override with IBM Carbon palette -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
-<!-- 3D force-directed graph stack — pinned versions for known-good compatibility
-     three@0.160 + 3d-force-graph@1.79 + three-spritetext@1.9 -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three-spritetext@1.9.0/dist/three-spritetext.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/3d-force-graph@1.79.0/dist/3d-force-graph.min.js"></script>
+<!-- 2D force-directed graph — 朴素丝滑, 学生加载从 750KB 降到 ~80KB
+     力导图同作者 Vasco Asturiano (vasturiano/force-graph) — 原生 Canvas 2D + 粒子流 -->
+<script src="https://cdn.jsdelivr.net/npm/force-graph@1.43.0/dist/force-graph.min.js"></script>
 
 <style>
   :root {
@@ -579,15 +577,14 @@
     <section class="cover">
       <div class="logo-bar">
         <span class="dot"></span>
-        <span>IBM · FUTURENOW CENTER CHINA · 大连</span>
+        <span>Dalian High-tech Industrial Zone × IBM FNCC</span>
       </div>
-      <h1>AI 夏令营 2026</h1>
-      <h2>从 AI 发展史到 Agent ·  <b>让你亲手参与</b> 的生成式 AI 启蒙</h2>
+      <h1>2026 IBM FNC 青年人才训练营</h1>
+      <h2>（生成式 AI 启蒙）</h2>
       <div class="meta">
+        <span><b>主办</b>Dalian High-tech Industrial Zone × IBM FNCC</span>
         <span><b>讲师</b>陳宏强 Richard Chen</span>
-        <span><b>主办</b>IBM × 大连高新园区</span>
         <span><b>开营</b>2026.07.01</span>
-        <span><span class="pulse"></span> &nbsp;LIVE PREVIEW</span>
       </div>
       <aside class="notes">
         欢迎学生入场。简单 30 秒自我介绍：我是 IBM Consulting · FutureNow Center China 的生成式 AI 解决方案架构师 Richard。
@@ -2265,23 +2262,15 @@
   function initKG() {
     const dom = document.getElementById('kgChart');
     if (!dom) return;
-
-    // Resolve UMD globals defensively (some bundles expose via .default)
-    const FG  = (typeof ForceGraph3D !== 'undefined') ? (ForceGraph3D.default || ForceGraph3D) : null;
-    const ST  = (typeof SpriteText  !== 'undefined') ? (SpriteText.default  || SpriteText)  : null;
-    const TJS = (typeof THREE !== 'undefined') ? THREE : null;
-
-    if (!FG || !TJS) {
-      // Libraries not loaded yet — retry shortly
+    const FG = (typeof ForceGraph !== 'undefined') ? (ForceGraph.default || ForceGraph) : null;
+    if (!FG) {
       if (!dom._kgRetries) dom._kgRetries = 0;
       dom._kgRetries++;
       if (dom._kgRetries > 25) {
-        dom.innerHTML = '<div style="padding:40px;color:#fa4d56;text-align:center;font-family:var(--r-code-font);font-size:13px;">⚠️ 3D 图谱依赖未加载<br><br>'
-          + '<span style="color:#a8a8b0;">THREE: ' + (TJS ? '✓' : '✗') + ' · ForceGraph3D: ' + (FG ? '✓' : '✗') + '</span><br>'
-          + '<span style="color:#a8a8b0;font-size:11px;">请检查网络（jsdelivr CDN 是否可访问）</span></div>';
+        dom.innerHTML = '<div style="padding:40px;color:#fa4d56;text-align:center;font-family:var(--r-code-font);font-size:13px;">⚠️ force-graph 库未加载<br><br><span style="color:#a8a8b0;font-size:11px;">请检查 jsdelivr CDN 网络</span></div>';
         return;
       }
-      setTimeout(initKG, 200);
+      setTimeout(initKG, 180);
       return;
     }
     if (dom.clientWidth < 10 || dom.clientHeight < 10) {
@@ -2291,7 +2280,7 @@
 
     let people = loadKBFromStorage();
     if (!people.length) people = DEMO_SEED_KG.slice();
-    const { nodes, links, collegeSet, interestSet } = buildGraphData(people);
+    const { nodes, links, collegeSet } = buildGraphData(people);
 
     document.getElementById('kgPeople').textContent = people.length;
     document.getElementById('kgEdges').textContent = links.length;
@@ -2299,94 +2288,92 @@
     updateKGTitle(people);
 
     try {
-    // First-time init: build the 3D scene
-    if (!kgInstance) {
-      kgInstance = FG()(dom)
-        .backgroundColor('rgba(0,0,0,0)')
-        .showNavInfo(false)
-        .width(dom.clientWidth)
-        .height(dom.clientHeight)
-        .nodeRelSize(5)
-        .nodeOpacity(0.95)
-        .nodeColor(n => {
-          if (kgHL_nodes.size === 0) return n.color;
-          return kgHL_nodes.has(n.id) ? n.color : 'rgba(80,82,95,0.22)';
-        })
-        .linkOpacity(0.35)
-        .linkWidth(l => kgHL_links.has(l) ? 1.6 : 0.4)
-        .linkColor(l => {
-          if (kgHL_links.size === 0) {
-            return l.type === 'college' ? 'rgba(241,194,27,0.55)' : 'rgba(192,139,255,0.55)';
-          }
-          return kgHL_links.has(l) ? '#78a9ff' : 'rgba(120,130,150,0.08)';
-        })
-        // ⭐ 真正的粒子流 — 沿边流动
-        .linkDirectionalParticles(l => kgHL_links.has(l) ? 5 : 1)
-        .linkDirectionalParticleSpeed(0.006)
-        .linkDirectionalParticleWidth(2.5)
-        .linkDirectionalParticleColor(l => kgHL_links.has(l) ? '#ffffff' : (l.type === 'college' ? '#f1c21b' : '#c08bff'))
-        .onNodeClick(node => {
-          kgHighlightNode(node.id);
-          // 镜头聚焦该节点
-          try {
-            const dist = 110;
-            const ratio = 1 + dist / (Math.hypot(node.x || 1, node.y || 1, node.z || 1) || 1);
-            kgInstance.cameraPosition(
-              { x: (node.x || 0) * ratio, y: (node.y || 0) * ratio, z: (node.z || 0) * ratio },
-              node, 1200
-            );
-          } catch (e) { /* camera focus optional */ }
-        })
-        .onBackgroundClick(() => kgClearHighlight());
+      if (!kgInstance) {
+        kgInstance = FG()(dom)
+          .width(dom.clientWidth)
+          .height(dom.clientHeight)
+          .backgroundColor('rgba(0,0,0,0)')
+          .nodeRelSize(4)
+          // 节点：简洁实色圆点 · 同学院兴趣三色，仅高亮时变化
+          .nodeCanvasObjectMode(() => 'replace')
+          .nodeCanvasObject((node, ctx, scale) => {
+            const r = node.category === 1 ? 6 : (node.category === 0 ? 5 : 4);
+            const dim = kgHL_nodes.size > 0 && !kgHL_nodes.has(node.id);
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
+            ctx.fillStyle = dim ? 'rgba(90,93,108,0.30)' : node.color;
+            ctx.fill();
+            // Subtle border
+            ctx.strokeStyle = dim ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0.25)';
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+            // 文字 label · 节点下方
+            if (scale > 0.6) {
+              ctx.font = (node.category === 1 ? 600 : 400) + ' ' + (12 / scale) + 'px IBM Plex Sans, Noto Sans SC, sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'top';
+              ctx.fillStyle = dim ? 'rgba(140,143,156,0.35)' : 'rgba(244,244,244,0.92)';
+              ctx.fillText(node.name, node.x, node.y + r + 3);
+            }
+          })
+          .nodePointerAreaPaint((node, color, ctx) => {
+            const r = node.category === 1 ? 8 : 6;
+            ctx.beginPath(); ctx.arc(node.x, node.y, r, 0, 2*Math.PI, false);
+            ctx.fillStyle = color; ctx.fill();
+          })
+          .linkColor(l => {
+            if (kgHL_links.size === 0) {
+              return l.type === 'college' ? 'rgba(241,194,27,0.22)' : 'rgba(192,139,255,0.22)';
+            }
+            return kgHL_links.has(l) ? 'rgba(120,169,255,0.85)' : 'rgba(120,130,150,0.06)';
+          })
+          .linkWidth(l => kgHL_links.has(l) ? 1.4 : 0.6)
+          // 朴素粒子流 — 每条边 1 个慢速粒子，高亮时多 + 加速
+          .linkDirectionalParticles(l => kgHL_links.has(l) ? 3 : 1)
+          .linkDirectionalParticleSpeed(l => kgHL_links.has(l) ? 0.008 : 0.0035)
+          .linkDirectionalParticleWidth(l => kgHL_links.has(l) ? 2.2 : 1.4)
+          .linkDirectionalParticleColor(l => {
+            if (kgHL_links.has(l)) return 'rgba(255,255,255,0.95)';
+            return l.type === 'college' ? 'rgba(241,194,27,0.6)' : 'rgba(192,139,255,0.55)';
+          })
+          .onNodeClick(node => {
+            kgHighlightNode(node.id);
+            kgInstance.centerAt(node.x, node.y, 700);
+            kgInstance.zoom(2.2, 700);
+          })
+          .onBackgroundClick(() => {
+            kgClearHighlight();
+            kgInstance.centerAt(0, 0, 700);
+            kgInstance.zoom(1, 700);
+          })
+          .d3VelocityDecay(0.32)
+          .cooldownTicks(160);
 
-      // 可选：节点文字 sprite（仅当 SpriteText 加载成功时启用）
-      if (ST) {
-        try {
-          kgInstance.nodeThreeObject(node => {
-            const sprite = new ST(node.name);
-            sprite.color = '#ffffff';
-            sprite.fontFace = 'IBM Plex Sans, Noto Sans SC, sans-serif';
-            sprite.fontWeight = '500';
-            sprite.textHeight = node.category === 0 ? 4 : (node.category === 1 ? 4.5 : 3);
-            if (sprite.material) sprite.material.depthWrite = false;
-            sprite.backgroundColor = node.category === 0 ? 'rgba(11,11,12,0.55)' : null;
-            sprite.padding = node.category === 0 ? 2 : 0;
-            sprite.borderRadius = 3;
-            return sprite;
-          }).nodeThreeObjectExtend(true);
-        } catch (e) { console.warn('[KG] SpriteText label setup failed:', e); }
+        if (typeof ResizeObserver !== 'undefined' && !dom._roBound) {
+          dom._roBound = true;
+          new ResizeObserver(() => {
+            if (kgInstance) {
+              try { kgInstance.width(dom.clientWidth).height(dom.clientHeight); } catch (e) {}
+            }
+          }).observe(dom);
+        }
+      } else {
+        kgInstance.width(dom.clientWidth).height(dom.clientHeight);
       }
 
-      // 持久 ResizeObserver — 容器尺寸变化自动同步
-      if (typeof ResizeObserver !== 'undefined' && !dom._roBound) {
-        dom._roBound = true;
-        new ResizeObserver(() => {
-          if (kgInstance) {
-            try { kgInstance.width(dom.clientWidth); kgInstance.height(dom.clientHeight); } catch (e) {}
-          }
-        }).observe(dom);
-      }
-    } else {
-      // 复用实例，刷新数据
-      kgInstance.width(dom.clientWidth);
-      kgInstance.height(dom.clientHeight);
-    }
-
-    kgInstance.graphData({ nodes, links });
-
-    // 二次 resize 兜底
-    setTimeout(() => {
-      if (kgInstance) {
-        try { kgInstance.width(dom.clientWidth); kgInstance.height(dom.clientHeight); } catch (e) {}
-      }
-    }, 80);
+      kgInstance.graphData({ nodes, links });
+      setTimeout(() => {
+        if (kgInstance) {
+          try { kgInstance.width(dom.clientWidth).height(dom.clientHeight); } catch (e) {}
+        }
+      }, 80);
 
     } catch (err) {
-      console.error('[KG] 3D 力导图初始化失败:', err);
+      console.error('[KG] 力导图初始化失败:', err);
       dom.innerHTML = '<div style="padding:40px;color:#fa4d56;text-align:center;font-family:var(--r-code-font);font-size:13px;line-height:1.7;">'
-        + '⚠️ 3D 图谱初始化失败<br><br>'
+        + '⚠️ 力导图初始化失败<br><br>'
         + '<span style="color:#a8a8b0;">' + (err.message || err) + '</span><br><br>'
-        + '<span style="color:#a8a8b0;font-size:11px;">请按 F12 打开控制台查看详细错误，或截图发给开发者</span>'
+        + '<span style="color:#a8a8b0;font-size:11px;">请按 F12 打开控制台查看详细错误</span>'
         + '</div>';
     }
   }
@@ -2394,13 +2381,16 @@
   // 触发渲染刷新（修改高亮状态后重新应用颜色函数）
   function _kgRedraw() {
     if (!kgInstance) return;
-    // Re-apply same functions to trigger redraw
-    kgInstance
-      .nodeColor(kgInstance.nodeColor())
-      .linkColor(kgInstance.linkColor())
-      .linkWidth(kgInstance.linkWidth())
-      .linkDirectionalParticles(kgInstance.linkDirectionalParticles())
-      .linkDirectionalParticleColor(kgInstance.linkDirectionalParticleColor());
+    try {
+      kgInstance
+        .linkColor(kgInstance.linkColor())
+        .linkWidth(kgInstance.linkWidth())
+        .linkDirectionalParticles(kgInstance.linkDirectionalParticles())
+        .linkDirectionalParticleSpeed(kgInstance.linkDirectionalParticleSpeed())
+        .linkDirectionalParticleWidth(kgInstance.linkDirectionalParticleWidth())
+        .linkDirectionalParticleColor(kgInstance.linkDirectionalParticleColor());
+      // Custom canvas needs no re-apply — it reads kgHL_nodes each frame
+    } catch (e) { /* harmless */ }
   }
 
   function kgInjectDemo() {
@@ -2437,13 +2427,10 @@
     if (!peopleNodes.length) return;
     const pick = peopleNodes[Math.floor(Math.random() * peopleNodes.length)];
     kgHighlightNode(pick.id);
-    // 同时镜头聚焦
-    const dist = 110;
-    const ratio = 1 + dist / (Math.hypot(pick.x || 1, pick.y || 1, pick.z || 1) || 1);
-    kgInstance.cameraPosition(
-      { x: (pick.x || 0) * ratio, y: (pick.y || 0) * ratio, z: (pick.z || 0) * ratio },
-      pick, 1200
-    );
+    try {
+      kgInstance.centerAt(pick.x || 0, pick.y || 0, 700);
+      kgInstance.zoom(2.2, 700);
+    } catch (e) { /* center optional */ }
   }
 
   function kgClearHighlight() {
