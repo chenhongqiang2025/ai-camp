@@ -65,15 +65,68 @@
     --danger: #fa4d56;
   }
 
-  /* === Force dark background everywhere — defeats Reveal's default theme === */
+  /* === Theme-driven background (used to be hard-coded dark; now toggleable) === */
   html, body, .reveal-viewport, .reveal {
-    background: #0b0b0c !important;
-    background-color: #0b0b0c !important;
+    background: var(--r-background-color) !important;
+    background-color: var(--r-background-color) !important;
   }
-  html, body { margin: 0; padding: 0; color: #f4f4f4; }
+  html, body { margin: 0; padding: 0; color: var(--r-main-color); }
   body { position: relative; }
-  .reveal { color: #f4f4f4; }
-  .reveal .slides { color: #f4f4f4; }
+  .reveal { color: var(--r-main-color); }
+  .reveal .slides { color: var(--r-main-color); }
+
+  /* === Light theme overrides — toggle via body.theme-light === */
+  body.theme-light {
+    --r-background-color: #f6f7fb;
+    --r-main-color: #161616;
+    --bg-1: #ffffff;
+    --bg-2: #eeeff4;
+    --bg-3: #e3e4ea;
+    --border: #d2d4dc;
+    --border-strong: #b5b8c4;
+    --text: #161616;
+    --text-dim: #525258;
+    --text-faint: #8d8d95;
+    --accent: #0f62fe;
+    --accent-2: #0043ce;
+    --accent-soft: rgba(15,98,254,0.10);
+  }
+  body.theme-light .reveal h1,
+  body.theme-light .reveal h2,
+  body.theme-light .reveal h3,
+  body.theme-light .reveal h4 { color: #161616 !important; }
+  body.theme-light .cover h1 {
+    background: linear-gradient(180deg, #161616 30%, #525258 100%) !important;
+    -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+    color: #161616 !important;
+  }
+  body.theme-light .closing .thanks {
+    background: linear-gradient(180deg, #161616 20%, #0f62fe 100%) !important;
+    -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+  }
+  body.theme-light .quote-stage .qs-text {
+    background: linear-gradient(180deg, #161616 25%, #525258 100%) !important;
+    -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+  }
+  body.theme-light .year-hero .yr {
+    background: linear-gradient(180deg, var(--accent-2) 30%, var(--accent) 100%) !important;
+    -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;
+  }
+
+  /* Theme toggle button */
+  .theme-toggle {
+    position: fixed; top: 16px; right: 90px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(125,125,135,0.12);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 14px; cursor: pointer; z-index: 90;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .2s;
+    line-height: 1;
+  }
+  .theme-toggle:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
+  @media (max-width: 760px) { .theme-toggle { display: none; } }
 
   /* Ambient grid background — placed on body for reliability */
   body::before {
@@ -236,6 +289,31 @@
   .flow-step .ttl { font-size: 0.88em; color: #fff; font-weight: 500; margin-bottom: 4px; }
   .flow-step .ds { font-size: 0.74em; color: var(--text-dim); line-height: 1.4; }
   .flow .arrow { color: var(--text-faint); font-size: 18px; flex-shrink: 0; }
+
+  /* Placeholder card — 标识"待 Richard 录入"的内容槽 */
+  .ph-card {
+    max-width: 800px; margin: 0 auto;
+    background: rgba(241,194,27,0.04);
+    border: 1px dashed rgba(241,194,27,0.4);
+    border-radius: 10px;
+    padding: 22px 26px;
+    color: var(--text-dim);
+  }
+  .ph-card .ph-label {
+    display: inline-block;
+    font-family: var(--r-code-font); font-size: 11px; letter-spacing: 1.5px;
+    color: var(--warning); padding: 3px 10px;
+    background: rgba(241,194,27,0.14); border-radius: 100px;
+    margin-bottom: 14px;
+  }
+  .ph-card .ph-hint { font-size: 0.92em; line-height: 1.7; color: var(--text-dim); }
+  .ph-card .ph-hint b { color: var(--text); font-weight: 500; }
+  .ph-card .ph-hint ul { margin: 8px 0 0; padding-left: 22px; }
+  .ph-card .ph-hint li { margin: 4px 0; }
+  .ph-card .ph-hint code { background: var(--bg-2); padding: 1px 6px; border-radius: 3px; font-size: 0.92em; color: var(--accent-2); }
+
+  /* 当 body.review-mode 时显示 IN DESIGN/IN DEV badge；学生视角隐藏 */
+  body:not(.review-mode) .chapter-meta .badge.status-flag { display: none; }
 
   /* Mobile adjustments for content patterns */
   @media (max-width: 760px) {
@@ -549,6 +627,7 @@
 <body>
 
 <div class="chap-indicator" id="chapIndicator"></div>
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换明暗（M）" aria-label="切换明暗">🌗</button>
 
 <!-- Review Mode UI (only visible when body has .review-mode class, set by ?review=1) -->
 <div class="review-toolbar" id="reviewToolbar">
@@ -594,83 +673,94 @@
     <section>
       <section class="chapter-title">
         <div class="chapter-num">CHAPTER · 01</div>
-        <h1 class="chapter-h1">开场 &amp; 自我介绍</h1>
-        <p class="chapter-sub">IBM · FNC · Richard · 大连高新区合作背景 · 你将在这一天学到什么</p>
+        <h1 class="chapter-h1">自我介绍</h1>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">10 min</span>
         </div>
+        <aside class="notes">
+【演讲稿 · 待 Richard 录入】
+
+开场约 30-60 秒，把全场的注意力拉到这一页：
+[请录入你想用的开场话术 — 例如简短打招呼、点名团队、抛出 Day 1 是什么]
+        </aside>
       </section>
+
       <section>
         <div class="content-header">
           <div class="ctx">CH.01 · 01 / 03</div>
-          <h2>IBM 大连 · FutureNow Center China</h2>
-          <p class="sub">把全球前沿 AI 能力，带到大连，带到中国企业落地的第一线</p>
+          <h2>IBM · FutureNow Center China · 大连</h2>
         </div>
-        <ul class="pts">
-          <li><span class="n">01</span><div><b>IBM 中国 ＿ 41 年</b> · 1984 进入中国，现已成为本土最大的国际 AI 服务团队之一<span class="ex">大连办公室聚焦交付与咨询，是 IBM Global Delivery 的重要支点</span></div></li>
-          <li><span class="n">02</span><div><b>FutureNow Center</b> · 把"明天的技术"翻译成"今天能用的方案"<span class="ex">服务范围：金融、制造、零售、能源 — 每个行业都有针对性 GenAI 方案</span></div></li>
-          <li><span class="n">03</span><div><b>FNC 大连</b> · 离客户最近、离应用场景最近的 AI 队伍<span class="ex">本土工程师 + 行业专家 + 设计师 + 数据科学家的混合编队</span></div></li>
-        </ul>
+        <div class="ph-card">
+          <div class="ph-label">📝 待 Richard 录入</div>
+          <div class="ph-hint">
+            <b>这一页讲什么 ：</b>简短介绍 FNC 大连团队，让学员对"你来自哪里"有印象。<br>
+            建议填入：
+            <ul>
+              <li>FNC 大连办公室的真实定位（团队规模 / 业务范围）</li>
+              <li>FNC 的使命（你平时给客户怎么讲的 — 不要市场套话）</li>
+              <li>本地团队的真实优势 / 现在在做的事</li>
+            </ul>
+            <span style="color:var(--text-faint);font-size:0.85em;">写好后告诉我，我帮你换成正式排版。</span>
+          </div>
+        </div>
         <aside class="notes">
-          开场 30 秒：先点出"IBM 在中国 41 年了"——给学生信任感和厚度感。
-          然后简短说 FNC 的使命：把前沿 AI 带到客户身边。
-          最后说 FNC 大连和大家在同一座城市，是身边的 IBM。
+【演讲稿 · 待 Richard 录入】
+
+约 1-2 分钟。
+[请录入你想对学员讲的关于 FNC 大连的开场内容 — 推荐用你平时介绍团队的原话]
         </aside>
       </section>
 
       <section>
         <div class="content-header">
           <div class="ctx">CH.01 · 02 / 03</div>
-          <h2>关于我 · Richard Chen</h2>
-          <p class="sub">技术 + 业务双线，18 年走过研发、架构、解决方案、商务拓展</p>
+          <h2>关于我</h2>
         </div>
-        <div class="timeline">
-          <div class="tl-item"><div class="yr">2008</div><div class="ttl">工科启蒙</div><div class="ds">大连本地学校 · 第一行 C 代码</div></div>
-          <div class="tl-item major"><div class="yr">2015</div><div class="ttl">企业架构</div><div class="ds">从工程师到企业级架构师</div></div>
-          <div class="tl-item major"><div class="yr">2019</div><div class="ttl">加入 IBM</div><div class="ds">IBM Consulting · 解决方案架构</div></div>
-          <div class="tl-item"><div class="yr">2022</div><div class="ttl">GenAI 转向</div><div class="ds">ChatGPT 时刻后全面 AI 化</div></div>
-          <div class="tl-item major"><div class="yr">2026</div><div class="ttl">今天</div><div class="ds">FNC 中国 · GenAI 架构 + BD</div></div>
+        <div class="ph-card">
+          <div class="ph-label">📝 待 Richard 录入</div>
+          <div class="ph-hint">
+            <b>这一页讲什么 ：</b>简短介绍你的身份和当下角色，让学员认识"今天讲师是谁"。<br>
+            建议填入：
+            <ul>
+              <li>当下身份一句话（IBM Consulting · FNC · 生成式 AI 解决方案架构师 + BD）</li>
+              <li>2-3 个职业关键节点（用你愿意公开的真实经历，年份可虚化）</li>
+              <li>和学员的连接点（你希望他们记住你的什么）</li>
+            </ul>
+            <span style="color:var(--text-faint);font-size:0.85em;">写好后告诉我，我用 <code>timeline</code> / <code>quote</code> / <code>pts</code> 任一版式呈现。</span>
+          </div>
         </div>
-        <div class="takeaway"><b>我和你站在同一个起点 — 大连。</b> 不同的是，我走了 18 年才看到 GenAI；你直接从 GenAI 开始。这是你的幸运，也是你的责任。</div>
         <aside class="notes">
-          这一页要拉近和学生的距离 — 强调"我也是大连出去的工科生"。
-          不要堆砌 title，而是讲转折点：什么时候明白技术 + 业务比纯技术更重要。
-          最后的 takeaway 是核心 — 让他们感觉自己的起点比当年的我高。
+【演讲稿 · 待 Richard 录入】
+
+约 2 分钟。
+[请录入你的自我介绍话术 — 平时怎么给一线介绍自己就怎么写]
         </aside>
       </section>
 
       <section>
         <div class="content-header">
           <div class="ctx">CH.01 · 03 / 03</div>
-          <h2>这一天，你会获得什么</h2>
-          <p class="sub">不是听完就忘的讲座 · 是一份能带走、能回看、能动手的能力</p>
+          <h2>这一天 · 你会获得什么</h2>
         </div>
-        <div class="cards-3">
-          <div class="card">
-            <div class="icon">◉</div>
-            <h3>看懂"昨天-今天-明天"</h3>
-            <p>从 1950 图灵到 2026 Agent，AI 的来路与去向，你将拥有完整时间轴</p>
-            <div class="ft">CH.02 — CH.05</div>
-          </div>
-          <div class="card">
-            <div class="icon">⟹</div>
-            <h3>亲手体验 6 个核心技术</h3>
-            <p>RAG、知识图谱、Agent、A2A、MCP — 你不是看演示，你是参与者</p>
-            <div class="ft">CH.07 — CH.12</div>
-          </div>
-          <div class="card">
-            <div class="icon">◫</div>
-            <h3>一份永久访问的课件</h3>
-            <p>课件托管在 GitHub Pages，URL 永久有效 — 随时回看，欢迎转给同学</p>
-            <div class="ft">chenhongqiang2025.github.io/ai-camp</div>
+        <div class="ph-card">
+          <div class="ph-label">📝 待 Richard 录入</div>
+          <div class="ph-hint">
+            <b>这一页讲什么 ：</b>给学员一个清晰的 Day 1 承诺，让他们知道接下来 3 小时能拿走什么。<br>
+            建议填入 3 件具体的事：
+            <ul>
+              <li>① 学员能"看懂"的：（AI 史 / 大模型原理 / 幻觉 / RAG / KG / Agent ... 你选）</li>
+              <li>② 学员能"亲手做"的：（互动实验 / KG 节点 / 提问 / 抽奖 ... 你选）</li>
+              <li>③ 学员能"带走"的：课件 URL 永久可访问 <code>chenhongqiang2025.github.io/ai-camp</code></li>
+            </ul>
+            <span style="color:var(--text-faint);font-size:0.85em;">告诉我你的 3 件事，我换成三卡片版式。</span>
           </div>
         </div>
-        <div class="takeaway"><b>承诺：</b> 今天结束时，你能用自己的话向室友解释 RAG 和 Agent 是什么。这就够了。</div>
         <aside class="notes">
-          这一页是"承诺管理" — 给学生明确的期待。
-          强调"亲手体验"和"永久访问"是这堂课区别于普通讲座的两大特点。
-          最后承诺要落地、具体、可验证 — "能向室友解释 RAG"，简单且有标准。
+【演讲稿 · 待 Richard 录入】
+
+约 1-2 分钟。
+[请录入"我承诺你 3 小时后能..."的话术]
         </aside>
       </section>
     </section>
@@ -682,7 +772,7 @@
         <h1 class="chapter-h1">AI 发展简史</h1>
         <p class="chapter-sub">从图灵的疑问，到达特茅斯的命名，到两次寒冬，到机器学习的复兴 —— AI 走了 70 年</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">15 min</span>
         </div>
       </section>
@@ -779,7 +869,7 @@
         <h1 class="chapter-h1">机器学习与神经网络</h1>
         <p class="chapter-sub">从一个"神经元"开始，到能识别万物的深度网络 —— 数学并不可怕</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">20 min</span>
         </div>
       </section>
@@ -888,7 +978,7 @@
         <h1 class="chapter-h1">NLP 演进史</h1>
         <p class="chapter-sub">让机器"理解"语言：从词袋到 Transformer 的范式跃迁</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">20 min</span>
         </div>
       </section>
@@ -997,7 +1087,7 @@
         <h1 class="chapter-h1">ChatGPT 时刻</h1>
         <p class="chapter-sub">2022 年 11 月 30 日 —— 5 天 100 万用户，2 个月破亿，AI 第一次走进每个人的生活</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">15 min</span>
         </div>
       </section>
@@ -1097,7 +1187,7 @@
         <h1 class="chapter-h1">大模型的幻觉问题</h1>
         <p class="chapter-sub">当 AI "一本正经地胡说八道" —— 为什么会发生？怎么治？</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">10 min</span>
           <span class="badge accent">铺垫 RAG</span>
         </div>
@@ -1205,7 +1295,7 @@
         <h1 class="chapter-h1">RAG · 检索增强生成</h1>
         <p class="chapter-sub">给 AI 一个外挂"百科全书"——它就能回答它本来不知道的事</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">25 min</span>
           <span class="badge interactive">⭐ 互动核心</span>
         </div>
@@ -1387,7 +1477,7 @@
         <h1 class="chapter-h1">本体论 &amp; 知识图谱</h1>
         <p class="chapter-sub">把世界拆成"实体 - 关系 - 实体"三元组 —— AI 终于能"推理"</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">25 min</span>
           <span class="badge interactive">⭐ 互动核心</span>
         </div>
@@ -1500,7 +1590,7 @@
         <h1 class="chapter-h1">力导图 · 关系推理</h1>
         <p class="chapter-sub">从图谱里"看见"答案：你和谁有共同兴趣？谁该和你组队？</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">20 min</span>
           <span class="badge interactive">⭐ 互动延伸</span>
         </div>
@@ -1560,7 +1650,7 @@
         <h1 class="chapter-h1">MCP · 模型上下文协议</h1>
         <p class="chapter-sub">Anthropic 提出的"AI 与世界对话"的统一标准 —— 让模型用工具更优雅</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">15 min</span>
         </div>
       </section>
@@ -1665,7 +1755,7 @@
         <h1 class="chapter-h1">Agent · 智能体</h1>
         <p class="chapter-sub">从"对话机器人"到"会做事的助手"—— Agent 是怎样"想"和"动"的</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">20 min</span>
           <span class="badge interactive">⭐ 互动演示</span>
         </div>
@@ -1742,7 +1832,7 @@
         <h1 class="chapter-h1">A2A · 多智能体协作</h1>
         <p class="chapter-sub">Agent 不再独行 —— 两个或更多 Agent 通过协议交谈、协作、达成目标</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">15 min</span>
         </div>
       </section>
@@ -1830,7 +1920,7 @@
         <h1 class="chapter-h1">IBM 的 AI 实践</h1>
         <p class="chapter-sub">从 Watson 到 watsonx —— IBM 在企业 AI 落地的真实故事</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">15 min</span>
           <span class="badge accent">IBM</span>
         </div>
@@ -1919,7 +2009,7 @@
         <h1 class="chapter-h1">Q&amp;A · 合影 · 结营</h1>
         <p class="chapter-sub">问任何问题 · 用今天的数据做一次随机抽奖 · 结营合影</p>
         <div class="chapter-meta">
-          <span class="badge warn">IN DESIGN</span>
+          <span class="badge warn status-flag">IN DESIGN</span>
           <span class="badge">15 min</span>
         </div>
       </section>
@@ -2069,6 +2159,37 @@
   deck.on('slidechanged', updateIndicator);
   deck.on('ready', updateIndicator);
   updateIndicator();
+
+  // ===== Light/Dark theme toggle =====
+  const THEME_KEY = 'fnc_slides_theme';
+  function applyTheme(name) {
+    const isLight = name === 'light';
+    document.body.classList.toggle('theme-light', isLight);
+    const btn = document.getElementById('themeToggle');
+    if (btn) btn.textContent = isLight ? '☀' : '🌙';
+  }
+  function toggleTheme() {
+    const cur = document.body.classList.contains('theme-light') ? 'light' : 'dark';
+    const next = cur === 'light' ? 'dark' : 'light';
+    localStorage.setItem(THEME_KEY, next);
+    applyTheme(next);
+  }
+  window.toggleTheme = toggleTheme;
+  // Apply saved theme on boot
+  (function () {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') applyTheme(saved);
+    else applyTheme('dark');  // default dark
+  })();
+  // Keyboard shortcut M
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'm' || e.key === 'M') {
+      if (!e.ctrlKey && !e.metaKey && !e.altKey) {
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA') toggleTheme();
+      }
+    }
+  });
 
   // ===== Help tip auto-fade =====
   const tip = document.getElementById('helpTip');
