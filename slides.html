@@ -202,17 +202,18 @@
   .proj-card .proj-tags .tag { font-family: var(--r-code-font); font-size: 10.5px; padding: 2px 8px; background: var(--bg-3); color: var(--text-dim); border-radius: 3px; letter-spacing: 0.3px; }
   @media (max-width: 760px) { .proj-grid { grid-template-columns: 1fr; } }
 
-  /* 联系卡 — Ch.01 收尾页用 */
-  .contact-card { max-width: 720px; margin: 0 auto; padding: 28px 32px; background: linear-gradient(135deg, var(--bg-2), var(--bg-1)); border: 1px solid var(--border-strong); border-radius: 12px; text-align: center; }
-  .contact-card .ct-glyph { font-size: 40px; color: var(--accent); margin-bottom: 14px; }
-  .contact-card h3 { font-size: 1.3em !important; margin: 0 0 8px !important; color: #fff !important; font-weight: 500; }
-  body.theme-light .contact-card h3 { color: #161616 !important; }
-  .contact-card .ct-line { color: var(--text-dim); font-size: 0.95em; line-height: 1.65; margin-bottom: 18px; }
-  .contact-card .ct-info { display: flex; flex-direction: column; gap: 8px; font-family: var(--r-code-font); font-size: 13px; }
-  .contact-card .ct-info .row { display: flex; gap: 14px; justify-content: center; align-items: center; }
-  .contact-card .ct-info .row .k { color: var(--text-faint); min-width: 70px; text-align: right; }
-  .contact-card .ct-info .row .v { color: var(--accent-2); }
-  .contact-card .ct-info .row .v a { color: inherit; text-decoration: none; border-bottom: 1px dashed currentColor; }
+  /* 联系信息 — 极简：仅 dl/dt/dd 两栏对齐，无装饰 */
+  .contact-info {
+    display: grid; grid-template-columns: max-content 1fr;
+    column-gap: 28px; row-gap: 16px;
+    max-width: 640px; margin: 36px auto 0;
+    font-family: var(--r-code-font); font-size: 15px;
+    align-items: baseline;
+  }
+  .contact-info dt { color: var(--text-faint); letter-spacing: 0.5px; text-align: right; }
+  .contact-info dd { color: var(--accent-2); margin: 0; }
+  .contact-info dd a { color: inherit; text-decoration: none; border-bottom: 1px dashed currentColor; }
+  .contact-info dd a:hover { color: var(--accent); }
 
   /* === Placeholder slide === */
   .placeholder { max-width: 760px; margin: 0 auto !important; text-align: left; }
@@ -736,36 +737,35 @@
       <section>
         <div class="content-header">
           <div class="ctx">CH.01 · 02 / 03</div>
-          <h2>IBM 在做的 AI · 我经手的项目</h2>
-          <p class="sub">不是讲我自己 · 是看 IBM 怎么把 GenAI 真实落到企业场景</p>
+          <h2>项目实践</h2>
         </div>
         <div class="proj-grid">
           <div class="proj-card">
             <div class="proj-h">
               <h3>GenAI 解决方案架构 · Pre-sales</h3>
-              <span class="proj-role">IBM GCG · 至今</span>
+              <span class="proj-role">IBM GCG</span>
             </div>
-            <div class="proj-line">为世界 500 强客户主导 GenAI 方案架构与提案，设计企业级 AI 战略与概念验证 — 覆盖智能文档处理、对话式 AI、企业知识库</div>
+            <div class="proj-line">世界 500 强客户的 GenAI 方案架构与提案 · 智能文档处理 · 对话式 AI · 企业知识库</div>
             <div class="proj-tags">
               <span class="tag">GenAI</span><span class="tag">RAG</span><span class="tag">Agent 编排</span><span class="tag">LLM 评估</span><span class="tag">RFP / RFI</span>
             </div>
           </div>
           <div class="proj-card">
             <div class="proj-h">
-              <h3>Ask Billing · IBM 财务对话式系统</h3>
-              <span class="proj-role">Watsonx · 生产级</span>
+              <h3>Ask Billing</h3>
+              <span class="proj-role">Watsonx · Production</span>
             </div>
-            <div class="proj-line">基于 IBM Watsonx 的生产级对话式计费系统 · 服务亚太区财务团队 · 月处理 10,000+ 查询 · 计费查询解决时间从 48 小时 → 5 分钟内</div>
+            <div class="proj-line">IBM 财务对话式计费系统 · 亚太区 · 10,000+ 查询 / 月 · 计费查询从 48h 缩短至 5min</div>
             <div class="proj-tags">
               <span class="tag">Watsonx</span><span class="tag">NL2SQL</span><span class="tag">Production</span><span class="tag">Multi-region</span>
             </div>
           </div>
           <div class="proj-card">
             <div class="proj-h">
-              <h3>ERP-Buddy · 企业 AI 助手</h3>
-              <span class="proj-role">AI 技术 Lead</span>
+              <h3>ERP-Buddy</h3>
+              <span class="proj-role">AI Tech Lead</span>
             </div>
-            <div class="proj-line">AI 驱动的 ERP 助手 · 自然语言与复杂企业系统交互 · 支持 SAP / Oracle 集成 · ERP 文档语义检索准确率 92%</div>
+            <div class="proj-line">企业 AI 助手 · 自然语言到复杂 ERP 交互 · SAP / Oracle 集成 · 语义检索准确率 92%</div>
             <div class="proj-tags">
               <span class="tag">RAG</span><span class="tag">NL2ERP</span><span class="tag">SAP</span><span class="tag">语义检索</span>
             </div>
@@ -773,57 +773,46 @@
           <div class="proj-card">
             <div class="proj-h">
               <h3>Watsonx · 日本实验室</h3>
-              <span class="proj-role">技术 Lead</span>
+              <span class="proj-role">Tech Lead</span>
             </div>
-            <div class="proj-line">为日本市场 Watsonx AI 项目提供技术领导 · 本地化 NLP 任务的提示工程模板与评估流水线 · 跨日美团队协调</div>
+            <div class="proj-line">日本市场 Watsonx AI 项目技术领导 · 日语 NLP 提示工程模板与评估流水线</div>
             <div class="proj-tags">
               <span class="tag">Watsonx</span><span class="tag">日语 NLP</span><span class="tag">Prompt Engineering</span>
             </div>
           </div>
         </div>
-        <div class="takeaway"><b>这些项目说明的不是"我多厉害"，是 IBM Consulting 把 GenAI 从概念变成<b>可衡量业务价值</b>的真实能力。</b></div>
         <aside class="notes">
 【演讲稿 · 2-3 分钟】
 
-关键定调：不是自我介绍。是用项目证明 IBM 在 AI 上的真实能力。
-不要讲学历、年龄、工作年限。
+关键定调（内部 brief，不要讲出来）：这一页不是自我介绍，是通过项目展示 IBM Consulting 在 GenAI 的真实能力。
+不讲学历、年龄、工作年限。
 
-可以这样开头：
-"接下来这一页，不是给大家讲我个人 — 而是给大家看 IBM Consulting 把 GenAI 真实落到客户业务里的几个项目。每一个都是我经手过的。"
+按卡片顺序逐个项目讲，每个项目 30 秒：
+1. GenAI Pre-sales — 给世界 500 强做方案
+2. Ask Billing — Watsonx 生产级，10K+/月查询
+3. ERP-Buddy — RAG + NL2ERP，92% 准确率
+4. Watsonx 日本 — 日语 NLP Prompt Engineering
 
-逐个项目讲：
-1. GenAI 架构 · 售前 — 给世界 500 强做方案
-2. Ask Billing — Watsonx 生产级系统，跑了 10K+/月查询
-3. ERP-Buddy — RAG + NL2ERP
-4. Watsonx 日本 — 多语言 prompt engineering
-
-结尾：
-"这就是 IBM Consulting · FutureNow Center 的协作能力 — 把世界级 AI 技术真实落到你们将要进入的企业。"
+[Richard 录入自己的过渡话术]
         </aside>
       </section>
 
       <section>
         <div class="content-header">
           <div class="ctx">CH.01 · 03 / 03</div>
-          <h2>欢迎反馈 · 保持联系</h2>
+          <h2>Contact</h2>
         </div>
-        <div class="contact-card">
-          <div class="ct-glyph">✉</div>
-          <h3>这些内容 · 大家认真思考再做反馈</h3>
-          <div class="ct-line">课件永久可访问 · 任何问题、想法、合作方向都欢迎</div>
-          <div class="ct-info">
-            <div class="row"><span class="k">课件</span><span class="v"><a href="https://chenhongqiang2025.github.io/ai-camp/" target="_blank">chenhongqiang2025.github.io/ai-camp</a></span></div>
-            <div class="row"><span class="k">邮箱</span><span class="v"><a href="mailto:hongqian@cn.ibm.com">hongqian@cn.ibm.com</a></span></div>
-          </div>
-        </div>
+        <dl class="contact-info">
+          <dt>课件</dt>
+          <dd><a href="https://chenhongqiang2025.github.io/ai-camp/" target="_blank">chenhongqiang2025.github.io/ai-camp</a></dd>
+          <dt>邮箱</dt>
+          <dd><a href="mailto:hongqian@cn.ibm.com">hongqian@cn.ibm.com</a></dd>
+        </dl>
         <aside class="notes">
-【演讲稿 · 30 秒】
+【演讲稿 · 20 秒】
 
-简单交代：
-"这是课件 URL，永久可访问 — 你们随时回看。"
-"有想法、有反馈、有合作方向都可以邮件给我，hongqian@cn.ibm.com。"
-
-不要承诺什么、不要 over-promise。
+直接交代两条信息，不 over-promise，不展开。
+"课件 URL 永久可访问，邮箱在这。"
 直接进入 Ch.02。
 
 约 1-2 分钟。
