@@ -2239,23 +2239,26 @@ FNC，FutureNow Center，是 IBM Consulting 的全球 AI 交付网络。
   deck.initialize();
 
   // ===== Chapter indicator (top-right) =====
+  // Must match actual top-level <section> count in the deck (including quote stages)
   const chapters = [
-    { num: '00', title: 'COVER' },
-    { num: '01', title: '开场' },
-    { num: '02', title: 'AI 发展简史' },
-    { num: '03', title: '机器学习 & 神经网络' },
-    { num: '04', title: 'NLP 演进史' },
-    { num: '05', title: 'ChatGPT 时刻' },
-    { num: '06', title: '大模型幻觉' },
-    { num: '07', title: 'RAG ⭐' },
-    { num: '08', title: '知识图谱 ⭐' },
-    { num: '09', title: '关系推理 ⭐' },
-    { num: '10', title: 'MCP' },
-    { num: '11', title: 'Agent ⭐' },
-    { num: '12', title: 'A2A' },
-    { num: '13', title: 'IBM 实践' },
-    { num: '14', title: 'Q&A 结营' },
-    { num: '∎',  title: 'THE END' }
+    { num: '00', title: 'COVER' },                      // 0
+    { num: '01', title: '开场' },                        // 1
+    { num: '02', title: 'AI 发展简史' },                  // 2
+    { num: '03', title: '机器学习 & 神经网络' },           // 3
+    { num: '04', title: 'NLP 演进史' },                  // 4
+    { num: '05', title: 'ChatGPT 时刻' },                // 5
+    { num: '06', title: '大模型幻觉' },                  // 6
+    { num: '"',  title: '金句' },                        // 7 (quote stage 1 — indicator hidden)
+    { num: '07', title: 'RAG ⭐' },                      // 8
+    { num: '"',  title: '金句' },                        // 9 (quote stage 2 — indicator hidden)
+    { num: '08', title: '知识图谱 ⭐' },                  // 10
+    { num: '09', title: '关系推理 ⭐' },                  // 11
+    { num: '10', title: 'MCP' },                         // 12
+    { num: '11', title: 'Agent ⭐' },                    // 13
+    { num: '12', title: 'A2A' },                         // 14
+    { num: '13', title: 'IBM 实践' },                    // 15
+    { num: '14', title: 'Q&A 结营' },                    // 16
+    { num: '∎',  title: 'THE END' }                      // 17
   ];
 
   const indicator = document.getElementById('chapIndicator');
