@@ -202,6 +202,56 @@
   .proj-card .proj-tags .tag { font-family: var(--r-code-font); font-size: 10.5px; padding: 2px 8px; background: var(--bg-3); color: var(--text-dim); border-radius: 3px; letter-spacing: 0.3px; }
   @media (max-width: 760px) { .proj-grid { grid-template-columns: 1fr; } }
 
+  /* Speaker ID block — IBM business card style for chapter-title page */
+  .speaker-id { max-width: 720px; margin: 24px auto 0; text-align: left; padding-left: 6px; }
+  .speaker-id .sp-name { font-size: 1.55em; font-weight: 600; color: #fff; line-height: 1.2; margin-bottom: 10px; letter-spacing: 0.2px; }
+  body.theme-light .speaker-id .sp-name { color: #161616; }
+  .speaker-id .sp-name .cn { font-size: 0.78em; font-weight: 400; color: var(--accent-2); margin-left: 8px; letter-spacing: 1px; }
+  .speaker-id .sp-line { font-size: 1.02em; color: var(--text); line-height: 1.55; }
+  .speaker-id .sp-line.dim { color: var(--text-dim); }
+  .speaker-id .sp-sep { height: 1px; background: var(--border); margin: 12px 0 14px; max-width: 480px; }
+  .speaker-id .sp-contact { display: flex; flex-wrap: wrap; gap: 28px; font-family: var(--r-code-font); font-size: 13px; color: var(--text-dim); letter-spacing: 0.2px; }
+  .speaker-id .sp-contact b { color: var(--accent-2); font-weight: 500; margin-right: 8px; letter-spacing: 0.5px; }
+
+  /* Project Engagement timeline — tight resume-style rows */
+  .pe-timeline { max-width: 1140px; margin: 14px auto 0; display: flex; flex-direction: column; }
+  .pe-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 1fr 60px;
+    gap: 18px; padding: 8px 10px; align-items: baseline;
+    border-bottom: 1px solid var(--border);
+    font-size: 13.5px; line-height: 1.4;
+  }
+  .pe-row:last-child { border-bottom: none; }
+  .pe-row.pe-head { color: var(--text-faint); font-family: var(--r-code-font); font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; padding-bottom: 6px; border-bottom-color: var(--accent); }
+  .pe-row .pe-yr { font-family: var(--r-code-font); font-size: 12px; color: var(--accent-2); letter-spacing: 0.3px; white-space: nowrap; }
+  .pe-row .pe-co { color: #fff; font-weight: 500; }
+  body.theme-light .pe-row .pe-co { color: #161616; }
+  .pe-row .pe-role { color: var(--text-dim); }
+  .pe-row .pe-tag { justify-self: end; font-family: var(--r-code-font); font-size: 10px; padding: 2px 8px; border-radius: 3px; letter-spacing: 0.4px; background: var(--bg-3); color: var(--text-dim); white-space: nowrap; }
+  .pe-row .pe-tag.genai { background: rgba(69,137,255,0.18); color: var(--accent-2); }
+  .pe-row .pe-tag.sap   { background: rgba(255,170,0,0.14); color: #ffaa00; }
+  .pe-row .pe-tag.arch  { background: rgba(120,134,200,0.16); color: #aab3e0; }
+  .pe-row .pe-tag.dev   { background: rgba(36,161,72,0.16); color: var(--success); }
+  .pe-row .pe-tag.qa    { background: rgba(170,120,200,0.16); color: #c7a3e0; }
+  .pe-row .pe-tag.pm    { background: rgba(200,140,90,0.16); color: #e0b48a; }
+  .pe-row.pe-genai { background: linear-gradient(90deg, rgba(69,137,255,0.06), transparent 60%); }
+  @media (max-width: 760px) {
+    .pe-row { grid-template-columns: 110px 1fr 50px; gap: 10px; font-size: 12px; }
+    .pe-row .pe-role { grid-column: 2 / span 1; color: var(--text-faint); font-size: 11px; }
+  }
+
+  /* Contact block — IBM business card style for closing slide */
+  .contact-block { max-width: 720px; margin: 28px auto 0; padding-left: 6px; }
+  .contact-block .cb-row { display: grid; grid-template-columns: max-content 1fr; gap: 18px; padding: 14px 0; border-bottom: 1px solid var(--border); align-items: baseline; }
+  .contact-block .cb-row:last-of-type { border-bottom: none; }
+  .contact-block .cb-label { font-family: var(--r-code-font); font-size: 11px; color: var(--text-faint); letter-spacing: 1px; text-transform: uppercase; }
+  .contact-block .cb-value { font-size: 1.05em; color: #fff; }
+  body.theme-light .contact-block .cb-value { color: #161616; }
+  .contact-block .cb-value a { color: var(--accent-2); text-decoration: none; }
+  .contact-block .cb-value a:hover { text-decoration: underline; }
+  .contact-block .cb-tag { margin-top: 18px; color: var(--text-dim); font-size: 0.92em; }
+
   /* 联系信息 — 极简：仅 dl/dt/dd 两栏对齐，无装饰 */
   .contact-info {
     display: grid; grid-template-columns: max-content 1fr;
@@ -693,9 +743,7 @@
         <span><span class="pulse"></span> &nbsp;LIVE PREVIEW</span>
       </div>
       <aside class="notes">
-(学员入场期间停留此页，等大家就座、扫码同步翻页)
-
-(到点切 Ch.01)
+学员入场，大家就座，扫码同步课件。
       </aside>
     </section>
 
@@ -703,24 +751,32 @@
     <section>
       <section class="chapter-title">
         <div class="chapter-num">CHAPTER · 01</div>
-        <h1 class="chapter-h1">自我介绍</h1>
-        <div class="chapter-meta">
-          <span class="badge role brand">IBM FNCC</span>
-          <span class="badge role">陈宏强 Richard Chen</span>
-          <span class="badge role">生成式 AI 解决方案架构师 兼 BD</span>
+        <h1 class="chapter-h1">讲师介绍</h1>
+        <div class="speaker-id">
+          <div class="sp-name">Richard Chen <span class="cn">陈宏强</span></div>
+          <div class="sp-line">Generative AI Application Layer Solutions Architect (BD)</div>
+          <div class="sp-line dim">Custom Application Operation Practice</div>
+          <div class="sp-line dim">IBM Consulting FNC, China</div>
+          <div class="sp-sep"></div>
+          <div class="sp-contact">
+            <span><b>E-mail</b>hongqian@cn.ibm.com</span>
+            <span><b>Tel</b>+86-411-8804-6760</span>
+          </div>
         </div>
         <aside class="notes">
-大家好，我是陈宏强 Richard，IBM Consulting FutureNow Center 的生成式 AI 解决方案架构师兼 BD。
+大家好，欢迎参加本次青年人才训练营。我是陈宏强，来自 IBM Consulting FutureNow Center，目前担任的是生成式 AI 解决方案架构师兼 BD。
 
-接下来三小时是 Day 1 — 生成式 AI 启蒙。我们会从 1950 年图灵的疑问开始，一路走到 2026 的 Agent。
+在接下来大概一小时的时间里，是我们的 Day 1 分享——生成式 AI 启蒙。我会从最早的 AI、1950 年图灵的疑问开始，一路走到我们现在 2026 的 Agent。
 
-在进入 AI 内容之前，先用两页时间，看一下 FNC 这个团队，以及我们做过的几个项目。
+今天是一场快速启蒙。后续几天，我的同事们会给大家更落地、更深入的分享和互动。
+
+我希望今天的分享能提起大家的兴趣和认知，并在以后相关领域和研究方面多多交流。
         </aside>
       </section>
 
       <section>
         <div class="content-header">
-          <div class="ctx">CH.01 · 01 / 03</div>
+          <div class="ctx">CH.01 · 02 / 04</div>
           <h2>FutureNow Center · IBM Consulting</h2>
           <p class="sub">把人才与技术结合起来，把战略转化为可衡量的大规模执行</p>
         </div>
@@ -731,101 +787,81 @@
           <li><span class="n">使命</span><div><b>为今天交付，为明天打造</b><span class="ex">让当今世界这一位变得更好 — IBM Consulting FutureNow</span></div></li>
         </ul>
         <aside class="notes">
-FNC，FutureNow Center，是 IBM Consulting 的全球 AI 交付网络。
+在开始进入 AI 之前，我给大家快速介绍一下我们 IBM FNC。
 
-简单四点：
+FNC，即 FutureNow Center，是我们 IBM Consulting 的全球 AI 交付网络。简单四点介绍——
 
-一，定位 — 把人才和技术结合，把战略转成大规模执行。
+一，定位——把人才和技术结合，把认知转成大规模执行。
 
-二，网络 — 全球协同。服务集成中心负责市场端，未来现在中心负责落地，两类节点闭环。
+二，网络——全球协同。服务集成中心负责市场端，FutureNow Center 负责落地，两类节点闭环。
 
-三，引擎 — 知识流和数字资产的快速扩展，团队不从零造轮子。
+三，引擎——知识流和数字资产的快速扩展，团队不从零造轮子。
 
-四，使命 — 为今天交付，为明天打造。
+四，使命——为今天交付，为明天打造。
 
-大连办公室，就是这张网络的一个节点。
+大连办公室，就是这张网络的一个重要节点。
         </aside>
       </section>
 
       <section>
         <div class="content-header">
-          <div class="ctx">CH.01 · 02 / 03</div>
-          <h2>项目实践</h2>
+          <div class="ctx">CH.01 · 03 / 04</div>
+          <h2>Project Engagement</h2>
+          <p class="sub">17 项目 · 2009 — 2026 · 从工程到 GenAI 架构的完整路径</p>
         </div>
-        <div class="proj-grid">
-          <div class="proj-card">
-            <div class="proj-h">
-              <h3>Watsonx · 日本实验室</h3>
-              <span class="proj-role">2023 · LLM 微调</span>
-            </div>
-            <div class="proj-line">日本市场 Watsonx AI 项目技术 Lead · 日语 NLP 提示工程模板与评估流水线</div>
-            <div class="proj-tags">
-              <span class="tag">Watsonx</span><span class="tag">LLM Fine-tuning</span><span class="tag">日语 NLP</span><span class="tag">Prompt Engineering</span>
-            </div>
-          </div>
-          <div class="proj-card">
-            <div class="proj-h">
-              <h3>Ask Billing</h3>
-              <span class="proj-role">2024 · Watsonx 生产级</span>
-            </div>
-            <div class="proj-line">IBM 财务对话式计费系统 · 亚太区 · 10,000+ 查询 / 月 · 计费查询从 48h 缩短至 5min</div>
-            <div class="proj-tags">
-              <span class="tag">Watsonx</span><span class="tag">NL2SQL</span><span class="tag">Production</span><span class="tag">Multi-region</span>
-            </div>
-          </div>
-          <div class="proj-card">
-            <div class="proj-h">
-              <h3>ERP-Buddy</h3>
-              <span class="proj-role">2024 · RAG + NL2ERP</span>
-            </div>
-            <div class="proj-line">企业 AI 助手 · 自然语言对接复杂 ERP · SAP / Oracle 集成 · 语义检索准确率 92%</div>
-            <div class="proj-tags">
-              <span class="tag">RAG</span><span class="tag">NL2ERP</span><span class="tag">SAP</span><span class="tag">语义检索</span>
-            </div>
-          </div>
-          <div class="proj-card">
-            <div class="proj-h">
-              <h3>GenAI 解决方案架构 · Pre-sales</h3>
-              <span class="proj-role">2026 · IBM GCG</span>
-            </div>
-            <div class="proj-line">世界 500 强客户的 GenAI 方案架构与提案 · 智能文档处理 · 对话式 AI · 企业知识库 · Agent 编排</div>
-            <div class="proj-tags">
-              <span class="tag">GenAI</span><span class="tag">Agent 编排</span><span class="tag">RAG</span><span class="tag">LLM 评估</span><span class="tag">RFP / RFI</span>
-            </div>
-          </div>
+        <div class="pe-timeline">
+          <div class="pe-row pe-head"><span>Period</span><span>Client / Org</span><span>Role</span><span>Domain</span></div>
+          <div class="pe-row pe-genai"><span class="pe-yr">2026.03 — 至今</span><span class="pe-co">IBM GCG · MB / BMW / Volvo / L'Oréal</span><span class="pe-role">GenAI Architect & Pre-sales Lead</span><span class="pe-tag genai">GenAI</span></div>
+          <div class="pe-row pe-genai"><span class="pe-yr">2025.07 — 26.02</span><span class="pe-co">US Hubbell</span><span class="pe-role">GenAI Test Automation Eng & BA</span><span class="pe-tag genai">GenAI</span></div>
+          <div class="pe-row pe-genai"><span class="pe-yr">2024.12 — 至今</span><span class="pe-co">Enterprise · ERP-Buddy</span><span class="pe-role">AI Technical Lead & BA</span><span class="pe-tag genai">GenAI</span></div>
+          <div class="pe-row pe-genai"><span class="pe-yr">2024.12 — 25.06</span><span class="pe-co">AI Product R&D</span><span class="pe-role">AI Product POC R&D Director</span><span class="pe-tag genai">GenAI</span></div>
+          <div class="pe-row pe-genai"><span class="pe-yr">2024.03 — 至今</span><span class="pe-co">IBM Finance · Ask Billing</span><span class="pe-role">Watsonx AI Tech Lead & BA</span><span class="pe-tag genai">GenAI</span></div>
+          <div class="pe-row pe-genai"><span class="pe-yr">2023.07 — 24.03</span><span class="pe-co">IBM Japan · watsonx Lab</span><span class="pe-role">Team Lead / PM</span><span class="pe-tag genai">GenAI</span></div>
+          <div class="pe-row"><span class="pe-yr">2022.02 — 23.02</span><span class="pe-co">NTT</span><span class="pe-role">SAP & RPA Solution Developer</span><span class="pe-tag sap">SAP</span></div>
+          <div class="pe-row"><span class="pe-yr">2021.07 — 21.10</span><span class="pe-co">Apaman Japan</span><span class="pe-role">Solution Architect</span><span class="pe-tag arch">Arch</span></div>
+          <div class="pe-row"><span class="pe-yr">2021.07 — 21.12</span><span class="pe-co">Global Cognitive (US)</span><span class="pe-role">Global Technical Leader</span><span class="pe-tag arch">Arch</span></div>
+          <div class="pe-row"><span class="pe-yr">2021.01 — 22.02</span><span class="pe-co">Coway Korea</span><span class="pe-role">SAP RPA Solution Architect</span><span class="pe-tag sap">SAP</span></div>
+          <div class="pe-row"><span class="pe-yr">2020.07 — 20.12</span><span class="pe-co">AOCC</span><span class="pe-role">Supervisor</span><span class="pe-tag pm">PM</span></div>
+          <div class="pe-row"><span class="pe-yr">2019.12 — 20.06</span><span class="pe-co">MetLife Japan</span><span class="pe-role">Application Developer</span><span class="pe-tag dev">Dev</span></div>
+          <div class="pe-row"><span class="pe-yr">2019.11 — 19.12</span><span class="pe-co">Home Credit</span><span class="pe-role">Solution</span><span class="pe-tag arch">Arch</span></div>
+          <div class="pe-row"><span class="pe-yr">2018.11 — 19.10</span><span class="pe-co">CHB HK</span><span class="pe-role">Test Specialist</span><span class="pe-tag qa">QA</span></div>
+          <div class="pe-row"><span class="pe-yr">2015.06 — 18.11</span><span class="pe-co">Huawei</span><span class="pe-role">Agile Coach & BA</span><span class="pe-tag pm">Agile</span></div>
+          <div class="pe-row"><span class="pe-yr">2012.06 — 15.06</span><span class="pe-co">YACHANG & GRT</span><span class="pe-role">App Dev / QA / BA</span><span class="pe-tag dev">Dev</span></div>
+          <div class="pe-row"><span class="pe-yr">2009.07 — 12.06</span><span class="pe-co">CITI & DBS Bank</span><span class="pe-role">Test Specialist / BA Support</span><span class="pe-tag qa">QA</span></div>
         </div>
         <aside class="notes">
-2023 年开始，生成式 AI 真正在企业里落地。我从 Watsonx 日本实验室的 LLM 微调起步，一路到 2026 — 技术演进到哪，项目就跟到哪。
+17 年职业路径，最近三年全部在生成式 AI 上。
 
-四个项目按时间顺序串起来：
+蓝色高亮的六行是 2023 年起的 GenAI 项目——从日本 watsonx 实验室、Ask Billing、ERP-Buddy，到现在 IBM GCG 给 BMW、Volvo 这些 500 强客户做 GenAI 架构。
 
-2023 年，Watsonx 日本实验室。日本市场 Watsonx 项目的技术 Lead — 日语 NLP 的提示工程模板和评估流水线，跨日美团队协调。那一年的主线是 LLM 微调，把模型能力真实落到一个本地化场景。
+下面 11 个项目是这之前的工程底子——SAP、企业架构、测试、敏捷。从 2009 银行测试一路走到 2022。
 
-2024 年初，Ask Billing。基于 Watsonx 的生产级对话式计费系统，服务 IBM 亚太区财务团队。月一万多查询，计费查询解决时间，从 48 小时压到 5 分钟内。Watsonx 从实验室走进生产线。
-
-2024 年末，ERP-Buddy。企业 AI 助手 — 自然语言对接 SAP、Oracle。RAG 加 NL2ERP，文档语义检索准确率 92%。RAG 这一年成为企业落地的标配。
-
-2026 年到现在，GenAI 解决方案架构。在 IBM GCG，给世界 500 强客户做 GenAI 方案架构 — 智能文档、对话式 AI、企业知识库，到 Agent 编排。从单点应用走到全栈架构。
-
-四个项目串起来，就是 2023 到 2026 这三年，生成式 AI 在企业真实落地的演进路径 — 从 LLM 微调，到生产级对话，到 RAG 知识库，到 Agent。这是 IBM Consulting · FutureNow Center 一直在做的事。
+今天讲的所有内容，都是从这条路上走出来的。
         </aside>
       </section>
 
       <section>
         <div class="content-header">
-          <div class="ctx">CH.01 · 03 / 03</div>
+          <div class="ctx">CH.01 · 04 / 04</div>
           <h2>Contact</h2>
         </div>
-        <dl class="contact-info">
-          <dt>课件</dt>
-          <dd><a href="https://chenhongqiang2025.github.io/ai-camp/" target="_blank">chenhongqiang2025.github.io/ai-camp</a></dd>
-          <dt>邮箱</dt>
-          <dd><a href="mailto:hongqian@cn.ibm.com">hongqian@cn.ibm.com</a></dd>
-        </dl>
+        <div class="contact-block">
+          <div class="cb-row">
+            <span class="cb-label">课件访问地址</span>
+            <span class="cb-value"><a href="https://chenhongqiang2025.github.io/ai-camp/" target="_blank">chenhongqiang2025.github.io/ai-camp</a></span>
+          </div>
+          <div class="cb-row">
+            <span class="cb-label">我的联系方式</span>
+            <span class="cb-value"><a href="mailto:hongqian@cn.ibm.com">hongqian@cn.ibm.com</a></span>
+          </div>
+          <div class="cb-tag">大家有需要可以随时提问、反馈、交流想法。</div>
+        </div>
         <aside class="notes">
-课件永久可访问，URL 在这里——chenhongqiang2025.github.io/ai-camp。
+课件访问地址可以点击。
 
-邮箱 hongqian@cn.ibm.com，任何问题、反馈、想法都欢迎。
+我的联系方式。
+
+大家有需要可以随时提问、反馈、交流想法。
 
 接下来我们进入 Ch.02——AI 发展简史。
         </aside>
