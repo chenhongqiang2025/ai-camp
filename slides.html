@@ -186,6 +186,33 @@
   .badge.warn { background: rgba(241,194,27,0.14); color: var(--warning); border-color: rgba(241,194,27,0.3); }
   .badge.success { background: rgba(66,190,101,0.14); color: var(--success); border-color: rgba(66,190,101,0.3); }
   .badge.interactive { background: rgba(192,139,255,0.14); color: var(--interactive); border-color: rgba(192,139,255,0.3); }
+  /* 名片式：身份信息 — 用于章节首页讲师标识 */
+  .badge.role { font-family: var(--r-zh, inherit); font-size: 13px; padding: 6px 14px; letter-spacing: 0; color: var(--text); }
+  .badge.role.brand { background: var(--accent-soft); color: var(--accent-2); border-color: rgba(69,137,255,0.35); font-family: var(--r-code-font); letter-spacing: 0.5px; }
+
+  /* 项目卡 — 用于"AI 项目实践"展示，比 cards-3 更紧凑、含技术 tags */
+  .proj-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; max-width: 1100px; margin: 0 auto; }
+  .proj-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; }
+  .proj-card .proj-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 10px; }
+  .proj-card h3 { font-size: 1em !important; margin: 0 !important; color: #fff; font-weight: 600; }
+  body.theme-light .proj-card h3 { color: #161616 !important; }
+  .proj-card .proj-role { font-family: var(--r-code-font); font-size: 10px; color: var(--accent-2); letter-spacing: 0.5px; white-space: nowrap; }
+  .proj-card .proj-line { color: var(--text-dim); font-size: 0.85em; line-height: 1.55; margin-bottom: 8px; }
+  .proj-card .proj-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .proj-card .proj-tags .tag { font-family: var(--r-code-font); font-size: 10.5px; padding: 2px 8px; background: var(--bg-3); color: var(--text-dim); border-radius: 3px; letter-spacing: 0.3px; }
+  @media (max-width: 760px) { .proj-grid { grid-template-columns: 1fr; } }
+
+  /* 联系卡 — Ch.01 收尾页用 */
+  .contact-card { max-width: 720px; margin: 0 auto; padding: 28px 32px; background: linear-gradient(135deg, var(--bg-2), var(--bg-1)); border: 1px solid var(--border-strong); border-radius: 12px; text-align: center; }
+  .contact-card .ct-glyph { font-size: 40px; color: var(--accent); margin-bottom: 14px; }
+  .contact-card h3 { font-size: 1.3em !important; margin: 0 0 8px !important; color: #fff !important; font-weight: 500; }
+  body.theme-light .contact-card h3 { color: #161616 !important; }
+  .contact-card .ct-line { color: var(--text-dim); font-size: 0.95em; line-height: 1.65; margin-bottom: 18px; }
+  .contact-card .ct-info { display: flex; flex-direction: column; gap: 8px; font-family: var(--r-code-font); font-size: 13px; }
+  .contact-card .ct-info .row { display: flex; gap: 14px; justify-content: center; align-items: center; }
+  .contact-card .ct-info .row .k { color: var(--text-faint); min-width: 70px; text-align: right; }
+  .contact-card .ct-info .row .v { color: var(--accent-2); }
+  .contact-card .ct-info .row .v a { color: inherit; text-decoration: none; border-bottom: 1px dashed currentColor; }
 
   /* === Placeholder slide === */
   .placeholder { max-width: 760px; margin: 0 auto !important; text-align: left; }
@@ -675,89 +702,129 @@
         <div class="chapter-num">CHAPTER · 01</div>
         <h1 class="chapter-h1">自我介绍</h1>
         <div class="chapter-meta">
-          <span class="badge warn status-flag">IN DESIGN</span>
-          <span class="badge">10 min</span>
+          <span class="badge role brand">IBM FNCC</span>
+          <span class="badge role">陈宏强 Richard Chen</span>
+          <span class="badge role">生成式 AI 解决方案架构师 兼 BD</span>
         </div>
         <aside class="notes">
-【演讲稿 · 待 Richard 录入】
+【演讲稿 · 30-60 秒】
 
-开场约 30-60 秒，把全场的注意力拉到这一页：
-[请录入你想用的开场话术 — 例如简短打招呼、点名团队、抛出 Day 1 是什么]
+[Richard 录入开场白]
         </aside>
       </section>
 
       <section>
         <div class="content-header">
           <div class="ctx">CH.01 · 01 / 03</div>
-          <h2>IBM · FutureNow Center China · 大连</h2>
+          <h2>FutureNow Center · IBM Consulting</h2>
+          <p class="sub">把人才与技术结合起来，把战略转化为可衡量的大规模执行</p>
         </div>
-        <div class="ph-card">
-          <div class="ph-label">📝 待 Richard 录入</div>
-          <div class="ph-hint">
-            <b>这一页讲什么 ：</b>简短介绍 FNC 大连团队，让学员对"你来自哪里"有印象。<br>
-            建议填入：
-            <ul>
-              <li>FNC 大连办公室的真实定位（团队规模 / 业务范围）</li>
-              <li>FNC 的使命（你平时给客户怎么讲的 — 不要市场套话）</li>
-              <li>本地团队的真实优势 / 现在在做的事</li>
-            </ul>
-            <span style="color:var(--text-faint);font-size:0.85em;">写好后告诉我，我帮你换成正式排版。</span>
-          </div>
-        </div>
+        <ul class="pts">
+          <li><span class="n">定位</span><div><b>IBM Consulting 的集成交付系统</b><span class="ex">将市场中心的人类智能与人工智能整合，以确定性、敏捷和价值交付客户成果</span></div></li>
+          <li><span class="n">网络</span><div><b>遍布全球的 FutureNow Centers 网络</b><span class="ex">服务集成中心（市场+动态能力）与未来现在中心（人才+技术执行）两类节点协同闭环</span></div></li>
+          <li><span class="n">引擎</span><div><b>"知识流 · 解决方案快速扩展 · 数字资产可部署"</b><span class="ex">交付更智能、成果更清晰、进展可衡量，建立在人与数字协作的持续耦合之上</span></div></li>
+          <li><span class="n">使命</span><div><b>为今天交付，为明天打造</b><span class="ex">让当今世界这一位变得更好 — IBM Consulting FutureNow</span></div></li>
+        </ul>
         <aside class="notes">
-【演讲稿 · 待 Richard 录入】
+【演讲稿 · 1-2 分钟】
 
-约 1-2 分钟。
-[请录入你想对学员讲的关于 FNC 大连的开场内容 — 推荐用你平时介绍团队的原话]
+这一页不是重点章节，简洁过即可。
+[Richard 录入想对学员讲的关于 FNC 的话]
         </aside>
       </section>
 
       <section>
         <div class="content-header">
           <div class="ctx">CH.01 · 02 / 03</div>
-          <h2>关于我</h2>
+          <h2>IBM 在做的 AI · 我经手的项目</h2>
+          <p class="sub">不是讲我自己 · 是看 IBM 怎么把 GenAI 真实落到企业场景</p>
         </div>
-        <div class="ph-card">
-          <div class="ph-label">📝 待 Richard 录入</div>
-          <div class="ph-hint">
-            <b>这一页讲什么 ：</b>简短介绍你的身份和当下角色，让学员认识"今天讲师是谁"。<br>
-            建议填入：
-            <ul>
-              <li>当下身份一句话（IBM Consulting · FNC · 生成式 AI 解决方案架构师 + BD）</li>
-              <li>2-3 个职业关键节点（用你愿意公开的真实经历，年份可虚化）</li>
-              <li>和学员的连接点（你希望他们记住你的什么）</li>
-            </ul>
-            <span style="color:var(--text-faint);font-size:0.85em;">写好后告诉我，我用 <code>timeline</code> / <code>quote</code> / <code>pts</code> 任一版式呈现。</span>
+        <div class="proj-grid">
+          <div class="proj-card">
+            <div class="proj-h">
+              <h3>GenAI 解决方案架构 · Pre-sales</h3>
+              <span class="proj-role">IBM GCG · 至今</span>
+            </div>
+            <div class="proj-line">为世界 500 强客户主导 GenAI 方案架构与提案，设计企业级 AI 战略与概念验证 — 覆盖智能文档处理、对话式 AI、企业知识库</div>
+            <div class="proj-tags">
+              <span class="tag">GenAI</span><span class="tag">RAG</span><span class="tag">Agent 编排</span><span class="tag">LLM 评估</span><span class="tag">RFP / RFI</span>
+            </div>
+          </div>
+          <div class="proj-card">
+            <div class="proj-h">
+              <h3>Ask Billing · IBM 财务对话式系统</h3>
+              <span class="proj-role">Watsonx · 生产级</span>
+            </div>
+            <div class="proj-line">基于 IBM Watsonx 的生产级对话式计费系统 · 服务亚太区财务团队 · 月处理 10,000+ 查询 · 计费查询解决时间从 48 小时 → 5 分钟内</div>
+            <div class="proj-tags">
+              <span class="tag">Watsonx</span><span class="tag">NL2SQL</span><span class="tag">Production</span><span class="tag">Multi-region</span>
+            </div>
+          </div>
+          <div class="proj-card">
+            <div class="proj-h">
+              <h3>ERP-Buddy · 企业 AI 助手</h3>
+              <span class="proj-role">AI 技术 Lead</span>
+            </div>
+            <div class="proj-line">AI 驱动的 ERP 助手 · 自然语言与复杂企业系统交互 · 支持 SAP / Oracle 集成 · ERP 文档语义检索准确率 92%</div>
+            <div class="proj-tags">
+              <span class="tag">RAG</span><span class="tag">NL2ERP</span><span class="tag">SAP</span><span class="tag">语义检索</span>
+            </div>
+          </div>
+          <div class="proj-card">
+            <div class="proj-h">
+              <h3>Watsonx · 日本实验室</h3>
+              <span class="proj-role">技术 Lead</span>
+            </div>
+            <div class="proj-line">为日本市场 Watsonx AI 项目提供技术领导 · 本地化 NLP 任务的提示工程模板与评估流水线 · 跨日美团队协调</div>
+            <div class="proj-tags">
+              <span class="tag">Watsonx</span><span class="tag">日语 NLP</span><span class="tag">Prompt Engineering</span>
+            </div>
           </div>
         </div>
+        <div class="takeaway"><b>这些项目说明的不是"我多厉害"，是 IBM Consulting 把 GenAI 从概念变成<b>可衡量业务价值</b>的真实能力。</b></div>
         <aside class="notes">
-【演讲稿 · 待 Richard 录入】
+【演讲稿 · 2-3 分钟】
 
-约 2 分钟。
-[请录入你的自我介绍话术 — 平时怎么给一线介绍自己就怎么写]
+关键定调：不是自我介绍。是用项目证明 IBM 在 AI 上的真实能力。
+不要讲学历、年龄、工作年限。
+
+可以这样开头：
+"接下来这一页，不是给大家讲我个人 — 而是给大家看 IBM Consulting 把 GenAI 真实落到客户业务里的几个项目。每一个都是我经手过的。"
+
+逐个项目讲：
+1. GenAI 架构 · 售前 — 给世界 500 强做方案
+2. Ask Billing — Watsonx 生产级系统，跑了 10K+/月查询
+3. ERP-Buddy — RAG + NL2ERP
+4. Watsonx 日本 — 多语言 prompt engineering
+
+结尾：
+"这就是 IBM Consulting · FutureNow Center 的协作能力 — 把世界级 AI 技术真实落到你们将要进入的企业。"
         </aside>
       </section>
 
       <section>
         <div class="content-header">
           <div class="ctx">CH.01 · 03 / 03</div>
-          <h2>这一天 · 你会获得什么</h2>
+          <h2>欢迎反馈 · 保持联系</h2>
         </div>
-        <div class="ph-card">
-          <div class="ph-label">📝 待 Richard 录入</div>
-          <div class="ph-hint">
-            <b>这一页讲什么 ：</b>给学员一个清晰的 Day 1 承诺，让他们知道接下来 3 小时能拿走什么。<br>
-            建议填入 3 件具体的事：
-            <ul>
-              <li>① 学员能"看懂"的：（AI 史 / 大模型原理 / 幻觉 / RAG / KG / Agent ... 你选）</li>
-              <li>② 学员能"亲手做"的：（互动实验 / KG 节点 / 提问 / 抽奖 ... 你选）</li>
-              <li>③ 学员能"带走"的：课件 URL 永久可访问 <code>chenhongqiang2025.github.io/ai-camp</code></li>
-            </ul>
-            <span style="color:var(--text-faint);font-size:0.85em;">告诉我你的 3 件事，我换成三卡片版式。</span>
+        <div class="contact-card">
+          <div class="ct-glyph">✉</div>
+          <h3>这些内容 · 大家认真思考再做反馈</h3>
+          <div class="ct-line">课件永久可访问 · 任何问题、想法、合作方向都欢迎</div>
+          <div class="ct-info">
+            <div class="row"><span class="k">课件</span><span class="v"><a href="https://chenhongqiang2025.github.io/ai-camp/" target="_blank">chenhongqiang2025.github.io/ai-camp</a></span></div>
+            <div class="row"><span class="k">邮箱</span><span class="v"><a href="mailto:hongqian@cn.ibm.com">hongqian@cn.ibm.com</a></span></div>
           </div>
         </div>
         <aside class="notes">
-【演讲稿 · 待 Richard 录入】
+【演讲稿 · 30 秒】
+
+简单交代：
+"这是课件 URL，永久可访问 — 你们随时回看。"
+"有想法、有反馈、有合作方向都可以邮件给我，hongqian@cn.ibm.com。"
+
+不要承诺什么、不要 over-promise。
+直接进入 Ch.02。
 
 约 1-2 分钟。
 [请录入"我承诺你 3 小时后能..."的话术]
