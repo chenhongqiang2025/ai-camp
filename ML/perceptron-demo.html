@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>感知机 · 1957 Rosenblatt · 动态可视化</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 12px 18px; margin-bottom: 18px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; max-width: 1280px; margin-left: auto; margin-right: auto; font-size: 13px; }
+  .control select, .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 7px 12px; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .control button.primary { background: #4589ff; border-color: #4589ff; font-weight: 500; }
+  .control button.primary:hover { background: #6fa7ff; }
+  .control label { color: #888; }
+
+  .stage { display: grid; grid-template-columns: 320px 1fr 360px; gap: 16px; max-width: 1280px; margin: 0 auto; }
+  .col { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 16px 18px; }
+  .col h3 { margin: 0 0 12px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid #2a2a35; }
+
+  .slider-row { margin: 12px 0; }
+  .slider-row .label { display: flex; justify-content: space-between; align-items: baseline; font-family: ui-monospace, monospace; font-size: 12px; margin-bottom: 4px; }
+  .slider-row .label .name { color: #fff; }
+  .slider-row .label .name.x { color: #ffd566; }
+  .slider-row .label .name.w { color: #6fa7ff; }
+  .slider-row .label .val { color: #aab; font-size: 11px; }
+  .slider-row input[type=range] { width: 100%; accent-color: #4589ff; }
+
+  .neuron-svg { width: 100%; height: 360px; }
+
+  .equation { font-family: ui-monospace, monospace; font-size: 13px; line-height: 1.9; padding: 12px 14px; background: #1d1d24; border-left: 3px solid #4589ff; border-radius: 4px; margin-top: 8px; }
+  .equation b { color: #ffd566; }
+  .equation .res { color: #24a148; font-weight: 600; }
+  .equation .step { color: #888; font-size: 11.5px; padding-left: 8px; }
+
+  .activation-graph { width: 100%; height: 180px; margin-top: 14px; }
+
+  .footnote { max-width: 1280px; margin: 18px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; letter-spacing: 0.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>感知机 · 第一个人工神经元</h1>
+<div class="sub">FRANK ROSENBLATT 1957 · INPUTS → WEIGHTED SUM → ACTIVATION → OUTPUT</div>
+
+<div class="control">
+  <label>激活函数</label>
+  <select id="act">
+    <option value="sigmoid">Sigmoid · σ(z) = 1/(1+e⁻ᶻ)</option>
+    <option value="relu">ReLU · max(0, z)</option>
+    <option value="tanh">Tanh · (eᶻ−e⁻ᶻ)/(eᶻ+e⁻ᶻ)</option>
+  </select>
+  <button class="primary" onclick="randomize()">🎲 随机输入 + 权重</button>
+  <button onclick="reset()">↻ 重置</button>
+</div>
+
+<div class="stage">
+
+  <div class="col">
+    <h3>输入 X (Inputs)</h3>
+    <div class="slider-row">
+      <div class="label"><span class="name x">x₁</span><span class="val" id="x1v">0.70</span></div>
+      <input type="range" min="-1" max="1" step="0.05" value="0.7" id="x1">
+    </div>
+    <div class="slider-row">
+      <div class="label"><span class="name x">x₂</span><span class="val" id="x2v">0.40</span></div>
+      <input type="range" min="-1" max="1" step="0.05" value="0.4" id="x2">
+    </div>
+    <div class="slider-row">
+      <div class="label"><span class="name x">x₃</span><span class="val" id="x3v">-0.20</span></div>
+      <input type="range" min="-1" max="1" step="0.05" value="-0.2" id="x3">
+    </div>
+
+    <h3 style="margin-top: 22px;">权重 W (Weights)</h3>
+    <div class="slider-row">
+      <div class="label"><span class="name w">w₁</span><span class="val" id="w1v">0.50</span></div>
+      <input type="range" min="-2" max="2" step="0.05" value="0.5" id="w1">
+    </div>
+    <div class="slider-row">
+      <div class="label"><span class="name w">w₂</span><span class="val" id="w2v">0.90</span></div>
+      <input type="range" min="-2" max="2" step="0.05" value="0.9" id="w2">
+    </div>
+    <div class="slider-row">
+      <div class="label"><span class="name w">w₃</span><span class="val" id="w3v">-0.30</span></div>
+      <input type="range" min="-2" max="2" step="0.05" value="-0.3" id="w3">
+    </div>
+
+    <h3 style="margin-top: 22px;">偏置 b (Bias)</h3>
+    <div class="slider-row">
+      <div class="label"><span class="name" style="color:#c7a3e0">b</span><span class="val" id="bv">0.10</span></div>
+      <input type="range" min="-1" max="1" step="0.05" value="0.1" id="b">
+    </div>
+  </div>
+
+  <div class="col">
+    <h3>神经元结构</h3>
+    <svg class="neuron-svg" id="neuronSvg" viewBox="0 0 600 360" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+
+  <div class="col">
+    <h3>实时计算</h3>
+    <div class="equation" id="eq"></div>
+
+    <h3 style="margin-top: 20px;">激活函数 · 当前 z 的位置</h3>
+    <svg class="activation-graph" id="actGraph" viewBox="0 0 320 180" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+
+</div>
+
+<div class="footnote">
+  万亿参数的 LLM · 本质就是数千亿个这样的神经元叠在一起 · 每一个的数学不超出中学范围
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const ids = ['x1','x2','x3','w1','w2','w3','b'];
+
+function sigmoid(z) { return 1/(1+Math.exp(-z)); }
+function relu(z) { return Math.max(0, z); }
+function tanh(z) { return Math.tanh(z); }
+
+function activate(z, fn) {
+  if (fn === 'sigmoid') return sigmoid(z);
+  if (fn === 'relu') return relu(z);
+  return tanh(z);
+}
+
+function fmt(n) { return (n>=0?' ':'') + n.toFixed(2); }
+
+function compute() {
+  const v = {};
+  ids.forEach(id => v[id] = parseFloat($(id).value));
+  ids.forEach(id => $(id+'v').textContent = fmt(v[id]));
+
+  const z = v.x1*v.w1 + v.x2*v.w2 + v.x3*v.w3 + v.b;
+  const fn = $('act').value;
+  const y = activate(z, fn);
+
+  // Equation panel
+  $('eq').innerHTML = `
+    <div><b>公式</b> &nbsp; y = σ(w₁·x₁ + w₂·x₂ + w₃·x₃ + b)</div>
+    <div class="step">w₁·x₁ = ${fmt(v.w1)} × ${fmt(v.x1)} = ${fmt(v.w1*v.x1)}</div>
+    <div class="step">w₂·x₂ = ${fmt(v.w2)} × ${fmt(v.x2)} = ${fmt(v.w2*v.x2)}</div>
+    <div class="step">w₃·x₃ = ${fmt(v.w3)} × ${fmt(v.x3)} = ${fmt(v.w3*v.x3)}</div>
+    <div class="step">+ b = ${fmt(v.b)}</div>
+    <div style="margin-top:6px;">加权和 <b>z = ${fmt(z)}</b></div>
+    <div>激活 <span class="res">y = ${fn}(${fmt(z)}) = ${fmt(y)}</span></div>
+  `;
+
+  drawNeuron(v, z, y, fn);
+  drawActivation(fn, z, y);
+}
+
+function drawNeuron(v, z, y, fn) {
+  const svg = $('neuronSvg');
+  // node positions
+  const inX = 60, inYs = [80, 180, 280];
+  const sumX = 320, sumY = 180;
+  const actX = 440;
+  const outX = 540;
+
+  // weight line styles
+  const wAbs = [Math.abs(v.w1), Math.abs(v.w2), Math.abs(v.w3)];
+  const lineThick = w => 1 + Math.min(6, w * 3);
+  const lineColor = w => w >= 0 ? '#4589ff' : '#ff6f6f';
+
+  svg.innerHTML = `
+    <!-- Input nodes -->
+    ${inYs.map((y, i) => `
+      <circle cx="${inX}" cy="${y}" r="22" fill="rgba(255,213,102,0.15)" stroke="#ffd566" stroke-width="1.5"/>
+      <text x="${inX}" y="${y+5}" text-anchor="middle" fill="#ffd566" font-family="ui-monospace,monospace" font-size="13">x${i+1}</text>
+      <text x="${inX-30}" y="${y+5}" text-anchor="end" fill="#888" font-family="ui-monospace,monospace" font-size="11">${fmt(v['x'+(i+1)])}</text>
+    `).join('')}
+
+    <!-- Weight lines -->
+    ${inYs.map((y, i) => {
+      const w = v['w'+(i+1)];
+      return `
+        <line x1="${inX+22}" y1="${y}" x2="${sumX-30}" y2="${sumY}"
+              stroke="${lineColor(w)}" stroke-width="${lineThick(Math.abs(w))}" opacity="0.85"/>
+        <rect x="${(inX+sumX)/2 - 22}" y="${(y+sumY)/2 - 10}" width="44" height="20" fill="#14141a" stroke="#6fa7ff" rx="4"/>
+        <text x="${(inX+sumX)/2}" y="${(y+sumY)/2 + 4}" text-anchor="middle" fill="#6fa7ff" font-family="ui-monospace,monospace" font-size="11">w${i+1}=${fmt(w)}</text>
+      `;
+    }).join('')}
+
+    <!-- Summation node -->
+    <circle cx="${sumX}" cy="${sumY}" r="32" fill="rgba(69,137,255,0.18)" stroke="#4589ff" stroke-width="2"/>
+    <text x="${sumX}" y="${sumY-2}" text-anchor="middle" fill="#fff" font-size="18" font-weight="600">Σ</text>
+    <text x="${sumX}" y="${sumY+16}" text-anchor="middle" fill="#aab" font-family="ui-monospace,monospace" font-size="10">+b=${fmt(v.b)}</text>
+    <text x="${sumX}" y="${sumY+58}" text-anchor="middle" fill="#fff" font-family="ui-monospace,monospace" font-size="13">z = ${fmt(z)}</text>
+
+    <!-- Arrow to activation -->
+    <line x1="${sumX+32}" y1="${sumY}" x2="${actX-32}" y2="${sumY}" stroke="#6fa7ff" stroke-width="2"/>
+    <polygon points="${actX-32},${sumY-5} ${actX-26},${sumY} ${actX-32},${sumY+5}" fill="#6fa7ff"/>
+
+    <!-- Activation node -->
+    <circle cx="${actX}" cy="${sumY}" r="32" fill="rgba(199,163,224,0.15)" stroke="#c7a3e0" stroke-width="2"/>
+    <text x="${actX}" y="${sumY+5}" text-anchor="middle" fill="#c7a3e0" font-family="ui-monospace,monospace" font-size="13">${fn === 'sigmoid' ? 'σ' : fn === 'relu' ? 'ReLU' : 'tanh'}</text>
+
+    <!-- Arrow to output -->
+    <line x1="${actX+32}" y1="${sumY}" x2="${outX-22}" y2="${sumY}" stroke="#24a148" stroke-width="2"/>
+    <polygon points="${outX-22},${sumY-5} ${outX-16},${sumY} ${outX-22},${sumY+5}" fill="#24a148"/>
+
+    <!-- Output node -->
+    <circle cx="${outX}" cy="${sumY}" r="26" fill="rgba(36,161,72,0.18)" stroke="#24a148" stroke-width="2"/>
+    <text x="${outX}" y="${sumY-2}" text-anchor="middle" fill="#24a148" font-size="14" font-weight="600">y</text>
+    <text x="${outX}" y="${sumY+14}" text-anchor="middle" fill="#24a148" font-family="ui-monospace,monospace" font-size="11">${fmt(y)}</text>
+  `;
+}
+
+function drawActivation(fn, z, y) {
+  const svg = $('actGraph');
+  const W = 320, H = 180;
+  const padL = 30, padR = 10, padT = 10, padB = 24;
+  const xMin = -5, xMax = 5;
+  const yMin = fn === 'tanh' ? -1.2 : -0.2;
+  const yMax = fn === 'tanh' ? 1.2 : 1.2;
+
+  const xToPx = x => padL + (x - xMin) / (xMax - xMin) * (W - padL - padR);
+  const yToPx = y => H - padB - (y - yMin) / (yMax - yMin) * (H - padT - padB);
+
+  // Build curve
+  const pts = [];
+  for (let i = 0; i <= 200; i++) {
+    const xi = xMin + (xMax - xMin) * i / 200;
+    const yi = activate(xi, fn);
+    pts.push(`${xToPx(xi).toFixed(1)},${yToPx(yi).toFixed(1)}`);
+  }
+  const zClamped = Math.max(xMin, Math.min(xMax, z));
+  const yClamped = activate(zClamped, fn);
+
+  svg.innerHTML = `
+    <!-- Grid -->
+    <line x1="${padL}" y1="${yToPx(0)}" x2="${W-padR}" y2="${yToPx(0)}" stroke="#2a2a35" stroke-width="1"/>
+    <line x1="${xToPx(0)}" y1="${padT}" x2="${xToPx(0)}" y2="${H-padB}" stroke="#2a2a35" stroke-width="1"/>
+    <text x="${W-padR-2}" y="${yToPx(0)-4}" text-anchor="end" fill="#555" font-family="ui-monospace,monospace" font-size="9">z</text>
+    <text x="${xToPx(0)+4}" y="${padT+10}" fill="#555" font-family="ui-monospace,monospace" font-size="9">y</text>
+
+    <!-- Curve -->
+    <polyline points="${pts.join(' ')}" fill="none" stroke="#c7a3e0" stroke-width="2"/>
+
+    <!-- Current z marker -->
+    <line x1="${xToPx(zClamped)}" y1="${yToPx(yClamped)}" x2="${xToPx(zClamped)}" y2="${H-padB}" stroke="#ffd566" stroke-width="1" stroke-dasharray="3,3"/>
+    <line x1="${padL}" y1="${yToPx(yClamped)}" x2="${xToPx(zClamped)}" y2="${yToPx(yClamped)}" stroke="#ffd566" stroke-width="1" stroke-dasharray="3,3"/>
+    <circle cx="${xToPx(zClamped)}" cy="${yToPx(yClamped)}" r="6" fill="#ffd566" stroke="#fff" stroke-width="1.5"/>
+    <text x="${xToPx(zClamped)+10}" y="${yToPx(yClamped)-8}" fill="#ffd566" font-family="ui-monospace,monospace" font-size="11">(z=${fmt(z)}, y=${fmt(y)})</text>
+  `;
+}
+
+function randomize() {
+  ids.forEach(id => {
+    const r = $(id);
+    const min = parseFloat(r.min), max = parseFloat(r.max);
+    r.value = (min + Math.random() * (max - min)).toFixed(2);
+  });
+  compute();
+}
+
+function reset() {
+  $('x1').value = 0.7; $('x2').value = 0.4; $('x3').value = -0.2;
+  $('w1').value = 0.5; $('w2').value = 0.9; $('w3').value = -0.3;
+  $('b').value = 0.1;
+  $('act').value = 'sigmoid';
+  compute();
+}
+
+// Wire up
+ids.forEach(id => $(id).addEventListener('input', compute));
+$('act').addEventListener('change', compute);
+compute();
+</script>
+
+</body>
+</html>

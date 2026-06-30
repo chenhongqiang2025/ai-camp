@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>RNN · 循环神经网络</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 12px 18px; margin-bottom: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 1280px; margin-left: auto; margin-right: auto; font-size: 13px; }
+  .control select, .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 7px 12px; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .control button.primary { background: #4589ff; border-color: #4589ff; font-weight: 500; }
+  .control button.primary:hover { background: #6fa7ff; }
+  .control button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .control label { color: #888; }
+  .control .gap { flex: 1; }
+  .control .meta { font-family: ui-monospace, monospace; font-size: 11px; color: #888; }
+
+  .stage { max-width: 1280px; margin: 0 auto; }
+  .col { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 18px 22px; margin-bottom: 14px; }
+  .col h3 { margin: 0 0 14px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid #2a2a35; }
+
+  svg { width: 100%; display: block; }
+
+  .legend { display: flex; gap: 18px; font-family: ui-monospace, monospace; font-size: 11px; color: #888; margin-top: 10px; flex-wrap: wrap; }
+  .legend .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+  .footnote { max-width: 1280px; margin: 18px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; letter-spacing: 0.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>RNN · 循环神经网络</h1>
+<div class="sub">RECURRENT NEURAL NETWORK · 处理有顺序的数据 · 隐状态 h 把上一步信息传给下一步</div>
+
+<div class="control">
+  <label>输入序列</label>
+  <select id="seq">
+    <option value="hello">H · E · L · L · O</option>
+    <option value="zh">今 · 天 · 天 · 气 · 真 · 好</option>
+    <option value="long">A · B · C · D · E · F · G · H · I · J</option>
+  </select>
+  <button class="primary" onclick="play()" id="btnPlay">▶ 逐步播放</button>
+  <button onclick="finish()" id="btnFinish">⏩ 全部展开</button>
+  <button onclick="reset()">↻ 重置</button>
+  <span class="gap"></span>
+  <span class="meta">时间步 <b id="stepLbl" style="color:#fff;">0</b> / <span id="totalLbl">5</span></span>
+</div>
+
+<div class="stage">
+
+  <div class="col">
+    <h3>RNN 按时间展开 · 每一步把上一步的 h 传给下一步</h3>
+    <svg id="svgUnroll" viewBox="0 0 1240 280" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="legend">
+      <span><span class="dot" style="background:#ffd566"></span>输入 xₜ</span>
+      <span><span class="dot" style="background:#4589ff"></span>隐状态 hₜ（"记忆"）</span>
+      <span><span class="dot" style="background:#24a148"></span>输出 yₜ</span>
+      <span><span class="dot" style="background:#c7a3e0"></span>循环连接 hₜ₋₁ → hₜ</span>
+    </div>
+  </div>
+
+  <div class="col">
+    <h3>隐状态强度（"记忆"随时间衰减 → 长序列梯度消失）</h3>
+    <svg id="svgDecay" viewBox="0 0 1240 160" preserveAspectRatio="xMidYMid meet"></svg>
+    <div style="font-family:ui-monospace,monospace;font-size:11px;color:#888;margin-top:8px;line-height:1.7;">
+      <div>每根柱子代表"第 1 步输入的信息"在后续每一步中保留了多少。</div>
+      <div>柱子越短 = 信息丢失越多。这就是 <b style="color:#ff6f6f;">RNN 的核心瓶颈</b>，2017 Transformer 用 Attention 一次解决。</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footnote">
+  RNN · 1986 起源 · 1990s LSTM 改进 · 2014–2017 NLP 主流 · 2017 之后被 Transformer 全面取代
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const sequences = {
+  hello: ['H', 'E', 'L', 'L', 'O'],
+  zh: ['今', '天', '天', '气', '真', '好'],
+  long: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']
+};
+
+let seq = sequences.hello;
+let step = 0;
+let timer = null;
+
+function colorH(intensity) {
+  // intensity 0-1
+  const t = Math.max(0, Math.min(1, intensity));
+  const a = 0.2 + 0.7 * t;
+  return `rgba(69,137,255,${a})`;
+}
+
+function drawUnroll() {
+  const svg = $('svgUnroll');
+  const W = 1240, H = 280;
+  const n = seq.length;
+  const margin = 50;
+  const stride = (W - margin*2) / (n - 1);
+
+  const yIn = 230, yH = 140, yOut = 50;
+
+  let html = '';
+
+  // Recurrent connections (between h_t-1 and h_t)
+  for (let t = 0; t < n - 1; t++) {
+    const visible = (t + 1) <= step;
+    const x1 = margin + t * stride + 26;
+    const x2 = margin + (t + 1) * stride - 26;
+    html += `<line x1="${x1}" y1="${yH}" x2="${x2}" y2="${yH}" stroke="#c7a3e0" stroke-width="2" opacity="${visible ? 0.85 : 0.15}"/>`;
+    if (visible) {
+      html += `<polygon points="${x2-6},${yH-4} ${x2},${yH} ${x2-6},${yH+4}" fill="#c7a3e0"/>`;
+    }
+  }
+
+  // For each timestep
+  for (let t = 0; t < n; t++) {
+    const x = margin + t * stride;
+    const visible = (t + 1) <= step;
+    const op = visible ? 1 : 0.18;
+
+    // Input x_t
+    html += `<circle cx="${x}" cy="${yIn}" r="22" fill="rgba(255,213,102,0.2)" stroke="#ffd566" stroke-width="1.5" opacity="${op}"/>`;
+    html += `<text x="${x}" y="${yIn+6}" text-anchor="middle" fill="#ffd566" font-family="ui-monospace,monospace" font-size="14" opacity="${op}">${seq[t]}</text>`;
+    html += `<text x="${x}" y="${yIn+45}" text-anchor="middle" fill="#888" font-family="ui-monospace,monospace" font-size="10" opacity="${op}">x${t+1}</text>`;
+
+    // Vertical arrow x_t → h_t
+    html += `<line x1="${x}" y1="${yIn-22}" x2="${x}" y2="${yH+26}" stroke="#888" stroke-width="1" opacity="${op}"/>`;
+    if (visible) html += `<polygon points="${x-4},${yH+26} ${x},${yH+20} ${x+4},${yH+26}" fill="#888"/>`;
+
+    // Hidden state h_t
+    const intensity = visible ? 1 : 0;
+    html += `<circle cx="${x}" cy="${yH}" r="26" fill="${colorH(intensity)}" stroke="#4589ff" stroke-width="2" opacity="${op}"/>`;
+    html += `<text x="${x}" y="${yH+5}" text-anchor="middle" fill="#fff" font-family="ui-monospace,monospace" font-size="12" opacity="${op}">h${t+1}</text>`;
+
+    // Vertical arrow h_t → y_t
+    html += `<line x1="${x}" y1="${yH-26}" x2="${x}" y2="${yOut+22}" stroke="#888" stroke-width="1" opacity="${op}"/>`;
+    if (visible) html += `<polygon points="${x-4},${yOut+22} ${x},${yOut+16} ${x+4},${yOut+22}" fill="#888"/>`;
+
+    // Output y_t
+    html += `<circle cx="${x}" cy="${yOut}" r="20" fill="rgba(36,161,72,0.18)" stroke="#24a148" stroke-width="1.5" opacity="${op}"/>`;
+    html += `<text x="${x}" y="${yOut+5}" text-anchor="middle" fill="#24a148" font-family="ui-monospace,monospace" font-size="12" opacity="${op}">y${t+1}</text>`;
+  }
+
+  // Time axis
+  html += `<line x1="${margin-20}" y1="${yIn+60}" x2="${W-margin+20}" y2="${yIn+60}" stroke="#2a2a35" stroke-width="1"/>`;
+  html += `<text x="${W-margin+20}" y="${yIn+60+4}" text-anchor="start" fill="#555" font-family="ui-monospace,monospace" font-size="10">time →</text>`;
+
+  svg.innerHTML = html;
+}
+
+function drawDecay() {
+  const svg = $('svgDecay');
+  const W = 1240, H = 160;
+  const n = seq.length;
+  const margin = 50;
+  const stride = (W - margin*2) / (n - 1);
+  const padTop = 18, padBot = 28;
+  const maxH = H - padTop - padBot;
+
+  let html = '';
+  // Y-axis
+  html += `<line x1="${margin}" y1="${padTop}" x2="${margin}" y2="${H-padBot}" stroke="#2a2a35"/>`;
+  html += `<line x1="${margin}" y1="${H-padBot}" x2="${W-margin+10}" y2="${H-padBot}" stroke="#2a2a35"/>`;
+  html += `<text x="${margin-6}" y="${padTop+4}" text-anchor="end" fill="#555" font-family="ui-monospace,monospace" font-size="9">100%</text>`;
+  html += `<text x="${margin-6}" y="${H-padBot+4}" text-anchor="end" fill="#555" font-family="ui-monospace,monospace" font-size="9">0%</text>`;
+
+  // Bars: "信息 from x_1 retained in h_t" 衰减系数 ~ 0.65^t
+  for (let t = 0; t < n; t++) {
+    const visible = (t + 1) <= step;
+    const ratio = Math.pow(0.65, t);
+    const barH = maxH * ratio;
+    const x = margin + t * stride;
+    const barW = Math.min(70, stride * 0.6);
+
+    const color = visible ? (ratio > 0.5 ? '#4589ff' : ratio > 0.2 ? '#ffaa00' : '#ff6f6f') : '#2a2a35';
+    const op = visible ? 1 : 0.3;
+
+    html += `<rect x="${x - barW/2}" y="${H - padBot - barH}" width="${barW}" height="${barH}" fill="${color}" opacity="${op}" rx="3"/>`;
+    html += `<text x="${x}" y="${H - padBot - barH - 6}" text-anchor="middle" fill="${color}" font-family="ui-monospace,monospace" font-size="11" opacity="${op}">${(ratio*100).toFixed(0)}%</text>`;
+    html += `<text x="${x}" y="${H - padBot + 14}" text-anchor="middle" fill="#888" font-family="ui-monospace,monospace" font-size="10" opacity="${op}">t=${t+1}</text>`;
+  }
+
+  svg.innerHTML = html;
+}
+
+function loadSeq() {
+  seq = sequences[$('seq').value];
+  step = 0;
+  $('totalLbl').textContent = seq.length;
+  $('stepLbl').textContent = 0;
+  if (timer) clearTimeout(timer);
+  $('btnPlay').disabled = false;
+  drawUnroll();
+  drawDecay();
+}
+
+function play() {
+  if (timer) clearTimeout(timer);
+  $('btnPlay').disabled = true;
+  step = 0;
+  function tick() {
+    step++;
+    $('stepLbl').textContent = step;
+    drawUnroll();
+    drawDecay();
+    if (step < seq.length) {
+      timer = setTimeout(tick, 700);
+    } else {
+      $('btnPlay').disabled = false;
+    }
+  }
+  tick();
+}
+
+function finish() {
+  if (timer) clearTimeout(timer);
+  step = seq.length;
+  $('stepLbl').textContent = step;
+  drawUnroll();
+  drawDecay();
+  $('btnPlay').disabled = false;
+}
+
+function reset() {
+  if (timer) clearTimeout(timer);
+  step = 0;
+  $('stepLbl').textContent = 0;
+  drawUnroll();
+  drawDecay();
+  $('btnPlay').disabled = false;
+}
+
+$('seq').addEventListener('change', loadSeq);
+loadSeq();
+</script>
+
+</body>
+</html>
