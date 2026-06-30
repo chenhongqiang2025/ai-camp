@@ -1,0 +1,5 @@
+# Photo intentionally inlined as base64 into slides.html (no separate file cached on student devices)
+# DO NOT add richard.jpg back here.
+*.jpg
+*.jpeg
+*.png
