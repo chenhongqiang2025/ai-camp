@@ -1,0 +1,147 @@
+@prefix : <http://lunar-camp.dlut.cn/2099/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+# ==================================================================
+# 月球营领域本体 · v0.3
+# 2099 大连高新园区·月球 AI 未来领袖夏令营
+# ==================================================================
+
+<http://lunar-camp.dlut.cn/2099/> a owl:Ontology ;
+    rdfs:label "Lunar AI Camp Ontology"@en ;
+    rdfs:label "月球营领域本体"@zh ;
+    rdfs:comment "2099 大连高新园区·月球 AI 未来领袖夏令营 - 领域知识结构" .
+
+# ------------------------------------------------------------------
+# Classes (类层次)
+# ------------------------------------------------------------------
+
+:Thing a owl:Class .
+
+# 人
+:Person a owl:Class ; rdfs:subClassOf :Thing ; rdfs:label "人"@zh .
+:Student a owl:Class ; rdfs:subClassOf :Person ; rdfs:label "学员"@zh .
+:Mentor a owl:Class ; rdfs:subClassOf :Person ; rdfs:label "导师"@zh .
+:Engineer a owl:Class ; rdfs:subClassOf :Person ; rdfs:label "工程师"@zh .
+
+# 学院
+:College a owl:Class ; rdfs:subClassOf :Thing ; rdfs:label "学院"@zh .
+
+# 任务
+:Mission a owl:Class ; rdfs:subClassOf :Thing ; rdfs:label "任务"@zh .
+:EVA_Mission a owl:Class ; rdfs:subClassOf :Mission ; rdfs:label "舱外任务"@zh .
+:SLAM_Mission a owl:Class ; rdfs:subClassOf :Mission ; rdfs:label "SLAM 任务"@zh .
+:Training_Mission a owl:Class ; rdfs:subClassOf :Mission ; rdfs:label "训练任务"@zh .
+
+# 技能
+:Skill a owl:Class ; rdfs:subClassOf :Thing ; rdfs:label "技能"@zh .
+:AI_Skill a owl:Class ; rdfs:subClassOf :Skill ; rdfs:label "AI 技能"@zh .
+:Engineering_Skill a owl:Class ; rdfs:subClassOf :Skill ; rdfs:label "工程技能"@zh .
+
+# 兴趣领域
+:Interest a owl:Class ; rdfs:subClassOf :Thing ; rdfs:label "兴趣领域"@zh .
+:AI_Interest a owl:Class ; rdfs:subClassOf :Interest ; rdfs:label "AI 兴趣"@zh .
+
+# 资源
+:Resource a owl:Class ; rdfs:subClassOf :Thing ; rdfs:label "资源"@zh .
+:Compute_Resource a owl:Class ; rdfs:subClassOf :Resource ; rdfs:label "算力资源"@zh .
+:Equipment a owl:Class ; rdfs:subClassOf :Resource ; rdfs:label "装备"@zh .
+
+# 位置
+:Location a owl:Class ; rdfs:subClassOf :Thing ; rdfs:label "位置"@zh .
+:Earth_Location a owl:Class ; rdfs:subClassOf :Location ; rdfs:label "地球位置"@zh .
+:Moon_Location a owl:Class ; rdfs:subClassOf :Location ; rdfs:label "月球位置"@zh .
+
+# ------------------------------------------------------------------
+# Object Properties (对象属性 / 关系)
+# ------------------------------------------------------------------
+
+:enrolledIn a owl:ObjectProperty ;
+    rdfs:domain :Student ; rdfs:range :College ;
+    rdfs:label "就读于"@zh .
+
+:hasInterest a owl:ObjectProperty ;
+    rdfs:domain :Person ; rdfs:range :Interest ;
+    rdfs:label "感兴趣"@zh .
+
+:hasSkill a owl:ObjectProperty ;
+    rdfs:domain :Person ; rdfs:range :Skill ;
+    rdfs:label "掌握技能"@zh .
+
+:assignedTo a owl:ObjectProperty ;
+    rdfs:domain :Student ; rdfs:range :Mission ;
+    rdfs:label "分配到"@zh .
+
+:requires a owl:ObjectProperty ;
+    rdfs:domain :Mission ; rdfs:range :Skill ;
+    rdfs:label "需要技能"@zh .
+
+:locatedIn a owl:ObjectProperty ;
+    rdfs:domain :Mission ; rdfs:range :Location ;
+    rdfs:label "位于"@zh .
+
+:mentorOf a owl:ObjectProperty ;
+    rdfs:domain :Mentor ; rdfs:range :Student ;
+    rdfs:label "指导"@zh .
+
+# ------------------------------------------------------------------
+# Concrete Instances (实例数据) - 兼容 KG/seed-students.json
+# ------------------------------------------------------------------
+
+# 学院实例
+:DLUT_Software a :College ; rdfs:label "大连理工大学·软件学院"@zh .
+:DLUT_Math a :College ; rdfs:label "大连理工大学·数学学院"@zh .
+:NEU_CS a :College ; rdfs:label "东北大学·计算机学院"@zh .
+:NEU_Auto a :College ; rdfs:label "东北大学·自动化学院"@zh .
+:DMU_IE a :College ; rdfs:label "大连海事大学·信息工程"@zh .
+
+# 兴趣实例
+:Interest_GenAI a :AI_Interest ; rdfs:label "生成式 AI"@zh .
+:Interest_RAG a :AI_Interest ; rdfs:label "RAG 工程"@zh .
+:Interest_Agent a :AI_Interest ; rdfs:label "Agent 编排"@zh .
+:Interest_KG a :AI_Interest ; rdfs:label "知识图谱"@zh .
+:Interest_MCP a :AI_Interest ; rdfs:label "MCP 协议"@zh .
+:Interest_RL a :AI_Interest ; rdfs:label "强化学习"@zh .
+:Interest_Robotics a :Interest ; rdfs:label "机器人控制"@zh .
+
+# 任务实例
+:Mission_SeismicAnomaly a :Training_Mission ; rdfs:label "月震噪声异常检测"@zh .
+:Mission_VisionSLAM a :SLAM_Mission ; rdfs:label "玉兔-10 视觉 SLAM"@zh .
+:Mission_PanguDeploy a :Training_Mission ; rdfs:label "盘古月球大模型部署"@zh .
+:Mission_AvoidanceEVA a :EVA_Mission ; rdfs:label "玉兔-10 自主避障"@zh .
+:Mission_DigitalTwin a :Training_Mission ; rdfs:label "营地数字孪生本体构建"@zh .
+
+# 学员实例（兼容 seed-students.json）
+:S001 a :Student ; rdfs:label "林知远"@zh ;
+    :enrolledIn :DLUT_Software ;
+    :hasInterest :Interest_GenAI, :Interest_RAG ;
+    :assignedTo :Mission_SeismicAnomaly .
+
+:S002 a :Student ; rdfs:label "陈雨桐"@zh ;
+    :enrolledIn :NEU_CS ;
+    :hasInterest :Interest_Agent, :Interest_MCP, :Interest_RAG ;
+    :assignedTo :Mission_VisionSLAM .
+
+:S003 a :Student ; rdfs:label "苏明翰"@zh ;
+    :enrolledIn :DLUT_Math ;
+    :hasInterest :Interest_KG ;
+    :assignedTo :Mission_SeismicAnomaly .
+
+# ------------------------------------------------------------------
+# 推理规则的种子 - 简单子类传递
+# ------------------------------------------------------------------
+# 由于 :Interest_RAG rdfs:subClassOf :AI_Interest
+# 且 :AI_Interest rdfs:subClassOf :Interest
+# 所以推理引擎可以推出：
+#   S001 hasInterest :Interest_RAG → S001 也 hasInterest 任何 :AI_Interest 子类的父类（用 SPARQL 上推查询）
+#
+# 简单 SPARQL 查询示例：
+# SELECT ?student WHERE {
+#   ?student :hasInterest ?interest .
+#   ?interest a/rdfs:subClassOf* :AI_Interest .
+# }
+# → 返回所有对 AI 感兴趣的学员（包括只标 RAG / MCP / Agent 的）
+
+# END

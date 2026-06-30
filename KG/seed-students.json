@@ -1,0 +1,81 @@
+{
+  "_meta": {
+    "purpose": "KG 演示兜底数据 · 2099 月球营地球端学员预埋",
+    "use_when": "真实学员未注册时单独演示；真实学员已注册时与之融合",
+    "fictional": true,
+    "scenario": "2099 大连高新园区·月球 AI 未来领袖夏令营 · 地球端集训学员"
+  },
+  "students": [
+    {
+      "id": "S001",
+      "name": "林知远",
+      "college": "大连理工大学 · 软件学院",
+      "interests": ["生成式 AI", "RAG 工程", "分布式训练"],
+      "skills": ["Python", "PyTorch", "Kubernetes"],
+      "mission": "月震噪声异常检测"
+    },
+    {
+      "id": "S002",
+      "name": "陈雨桐",
+      "college": "东北大学 · 计算机学院",
+      "interests": ["Agent 编排", "MCP 协议", "RAG 工程"],
+      "skills": ["LangChain", "TypeScript", "FastAPI"],
+      "mission": "玉兔-10 视觉 SLAM"
+    },
+    {
+      "id": "S003",
+      "name": "苏明翰",
+      "college": "大连理工大学 · 数学学院",
+      "interests": ["图算法", "知识图谱", "图神经网络"],
+      "skills": ["Neo4j", "Cypher", "NetworkX"],
+      "mission": "月震噪声异常检测"
+    },
+    {
+      "id": "S004",
+      "name": "周清越",
+      "college": "大连海事大学 · 信息工程",
+      "interests": ["大模型微调", "推理优化", "量化压缩"],
+      "skills": ["DeepSpeed", "vLLM", "CUDA"],
+      "mission": "盘古月球大模型部署"
+    },
+    {
+      "id": "S005",
+      "name": "黄星禾",
+      "college": "东北大学 · 自动化学院",
+      "interests": ["强化学习", "Agent 编排", "机器人控制"],
+      "skills": ["ROS", "OpenAI Gym", "Python"],
+      "mission": "玉兔-10 自主避障"
+    },
+    {
+      "id": "S006",
+      "name": "李南屿",
+      "college": "大连理工大学 · 软件学院",
+      "interests": ["生成式 AI", "RAG 工程", "本体论建模"],
+      "skills": ["Protégé", "OWL", "Python"],
+      "mission": "营地数字孪生本体构建"
+    },
+    {
+      "id": "S007",
+      "name": "宋桐羽",
+      "college": "大连海事大学 · 信息工程",
+      "interests": ["MCP 协议", "工具调用", "Agent 编排"],
+      "skills": ["TypeScript", "Node.js", "MCP SDK"],
+      "mission": "盘古月球大模型部署"
+    },
+    {
+      "id": "S008",
+      "name": "孟书晗",
+      "college": "东北大学 · 计算机学院",
+      "interests": ["知识图谱", "图神经网络", "RAG 工程"],
+      "skills": ["Neo4j", "PyTorch Geometric", "Cypher"],
+      "mission": "营地数字孪生本体构建"
+    }
+  ],
+  "_design_notes": [
+    "8 学员覆盖 4 个学院 — 出聚类时能看出学院维度的簇",
+    "兴趣维度有重叠（如 S001/S002/S006 都喜欢 RAG，S003/S008 都喜欢 KG），适合演示共同邻居推荐",
+    "技能维度互补（如 S003+S008 都会 Neo4j，可推荐组队做 KG 任务）",
+    "mission 维度形成自然小组 — 同 mission 的学员是天然搭档",
+    "姓名性别中性，避免任何引导"
+  ]
+}

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>A2A 双 Agent 协作演示 · 月球营组队推荐</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 28px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 24px; font-family: ui-monospace, monospace; letter-spacing: 1px; }
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; display: flex; gap: 12px; align-items: center; max-width: 1200px; margin-left: auto; margin-right: auto; }
+  .control select, .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  .control button.primary { background: #4589ff; border-color: #4589ff; font-weight: 500; }
+  .control button.primary:hover { background: #6fa7ff; }
+  .control button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .control label { font-size: 13px; color: #888; }
+
+  .stage { display: grid; grid-template-columns: 1fr 80px 1fr; gap: 12px; max-width: 1200px; margin: 0 auto; }
+  .agent { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 18px; min-height: 380px; display: flex; flex-direction: column; }
+  .agent .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2a2a35; }
+  .agent .head h3 { margin: 0; font-size: 15px; color: #fff; }
+  .agent .head .role { font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; }
+  .agent .desc { color: #999; font-size: 12px; line-height: 1.55; margin-bottom: 14px; }
+  .agent.thinking { border-color: #4589ff; box-shadow: 0 0 0 1px rgba(69,137,255,0.4); }
+  .agent.thinking .head .role { color: #ffd566; }
+  .agent .log { flex: 1; font-family: ui-monospace, monospace; font-size: 11.5px; line-height: 1.5; overflow-y: auto; max-height: 280px; }
+  .agent .log .entry { padding: 6px 0; border-bottom: 1px dashed #1d1d24; color: #bbb; }
+  .agent .log .entry.task { color: #ffd566; }
+  .agent .log .entry.result { color: #24a148; }
+  .agent .log .entry.send { color: #6fa7ff; }
+  .agent .log .entry.recv { color: #c7a3e0; }
+
+  .channel { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+  .channel .label { font-family: ui-monospace, monospace; font-size: 9.5px; color: #888; letter-spacing: 1.5px; text-align: center; }
+  .channel .pipe { width: 4px; height: 200px; background: linear-gradient(to bottom, transparent, #2a2a35 20%, #2a2a35 80%, transparent); position: relative; border-radius: 2px; }
+  .channel .pulse { position: absolute; width: 14px; height: 14px; background: #4589ff; border-radius: 50%; left: -5px; opacity: 0; box-shadow: 0 0 16px #4589ff; }
+  .channel .pulse.active { animation: travel 1.4s ease-out forwards; }
+  .channel .pulse.reverse.active { animation: travelReverse 1.4s ease-out forwards; }
+  @keyframes travel {
+    0% { top: -8px; opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { top: 208px; opacity: 0; }
+  }
+  @keyframes travelReverse {
+    0% { top: 208px; opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 1; }
+    100% { top: -8px; opacity: 0; }
+  }
+
+  .output { background: rgba(36,161,72,0.08); border: 1px solid #24a148; border-radius: 8px; padding: 18px 22px; margin: 22px auto 0; max-width: 1200px; display: none; }
+  .output.show { display: block; }
+  .output h3 { color: #24a148; font-family: ui-monospace, monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 12px; }
+  .output .team { font-size: 16px; color: #fff; line-height: 1.7; }
+  .output .team b { color: #ffd566; }
+  .output .reason { margin-top: 10px; font-size: 13px; color: #aab; line-height: 1.6; }
+
+  .footnote { max-width: 1200px; margin: 22px auto 0; font-size: 11.5px; color: #555; font-family: ui-monospace, monospace; letter-spacing: 0.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>A2A 双 Agent 协作 · 月球营组队推荐</h1>
+<div class="sub">CH.12 LANDING DEMO · ANALYZER ⇄ A2A ⇄ RECOMMENDER</div>
+
+<div class="control">
+  <label>为哪位学员找搭档：</label>
+  <select id="studentSel">
+    <option value="S001">S001 林知远（大工软件 · RAG / GenAI）</option>
+    <option value="S002">S002 陈雨桐（东北计算机 · Agent / MCP / RAG）</option>
+    <option value="S003">S003 苏明翰（大工数学 · KG / 图算法）</option>
+    <option value="S004">S004 周清越（海事信息 · 推理优化）</option>
+    <option value="S005">S005 黄星禾（东北自动化 · 强化学习）</option>
+  </select>
+  <button class="primary" id="btnStart">▶ 开始协作</button>
+  <button id="btnReset">↻ 重置</button>
+  <div style="flex: 1;"></div>
+  <span style="font-family: ui-monospace, monospace; font-size: 10.5px; color: #666;">基于 KG/seed-students.json</span>
+</div>
+
+<div class="stage">
+
+  <div class="agent" id="agentA">
+    <div class="head">
+      <h3>Analyzer Agent</h3>
+      <div class="role">分析 · 相似度</div>
+    </div>
+    <div class="desc">读取学员数据，计算与目标学员的兴趣相似度、学院匹配度、技能互补度。</div>
+    <div class="log" id="logA"></div>
+  </div>
+
+  <div class="channel">
+    <div class="label">A2A<br>PROTOCOL</div>
+    <div class="pipe">
+      <div class="pulse" id="pulse1"></div>
+      <div class="pulse reverse" id="pulse2"></div>
+    </div>
+  </div>
+
+  <div class="agent" id="agentB">
+    <div class="head">
+      <h3>Recommender Agent</h3>
+      <div class="role">推荐 · 多维排序</div>
+    </div>
+    <div class="desc">接收候选名单，综合任务匹配、互补性、多样性输出最终 3 人推荐。</div>
+    <div class="log" id="logB"></div>
+  </div>
+
+</div>
+
+<div class="output" id="output">
+  <h3>↳ Final Recommendation</h3>
+  <div class="team" id="teamLine"></div>
+  <div class="reason" id="reasonLine"></div>
+</div>
+
+<div class="footnote">
+  A2A 协议（Google 2025）· MCP（Agent ↔ Tool） + A2A（Agent ↔ Agent）= Agent 工程协议栈
+</div>
+
+<script>
+  const data = {
+    S001: { name: '林知远', college: '大工软件', interests: ['GenAI','RAG'], mission: '月震' },
+    S002: { name: '陈雨桐', college: '东北计算机', interests: ['Agent','MCP','RAG'], mission: 'VisionSLAM' },
+    S003: { name: '苏明翰', college: '大工数学', interests: ['KG','图算法'], mission: '月震' },
+    S004: { name: '周清越', college: '海事信息', interests: ['推理优化','量化'], mission: '盘古部署' },
+    S005: { name: '黄星禾', college: '东北自动化', interests: ['RL','Agent','机器人'], mission: 'VisionSLAM' },
+    S006: { name: '李南屿', college: '大工软件', interests: ['GenAI','RAG','本体'], mission: '数字孪生' },
+    S007: { name: '宋桐羽', college: '海事信息', interests: ['MCP','Agent'], mission: '盘古部署' },
+    S008: { name: '孟书晗', college: '东北计算机', interests: ['KG','GNN','RAG'], mission: '数字孪生' }
+  };
+
+  // hand-curated recommendation rules (simulates real algorithm output, deterministic for demo)
+  const recommendations = {
+    S001: { team: ['S006','S003'], reason: 'S006 同学院（大工软件）+ 同兴趣 RAG/GenAI；S003 互补技能（KG/数学）' },
+    S002: { team: ['S007','S008'], reason: 'S007 同兴趣 Agent/MCP；S008 同兴趣 RAG + 互补 KG' },
+    S003: { team: ['S008','S001'], reason: 'S008 同兴趣 KG + 同领域；S001 同 mission（月震）天然搭档' },
+    S004: { team: ['S007','S002'], reason: 'S007 同 mission（盘古部署）+ 互补 MCP；S002 互补 Agent 编排' },
+    S005: { team: ['S002','S007'], reason: 'S002 同兴趣 Agent + 同 mission（VisionSLAM）；S007 互补 MCP' }
+  };
+
+  const $ = id => document.getElementById(id);
+  const logA = $('logA'), logB = $('logB');
+  const agentA = $('agentA'), agentB = $('agentB');
+  const pulse1 = $('pulse1'), pulse2 = $('pulse2');
+  const output = $('output');
+
+  function addEntry(logEl, text, cls) {
+    const div = document.createElement('div');
+    div.className = 'entry ' + (cls || '');
+    div.textContent = text;
+    logEl.appendChild(div);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  async function runDemo(sid) {
+    output.classList.remove('show');
+    logA.innerHTML = ''; logB.innerHTML = '';
+    agentA.classList.remove('thinking'); agentB.classList.remove('thinking');
+    $('btnStart').disabled = true;
+
+    const s = data[sid];
+    const targetName = `${sid} ${s.name}`;
+
+    // Phase 1: Analyzer thinks
+    agentA.classList.add('thinking');
+    addEntry(logA, `[TASK] computeStudentSimilarity(target=${targetName})`, 'task');
+    await sleep(700);
+    addEntry(logA, `加载 8 学员数据 · 计算 Jaccard 系数...`);
+    await sleep(800);
+    addEntry(logA, `兴趣维度匹配完成`);
+    await sleep(400);
+    addEntry(logA, `学院 / mission 维度匹配完成`);
+    await sleep(400);
+    addEntry(logA, `[RESULT] 输出 Top-5 候选 + 打分`, 'result');
+    agentA.classList.remove('thinking');
+
+    // A2A pulse →
+    addEntry(logA, `[SEND →] A2A TaskRequest to Recommender`, 'send');
+    pulse1.classList.add('active');
+    await sleep(1400);
+    pulse1.classList.remove('active');
+
+    // Phase 2: Recommender thinks
+    agentB.classList.add('thinking');
+    addEntry(logB, `[RECV ←] A2A TaskRequest from Analyzer`, 'recv');
+    await sleep(400);
+    addEntry(logB, `[TASK] rankAndRecommend(候选=5)`, 'task');
+    await sleep(700);
+    addEntry(logB, `任务匹配 + 兴趣交叉 + 多样性多目标排序...`);
+    await sleep(900);
+    addEntry(logB, `生成 3 人组（含理由）`);
+    await sleep(400);
+    addEntry(logB, `[RESULT] team = ${recommendations[sid].team.join(' + ')}`, 'result');
+    agentB.classList.remove('thinking');
+
+    // A2A pulse ←
+    addEntry(logB, `[SEND →] A2A TaskResult to Coordinator`, 'send');
+    pulse2.classList.add('active');
+    await sleep(1400);
+    pulse2.classList.remove('active');
+
+    // Final output
+    const rec = recommendations[sid];
+    const members = rec.team.map(id => `<b>${id} ${data[id].name}</b>`).join(' + ');
+    $('teamLine').innerHTML = `推荐组队 (${targetName})：${members}`;
+    $('reasonLine').textContent = '理由：' + rec.reason;
+    output.classList.add('show');
+
+    $('btnStart').disabled = false;
+  }
+
+  $('btnStart').addEventListener('click', () => runDemo($('studentSel').value));
+  $('btnReset').addEventListener('click', () => {
+    logA.innerHTML = ''; logB.innerHTML = '';
+    output.classList.remove('show');
+    agentA.classList.remove('thinking'); agentB.classList.remove('thinking');
+  });
+</script>
+
+</body>
+</html>

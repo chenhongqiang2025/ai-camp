@@ -1,0 +1,25 @@
+{
+  "_comment_zh": "Claude Desktop MCP 配置示例 - 把下面 ALLOWED_DIRECTORY 改成你电脑上月球营档案文件夹的绝对路径",
+  "_comment_paths": {
+    "macOS": "~/Library/Application Support/Claude/claude_desktop_config.json",
+    "windows": "%APPDATA%\\Claude\\claude_desktop_config.json"
+  },
+  "_comment_steps": [
+    "1. 把这个文件改名为 claude_desktop_config.json（去掉 .example）",
+    "2. 复制到上面对应系统路径",
+    "3. 修改 ALLOWED_DIRECTORY 为你电脑上 月球营档案 文件夹的真实绝对路径",
+    "4. 完全退出 Claude Desktop 再重新打开",
+    "5. 在 Claude Desktop 设置 → Developer 里能看到 MCP server 状态绿色"
+  ],
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "ALLOWED_DIRECTORY"
+      ],
+      "_note": "把上面 ALLOWED_DIRECTORY 替换成绝对路径，比如 macOS: /Users/yourname/Desktop/月球营档案  或  Windows: C:\\Users\\HongQiangChen\\Desktop\\月球营档案"
+    }
+  }
+}
