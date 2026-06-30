@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>幻觉 · 大模型为什么会"编"</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; max-width: 1280px; margin-left: auto; margin-right: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+  .control button.primary { background: #4589ff; border-color: #4589ff; }
+  .control button:hover { background: #2a2a35; }
+  .control button.active { background: #4589ff; border-color: #4589ff; }
+  .control input[type=range] { width: 160px; vertical-align: middle; accent-color: #4589ff; }
+  .control .lbl { color: #888; font-family: ui-monospace, monospace; font-size: 11px; }
+  .control .val { color: #fff; font-family: ui-monospace, monospace; font-size: 12px; min-width: 40px; display: inline-block; }
+  .control .gap { flex: 1; }
+
+  .stage { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 360px; gap: 14px; }
+  .col { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 18px 22px; }
+  .col h3 { margin: 0 0 14px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid #2a2a35; }
+
+  .chat { background: #1a1a22; padding: 14px 18px; border-radius: 6px; margin-bottom: 16px; line-height: 1.85; font-size: 14px; min-height: 130px; }
+  .chat .prompt { color: #ffd566; font-family: ui-monospace, monospace; font-size: 13px; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed #2a2a35; }
+  .chat .resp { color: #ddd; }
+  .chat .resp .word { display: inline; padding: 1px 2px; border-radius: 3px; transition: all 0.3s; cursor: pointer; }
+  .chat .resp .word:hover { background: rgba(69,137,255,0.2); }
+  .chat .resp .word.picked { background: rgba(36,161,72,0.18); color: #58dd7c; }
+  .chat .resp .word.lie { background: rgba(255,111,111,0.18); color: #ff8e8e; font-weight: 600; }
+  .chat .resp .cursor { display: inline-block; width: 7px; height: 16px; background: #4589ff; vertical-align: text-bottom; animation: blink 0.8s steps(1) infinite; margin-left: 3px; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .candidates { padding: 14px 16px; background: #1a1a22; border-radius: 6px; }
+  .candidates .title { color: #aab; font-family: ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .cand { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+  .cand .tok { width: 100px; font-family: ui-monospace, monospace; font-size: 13px; color: #ddd; }
+  .cand .tok.real { color: #58dd7c; font-weight: 600; }
+  .cand .tok.fake { color: #ff8e8e; }
+  .cand .bar { flex: 1; height: 8px; background: #0a0a0c; border-radius: 2px; overflow: hidden; }
+  .cand .bar .fill { height: 100%; background: linear-gradient(90deg, #4589ff, #6fa7ff); transition: width 0.4s; }
+  .cand .pct { width: 48px; text-align: right; font-family: ui-monospace, monospace; font-size: 11px; color: #aab; }
+
+  .info { color: #888; font-size: 12.5px; font-family: ui-monospace, monospace; line-height: 1.75; margin-top: 14px; }
+  .info b { color: #aab; }
+  .info .warn { color: #ff8e8e; }
+  .info .ok { color: #58dd7c; }
+
+  .footnote { max-width: 1280px; margin: 18px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; text-align: center; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<h1>幻觉 · 大模型不是"知道"答案 · 是"预测"下一个最可能的词</h1>
+<div class="sub">CH.06 · 当模型记忆库里没有事实 · 它就用最像的词凑出一个看起来合理的答案 → 编造</div>
+
+<div class="control">
+  <span class="lbl">示例 prompt：</span>
+  <button class="active" onclick="loadCase(0,this)">已知事实</button>
+  <button onclick="loadCase(1,this)">虚构作者</button>
+  <button onclick="loadCase(2,this)">虚构 API</button>
+  <span class="gap"></span>
+  <span class="lbl">采样温度 T =</span>
+  <input type="range" id="temp" min="0" max="200" value="80" oninput="onTempChange()">
+  <span class="val" id="tempVal">0.80</span>
+  <button class="primary" onclick="regenerate()" id="btnGen">▶ 生成</button>
+</div>
+
+<div class="stage">
+
+  <div class="col">
+    <h3>逐 token 生成 · 鼠标悬停看每一步候选 · 红色 = 编造</h3>
+    <div class="chat">
+      <div class="prompt" id="prompt"></div>
+      <div class="resp" id="resp"></div>
+    </div>
+
+    <div class="info">
+      <b>怎么读：</b><br>
+      • 模型一次只产出一个 token（"字"或"词块"）<br>
+      • 每一步从概率最高的 N 个候选里采样<br>
+      • <span class="warn">红色词</span> = 训练数据里根本没出现过的"事实" · 但模型预测得很流畅<br>
+      • 关键问题：流畅 ≠ 真实 · 模型不知道自己在编<br><br>
+      <b>采样温度 T：</b><br>
+      • T = 0 → 永远选最高概率（确定性、保守、但仍可能错）<br>
+      • T = 1 → 按概率分布随机采样（多样性）<br>
+      • T = 2 → 趋近均匀分布（创造性、也最容易编）
+    </div>
+  </div>
+
+  <div class="col">
+    <h3>第 <span id="stepNum" style="color:#ffd566;">—</span> 步候选概率</h3>
+    <div class="candidates" id="candidatePanel">
+      <div class="title">点击响应中任意词 → 看那一步候选</div>
+    </div>
+
+    <div class="info" style="margin-top:18px;padding-top:14px;border-top:1px solid #2a2a35;">
+      <b style="color:#ffd566;">三种典型幻觉：</b><br><br>
+      <span class="warn">①  事实虚构</span><br>
+      &nbsp;&nbsp;问"哈利波特作者"→ 给 J.K.罗琳 ✓<br>
+      &nbsp;&nbsp;问没读过的小说作者 → 编一个名字<br><br>
+      <span class="warn">②  引用虚构</span><br>
+      &nbsp;&nbsp;模型会编 ISBN · 编 DOI · 编 arXiv 编号<br>
+      &nbsp;&nbsp;格式完全正确 · 但不存在<br><br>
+      <span class="warn">③  API 虚构</span><br>
+      &nbsp;&nbsp;模型会调一个看起来"应该存在"<br>
+      &nbsp;&nbsp;的函数 · 但文档里根本没有<br><br>
+      <b class="ok">解法：RAG / 工具调用 / 人工校验</b><br>
+      → 不让模型靠"记忆"答 · 让它先查再说
+    </div>
+  </div>
+
+</div>
+
+<div class="footnote">
+  幻觉是 LLM 的本质特征 · 不是 bug · 它就是个"预测下一个词"的概率机器 · 流畅 ≠ 真实<br>
+  上生产 · 必须配 RAG / 检索 / 校验 / 引用回链 / 人审 · 这是后面 RAG 章节的核心
+</div>
+
+<script>
+// Each case: prompt, "true answer", and tokenized response with per-token candidates
+const cases = [
+  {
+    name: '已知事实',
+    prompt: 'Q: 谁写了《哈利·波特》系列？',
+    tokens: [
+      { word: 'J.K.', candidates: [['J.K.', 0.85], ['托', 0.05], ['乔', 0.04], ['罗', 0.03], ['未知', 0.03]], real: true },
+      { word: '罗琳', candidates: [['罗琳', 0.95], ['唐', 0.02], ['布朗', 0.02], ['（不确定）', 0.01]], real: true },
+      { word: '，', candidates: [['，', 0.6], ['。', 0.3], [' 是', 0.05], ['；', 0.05]] },
+      { word: '英国', candidates: [['英国', 0.55], ['一位', 0.20], ['美国', 0.15], ['加拿大', 0.10]], real: true },
+      { word: '小说家', candidates: [['小说家', 0.65], ['作家', 0.25], ['女作家', 0.10]], real: true },
+      { word: '。', candidates: [['。', 0.7], ['，', 0.2], ['；', 0.1]] }
+    ]
+  },
+  {
+    name: '虚构作者',
+    prompt: 'Q: 谁写了《月光下的螺旋桨》这本科幻小说？',
+    tokens: [
+      { word: '《月光下的螺旋桨》', candidates: [['这本书', 0.20], ['《月光下的螺旋桨》', 0.40], ['很抱歉', 0.30], ['我不确定', 0.10]] },
+      { word: '由', candidates: [['由', 0.50], ['的作者是', 0.30], ['据我所知', 0.20]] },
+      { word: '陈志远', candidates: [['陈志远', 0.30], ['李明', 0.18], ['王浩', 0.15], ['（未知）', 0.15], ['一位', 0.22]], lie: true },
+      { word: '于', candidates: [['于', 0.55], ['在', 0.30], ['—', 0.15]] },
+      { word: '2018', candidates: [['2018', 0.22], ['2015', 0.20], ['2020', 0.18], ['1998', 0.15], ['（年份不确定）', 0.25]], lie: true },
+      { word: '年', candidates: [['年', 0.80], ['/', 0.10], [' Q4', 0.10]] },
+      { word: '由人民文学出版社', candidates: [['由人民文学出版社', 0.30], ['由长江文艺出版社', 0.25], ['由上海译文', 0.20], ['（出版社不详）', 0.25]], lie: true },
+      { word: '出版', candidates: [['出版', 0.85], ['发行', 0.10], ['推出', 0.05]] },
+      { word: '。', candidates: [['。', 0.95], ['，', 0.05]] }
+    ]
+  },
+  {
+    name: '虚构 API',
+    prompt: 'Q: Python 的 pandas 库怎么把 DataFrame 转成 base64？',
+    tokens: [
+      { word: '可以', candidates: [['可以', 0.40], ['你可以', 0.30], ['使用', 0.30]] },
+      { word: '使用', candidates: [['使用', 0.55], ['用', 0.30], ['通过', 0.15]] },
+      { word: 'df.to_base64()', candidates: [['df.to_base64()', 0.45], ['df.to_dict()', 0.20], ['先转 CSV 再 base64', 0.20], ['pickle + base64', 0.15]], lie: true },
+      { word: '方法', candidates: [['方法', 0.70], ['函数', 0.20], [' API', 0.10]] },
+      { word: '，', candidates: [['，', 0.85], ['。', 0.15]] },
+      { word: '该', candidates: [['该', 0.40], ['这个', 0.40], ['它', 0.20]] },
+      { word: '函数', candidates: [['函数', 0.65], ['方法', 0.30], ['接口', 0.05]] },
+      { word: '在', candidates: [['在', 0.45], ['从', 0.30], ['自', 0.25]] },
+      { word: 'pandas 0.24+', candidates: [['pandas 0.24+', 0.40], ['pandas 1.0+', 0.30], ['所有版本', 0.20], ['（版本不确定）', 0.10]], lie: true },
+      { word: '可用', candidates: [['可用', 0.80], ['被引入', 0.20]] },
+      { word: '。', candidates: [['。', 0.90], ['，', 0.10]] }
+    ]
+  }
+];
+
+let curCase = 0;
+let temperature = 0.8;
+let pickedIdx = -1;
+
+function softmax(probs, T) {
+  // apply temperature: p^(1/T) then renormalize. T->0 = sharper, T->2 = flatter
+  if (T <= 0.01) T = 0.01;
+  const ps = probs.map(p => Math.pow(p, 1 / Math.max(T, 0.01)));
+  const s = ps.reduce((a,b) => a+b, 0);
+  return ps.map(p => p / s);
+}
+
+function render() {
+  const c = cases[curCase];
+  document.getElementById('prompt').textContent = c.prompt;
+
+  const html = c.tokens.map((tok, i) => {
+    const cls = tok.lie ? 'lie' : (tok.real ? 'picked' : '');
+    return `<span class="word ${cls}" data-i="${i}" onclick="pickStep(${i})" title="${tok.lie ? '⚠️ 编造' : ''}">${tok.word}</span>`;
+  }).join('');
+  document.getElementById('resp').innerHTML = html;
+
+  if (pickedIdx >= 0 && pickedIdx < c.tokens.length) {
+    drawCandidates(pickedIdx);
+  }
+}
+
+function drawCandidates(i) {
+  const c = cases[curCase];
+  const tok = c.tokens[i];
+  const cands = tok.candidates;
+  const probs = softmax(cands.map(x => x[1]), temperature);
+
+  let html = `<div class="title">STEP ${i+1} · "${tok.word}" 被选中</div>`;
+  cands.forEach((c0, j) => {
+    const isPicked = c0[0] === tok.word;
+    const isLie = tok.lie && isPicked;
+    const cls = isLie ? 'fake' : (isPicked ? 'real' : '');
+    html += `<div class="cand">
+      <div class="tok ${cls}">${isPicked ? '▸ ' : '&nbsp;&nbsp;'}${c0[0]}</div>
+      <div class="bar"><div class="fill" style="width:${(probs[j]*100).toFixed(1)}%"></div></div>
+      <div class="pct">${(probs[j]*100).toFixed(1)}%</div>
+    </div>`;
+  });
+  document.getElementById('candidatePanel').innerHTML = html;
+  document.getElementById('stepNum').textContent = i + 1;
+}
+
+function pickStep(i) {
+  pickedIdx = i;
+  render();
+}
+
+function loadCase(i, btn) {
+  curCase = i;
+  pickedIdx = -1;
+  document.querySelectorAll('.control button:not(.primary)').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('candidatePanel').innerHTML = '<div class="title">点击响应中任意词 → 看那一步候选</div>';
+  document.getElementById('stepNum').textContent = '—';
+  render();
+}
+
+function onTempChange() {
+  temperature = +document.getElementById('temp').value / 100;
+  document.getElementById('tempVal').textContent = temperature.toFixed(2);
+  if (pickedIdx >= 0) drawCandidates(pickedIdx);
+}
+
+function regenerate() {
+  const c = cases[curCase];
+  const respEl = document.getElementById('resp');
+  respEl.innerHTML = '';
+  let i = 0;
+  function step() {
+    if (i >= c.tokens.length) return;
+    const tok = c.tokens[i];
+    const cls = tok.lie ? 'lie' : (tok.real ? 'picked' : '');
+    respEl.innerHTML = respEl.innerHTML.replace(/<span class="cursor"><\/span>/, '');
+    respEl.innerHTML += `<span class="word ${cls}" data-i="${i}" onclick="pickStep(${i})" title="${tok.lie ? '⚠️ 编造' : ''}">${tok.word}</span>`;
+    respEl.innerHTML += `<span class="cursor"></span>`;
+    i++;
+    if (i < c.tokens.length) setTimeout(step, 320);
+    else setTimeout(() => respEl.innerHTML = respEl.innerHTML.replace(/<span class="cursor"><\/span>/, ''), 320);
+  }
+  step();
+}
+
+render();
+</script>
+
+</body>
+</html>

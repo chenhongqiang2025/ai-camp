@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>ChatGPT 时刻 · 用户增长对比</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; max-width: 1280px; margin-left: auto; margin-right: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+  .control button.primary { background: #4589ff; border-color: #4589ff; }
+  .control button:hover { background: #2a2a35; }
+  .control button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .control .gap { flex: 1; }
+  .control .meta { color: #888; font-family: ui-monospace, monospace; font-size: 11px; }
+
+  .stage { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .col { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 18px 22px; }
+  .col h3 { margin: 0 0 14px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid #2a2a35; }
+
+  svg { width: 100%; display: block; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+  .stat { background: #1a1a22; padding: 14px 16px; border-radius: 6px; border-left: 3px solid #4589ff; }
+  .stat .label { color: #888; font-family: ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; margin-bottom: 4px; }
+  .stat .value { color: #fff; font-size: 20px; font-weight: 600; line-height: 1.1; }
+  .stat .value.big { font-size: 26px; color: #ffd566; }
+  .stat .sub { color: #aab; font-size: 11px; font-family: ui-monospace, monospace; margin-top: 4px; }
+  .stat.gpt { border-color: #24a148; }
+  .stat.gpt .label { color: #24a148; }
+  .stat.gpt .value { color: #24a148; }
+
+  .legend { display: flex; gap: 18px; font-family: ui-monospace, monospace; font-size: 11px; color: #888; margin-top: 14px; flex-wrap: wrap; padding-left: 6px; }
+  .legend .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+  .legend .bar { display: inline-block; width: 22px; height: 4px; margin-right: 6px; vertical-align: middle; border-radius: 2px; }
+
+  .footnote { max-width: 1280px; margin: 18px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; text-align: center; line-height: 1.7; }
+
+  .table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 12.5px; }
+  .table th { text-align: left; color: #aab; font-weight: normal; padding: 8px 12px; border-bottom: 1px solid #2a2a35; font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+  .table td { padding: 9px 12px; border-bottom: 1px solid #1a1a22; color: #ddd; }
+  .table td.brand { color: #fff; font-weight: 500; }
+  .table td.time { font-family: ui-monospace, monospace; color: #ffd566; }
+  .table tr.highlight td.brand { color: #24a148; font-weight: 600; }
+  .table tr.highlight td.time { color: #24a148; }
+</style>
+</head>
+<body>
+
+<h1>ChatGPT 时刻 · 100 万用户用了几天？1 亿用户用了几个月？</h1>
+<div class="sub">CH.05 · 2022/11/30 · 历史上没有任何消费级产品达到过这个增长速度</div>
+
+<div class="control">
+  <button class="primary" onclick="play()" id="btnPlay">▶ 播放动画</button>
+  <button onclick="finish()">⏩ 直接展开全部</button>
+  <button onclick="reset()">↻ 重置</button>
+  <span class="gap"></span>
+  <span class="meta">进度 <b id="dayLbl" style="color:#fff;">0</b> 天</span>
+</div>
+
+<div class="stage">
+
+  <div class="col">
+    <h3>到达 1 亿月活用户用了多久（天数）</h3>
+    <svg id="raceSvg" viewBox="0 0 1240 360" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="legend">
+      <span><span class="bar" style="background:#24a148;height:8px"></span>ChatGPT · 60 天</span>
+      <span><span class="bar" style="background:#6fa7ff"></span>TikTok · 9 个月</span>
+      <span><span class="bar" style="background:#ffaa00"></span>Instagram · 2.5 年</span>
+      <span><span class="bar" style="background:#c7a3e0"></span>WhatsApp · 3.5 年</span>
+      <span><span class="bar" style="background:#888"></span>Facebook · 4.5 年</span>
+    </div>
+  </div>
+
+  <div class="col">
+    <h3>关键数据 · 2022/11/30 ChatGPT 发布</h3>
+    <div class="stats">
+      <div class="stat gpt">
+        <div class="label">FIRST MILLION</div>
+        <div class="value big">5 天</div>
+        <div class="sub">破 100 万注册用户</div>
+      </div>
+      <div class="stat gpt">
+        <div class="label">FIRST 100M MAU</div>
+        <div class="value big">2 个月</div>
+        <div class="sub">破 1 亿月活</div>
+      </div>
+      <div class="stat">
+        <div class="label">DAU 峰值</div>
+        <div class="value">5亿+</div>
+        <div class="sub">2024 年底</div>
+      </div>
+      <div class="stat">
+        <div class="label">PARAMETERS</div>
+        <div class="value">1750 亿</div>
+        <div class="sub">GPT-3.5 时</div>
+      </div>
+    </div>
+
+    <table class="table" style="margin-top:18px;">
+      <thead>
+        <tr><th>产品</th><th>发布</th><th>到达 1 亿月活</th><th>对比</th></tr>
+      </thead>
+      <tbody>
+        <tr class="highlight"><td class="brand">ChatGPT</td><td>2022.11</td><td class="time">2 个月</td><td>—</td></tr>
+        <tr><td class="brand">TikTok</td><td>2017.05</td><td class="time">9 个月</td><td>慢 4.5×</td></tr>
+        <tr><td class="brand">Instagram</td><td>2010.10</td><td class="time">2.5 年</td><td>慢 15×</td></tr>
+        <tr><td class="brand">Pinterest</td><td>2010.03</td><td class="time">2.5 年</td><td>慢 15×</td></tr>
+        <tr><td class="brand">WhatsApp</td><td>2009.01</td><td class="time">3.5 年</td><td>慢 21×</td></tr>
+        <tr><td class="brand">Facebook</td><td>2004.02</td><td class="time">4.5 年</td><td>慢 27×</td></tr>
+        <tr><td class="brand">Twitter</td><td>2006.07</td><td class="time">5.5 年</td><td>慢 33×</td></tr>
+        <tr><td class="brand">Netflix</td><td>1997.08</td><td class="time">~10 年</td><td>慢 60×</td></tr>
+        <tr><td class="brand">手机（智能机出现前）</td><td>1973</td><td class="time">~30 年</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footnote">
+  ChatGPT 时刻 · 不是发布会创造的 · 不是营销创造的 · 是普通人第一次能直接用到大模型的拐点<br>
+  这个时刻之前 · AI 是研究院里的玩具 · 之后 · 它是 5 亿人的日常工具
+</div>
+
+<script>
+const products = [
+  { name: 'ChatGPT',  days: 60,   color: '#24a148', launch: '2022.11' },
+  { name: 'TikTok',   days: 270,  color: '#6fa7ff', launch: '2017.05' },
+  { name: 'Instagram',days: 912,  color: '#ffaa00', launch: '2010.10' },
+  { name: 'WhatsApp', days: 1278, color: '#c7a3e0', launch: '2009.01' },
+  { name: 'Facebook', days: 1642, color: '#888',    launch: '2004.02' },
+  { name: 'Twitter',  days: 2008, color: '#6f5ed0', launch: '2006.07' }
+];
+
+const MAX_DAYS = 1642; // cap visualisation
+let curDay = 0;
+let timer = null;
+
+function fmt(d) {
+  if (d < 60) return `${d} 天`;
+  if (d < 730) return `${(d/30).toFixed(1)} 个月`;
+  return `${(d/365).toFixed(1)} 年`;
+}
+
+function draw() {
+  const svg = document.getElementById('raceSvg');
+  const W = 1240, H = 360;
+  const padLeft = 130, padRight = 30, padTop = 30, padBot = 50;
+  const rowH = (H - padTop - padBot) / products.length;
+  const xMin = padLeft, xMax = W - padRight;
+  const dayToX = d => xMin + Math.min(d, MAX_DAYS) / MAX_DAYS * (xMax - xMin);
+
+  let html = '';
+
+  // x-axis grid + labels
+  const ticks = [0, 60, 270, 365, 730, 1095, 1460, 1642];
+  ticks.forEach(t => {
+    const x = dayToX(t);
+    html += `<line x1="${x}" y1="${padTop}" x2="${x}" y2="${H - padBot}" stroke="#1a1a22"/>`;
+    html += `<text x="${x}" y="${H - padBot + 16}" text-anchor="middle" fill="#666" font-family="ui-monospace,monospace" font-size="10">${t === 0 ? '发布' : fmt(t)}</text>`;
+  });
+
+  // current time marker
+  const xc = dayToX(curDay);
+  html += `<line x1="${xc}" y1="${padTop}" x2="${xc}" y2="${H - padBot}" stroke="#ffd566" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>`;
+  html += `<text x="${xc}" y="${padTop - 6}" text-anchor="middle" fill="#ffd566" font-family="ui-monospace,monospace" font-size="11">今天 day ${curDay}</text>`;
+
+  // bars
+  products.forEach((p, i) => {
+    const y = padTop + i * rowH + rowH * 0.18;
+    const barH = rowH * 0.55;
+    const filledDays = Math.min(curDay, p.days);
+    const totalDays = Math.min(p.days, MAX_DAYS);
+    const xFull = dayToX(p.days);
+    const xFill = dayToX(filledDays);
+
+    // brand label
+    html += `<text x="${padLeft - 10}" y="${y + barH * 0.6}" text-anchor="end" fill="#fff" font-family="ui-monospace,monospace" font-size="12">${p.name}</text>`;
+
+    // full bar (track)
+    html += `<rect x="${xMin}" y="${y}" width="${xFull - xMin}" height="${barH}" fill="${p.color}" opacity="0.12" rx="3"/>`;
+
+    // filled portion
+    html += `<rect x="${xMin}" y="${y}" width="${xFill - xMin}" height="${barH}" fill="${p.color}" rx="3"/>`;
+
+    // 100M flag if reached
+    if (curDay >= p.days) {
+      html += `<circle cx="${xFull}" cy="${y + barH/2}" r="9" fill="${p.color}" stroke="#fff" stroke-width="2"/>`;
+      html += `<text x="${xFull + 14}" y="${y + barH/2 + 4}" fill="${p.color}" font-family="ui-monospace,monospace" font-size="11" font-weight="600">${fmt(p.days)} → 1 亿月活</text>`;
+    } else {
+      // progress text
+      const pct = Math.round(curDay / p.days * 100);
+      html += `<text x="${xFill + 8}" y="${y + barH/2 + 4}" fill="${p.color}" font-family="ui-monospace,monospace" font-size="11">${pct}%</text>`;
+    }
+  });
+
+  svg.innerHTML = html;
+  document.getElementById('dayLbl').textContent = curDay;
+}
+
+function play() {
+  if (timer) clearInterval(timer);
+  curDay = 0;
+  draw();
+  document.getElementById('btnPlay').disabled = true;
+  const totalFrames = 120;
+  let frame = 0;
+  timer = setInterval(() => {
+    frame++;
+    // ease-out: spend more frames near the start so ChatGPT moment is clearly visible
+    const t = frame / totalFrames;
+    curDay = Math.round(MAX_DAYS * (1 - Math.pow(1 - t, 1.7)));
+    draw();
+    if (frame >= totalFrames) {
+      clearInterval(timer);
+      curDay = MAX_DAYS;
+      draw();
+      document.getElementById('btnPlay').disabled = false;
+    }
+  }, 35);
+}
+
+function finish() {
+  if (timer) clearInterval(timer);
+  curDay = MAX_DAYS;
+  draw();
+  document.getElementById('btnPlay').disabled = false;
+}
+
+function reset() {
+  if (timer) clearInterval(timer);
+  curDay = 0;
+  draw();
+  document.getElementById('btnPlay').disabled = false;
+}
+
+draw();
+</script>
+
+</body>
+</html>

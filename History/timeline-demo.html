@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>AI 70 年 · 互动时间轴</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 12px 18px; margin-bottom: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 1280px; margin-left: auto; margin-right: auto; font-size: 13px; }
+  .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+  .control button.active, .control button.primary { background: #4589ff; border-color: #4589ff; }
+  .control button:hover { background: #2a2a35; }
+  .control .gap { flex: 1; }
+  .control .legend { display: flex; gap: 14px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #aab; }
+  .control .legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  .stage { display: grid; grid-template-columns: 1fr 340px; gap: 16px; max-width: 1280px; margin: 0 auto; }
+
+  .timeline-wrap { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 16px 18px; min-height: 600px; }
+  .timeline-wrap h3 { margin: 0 0 12px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid #2a2a35; }
+  svg { width: 100%; display: block; }
+  svg .node circle { cursor: pointer; transition: all 0.3s; }
+  svg .node:hover circle { stroke-width: 3; r: 12; }
+  svg .node.selected circle { stroke: #ffd566; stroke-width: 4; filter: drop-shadow(0 0 8px #ffd566); }
+  svg .node text { fill: #ddd; font-family: ui-monospace, monospace; font-size: 11px; pointer-events: none; }
+  svg .node text.year { font-size: 12px; font-weight: 600; fill: #fff; }
+  svg .node text.label { font-size: 10px; fill: #888; }
+  svg .node.selected text.label { fill: #ffd566; font-weight: 600; }
+
+  .detail { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 18px 20px; height: 600px; overflow-y: auto; }
+  .detail h3 { margin: 0 0 12px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid #2a2a35; }
+  .detail .year-big { font-size: 36px; color: #ffd566; font-weight: 600; line-height: 1; margin-bottom: 6px; }
+  .detail .title-big { font-size: 17px; color: #fff; font-weight: 600; margin-bottom: 14px; }
+  .detail .tag { display: inline-block; font-family: ui-monospace, monospace; font-size: 10px; padding: 3px 9px; border-radius: 10px; letter-spacing: 1px; margin-bottom: 12px; }
+  .detail .tag.milestone { background: rgba(36,161,72,0.15); color: #24a148; border: 1px solid #24a148; }
+  .detail .tag.winter { background: rgba(120,134,200,0.15); color: #aab3e0; border: 1px solid #6f5ed0; }
+  .detail .tag.breakthrough { background: rgba(255,170,0,0.15); color: #ffaa00; border: 1px solid #ffaa00; }
+  .detail .tag.commercial { background: rgba(69,137,255,0.15); color: #6fa7ff; border: 1px solid #4589ff; }
+  .detail .body { color: #ccc; font-size: 13px; line-height: 1.65; }
+  .detail .body b { color: #fff; }
+  .detail .empty { color: #555; font-size: 12px; text-align: center; padding-top: 100px; font-family: ui-monospace, monospace; }
+
+  .footnote { max-width: 1280px; margin: 18px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; letter-spacing: 0.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>AI 70 年 · 互动时间轴</h1>
+<div class="sub">CH.02 · FROM 1950 TURING TO 2026 AGENTS · 点节点看详情</div>
+
+<div class="control">
+  <button class="active" onclick="filter('all', this)">全部 18</button>
+  <button onclick="filter('milestone', this)">学术里程碑</button>
+  <button onclick="filter('breakthrough', this)">技术突破</button>
+  <button onclick="filter('winter', this)">寒冬</button>
+  <button onclick="filter('commercial', this)">商业时刻</button>
+  <span class="gap"></span>
+  <span class="legend">
+    <span><span class="dot" style="background:#24a148"></span>里程碑</span>
+    <span><span class="dot" style="background:#ffaa00"></span>突破</span>
+    <span><span class="dot" style="background:#6f5ed0"></span>寒冬</span>
+    <span><span class="dot" style="background:#4589ff"></span>商业</span>
+  </span>
+</div>
+
+<div class="stage">
+  <div class="timeline-wrap">
+    <h3>1950 — 2026 · 18 个关键节点 · 按年份排列</h3>
+    <svg id="timelineSvg" viewBox="0 0 900 580" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+
+  <div class="detail" id="detail">
+    <div class="empty">← 点左侧任一节点 · 看详情</div>
+  </div>
+</div>
+
+<div class="footnote">
+  AI 不是从 ChatGPT 开始的 · 已经走了 76 年 · 经历过两次寒冬 · 这是第三次浪潮
+</div>
+
+<script>
+const events = [
+  { year: 1950, title: '图灵测试', cat: 'milestone', short: 'Alan Turing 论文',
+    body: '<b>艾伦·图灵</b>发表论文 <i>Computing Machinery and Intelligence</i>，提出"机器能不能思考"这个问题，给出后来被称为<b>图灵测试</b>的判断方法 —— 如果机器跟你聊天，你分不清它是人还是机器，那就有理由说它"思考"了。<br><br>今天我们用 ChatGPT 跟它聊天，本质上就是图灵 75 年前预言的那个场景。' },
+  { year: 1956, title: '达特茅斯会议', cat: 'milestone', short: 'AI 这个词诞生',
+    body: '<b>John McCarthy、Marvin Minsky、Claude Shannon</b> 等学者在达特茅斯学院召开为期 8 周的研讨会 —— "Artificial Intelligence" 这个词第一次出现在公开学术议程里。<br><br>McCarthy 后来发明了 LISP；Minsky 是 MIT AI 实验室创始人；Shannon 是信息论奠基人。<br><br>AI 不是这两年才有的词，已经 70 年了。' },
+  { year: 1957, title: '感知机', cat: 'milestone', short: 'Rosenblatt 第一个神经元',
+    body: '<b>Frank Rosenblatt</b> 提出感知机模型 —— 把生物神经元抽象成一行数学：输入 × 权重 → 加和 → 激活函数 → 输出。<br><br>今天最大的 LLM（万亿参数）本质就是数千亿个这样的小神经元叠在一起。' },
+  { year: 1969, title: '第一次寒冬开始', cat: 'winter', short: 'Minsky 批 Perceptron 局限',
+    body: 'Minsky 和 Papert 出版《Perceptrons》一书，证明单层感知机无法解决 XOR 这种非线性问题。<br><br>这本书重创了 AI 研究信心。加上之前承诺过的"10 年内造出通用智能"做不到，70 年代政府削减资助，<b>第一次 AI 寒冬</b>到来。' },
+  { year: 1986, title: '反向传播', cat: 'milestone', short: 'Rumelhart-Hinton-Williams Nature 论文',
+    body: '<b>Rumelhart、Hinton、Williams</b> 在 Nature 上发表论文，把反向传播算法推广开 —— 多层神经网络终于可以训练了。<br><br>今天 LLM 的训练本质还是这四步循环几百万次：前向传播 → 计算误差 → 反向传播 → 更新权重。' },
+  { year: 1987, title: '第二次寒冬', cat: 'winter', short: 'LISP 机商业失败',
+    body: '专家系统泡沫破裂，LISP 机商业失败，日本"第五代计算机"国家级项目最终也没出成果。<br><br>资本和媒体全面撤退，<b>第二次 AI 寒冬</b>持续到 1993。' },
+  { year: 1997, title: 'Deep Blue', cat: 'commercial', short: 'IBM 击败国际象棋世界冠军',
+    body: '<b>IBM 深蓝</b>在公开赛事中击败国际象棋世界冠军卡斯帕罗夫 —— 计算机第一次在重大智力赛事打败人类世界冠军。<br><br>比 ChatGPT 早 25 年。' },
+  { year: 1998, title: 'CNN / LeNet', cat: 'breakthrough', short: 'Yann LeCun 卷积神经网络',
+    body: '<b>Yann LeCun</b> 提出 LeNet 卷积神经网络，用"卷积"模拟人眼的局部感知 —— 不需要每个像素都跟每个神经元相连，用小窗口扫整张图就够了。<br><br>等了 14 年硬件跟上，2012 年才大放异彩。' },
+  { year: 2006, title: '深度学习正名', cat: 'milestone', short: 'Hinton DBN',
+    body: '<b>Geoffrey Hinton</b> 等提出深度信念网络（DBN），把"深度学习"这个词重新带回学界主流视野。<br><br>这是第三次 AI 浪潮的开端。' },
+  { year: 2011, title: 'Watson 赢 Jeopardy!', cat: 'commercial', short: 'IBM 自然语言里程碑',
+    body: '<b>IBM Watson</b> 在美国 Jeopardy! 知识问答节目击败人类冠军 —— 自然语言处理的第一次大众级时刻。' },
+  { year: 2012, title: 'AlexNet', cat: 'breakthrough', short: 'ImageNet 26.2% → 15.3%',
+    body: '<b>Krizhevsky、Sutskever、Hinton</b> 的 AlexNet 用 CNN + GPU，在 ImageNet 大赛把 top-5 错误率从 26.2% 拉到 15.3%。<br><br>计算机视觉的真正拐点。今天人脸识别、自动驾驶、医疗影像都建立在 CNN 之上。' },
+  { year: 2014, title: 'GAN + Attention', cat: 'breakthrough', short: 'Goodfellow & Bahdanau',
+    body: '<b>Ian Goodfellow</b> 提出生成对抗网络（GAN）—— AI 开始能"生成"。<br><br>同年 <b>Dzmitry Bahdanau</b> 在机器翻译中引入 Attention 机制 —— 翻每个输出词时回头看一遍原句。这是 Transformer 的种子。' },
+  { year: 2017, title: 'Transformer', cat: 'breakthrough', short: 'Attention Is All You Need',
+    body: '<b>Google 8 位作者</b>发表 12 页论文 "Attention Is All You Need" —— 抛弃 RNN 循环结构，只用 Attention。<br><br>训练时可以并行处理整句话，GPU 利用率飞跃 → 大模型时代来了。<br><br>今天每一个主流大模型（GPT/BERT/Claude/Gemini）都建立在这个架构上。' },
+  { year: 2018, title: 'BERT / GPT-1', cat: 'breakthrough', short: '预训练 + 微调范式',
+    body: 'Google BERT + OpenAI GPT-1 同年发布，确立"预训练 + 微调"范式 —— 用海量无标签文本先预训练，再针对具体任务微调。' },
+  { year: 2022, title: 'ChatGPT 时刻', cat: 'commercial', short: '5 天破百万、2 个月破亿',
+    body: '<b>2022 年 11 月 30 日</b>，OpenAI 没开发布会，把一个聊天工具放上线。<br><br>5 天破 100 万注册用户 · 2 个月破 1 亿月活 —— 这是普通人第一次能直接用到大模型。<br><br>整个 AI 行业的发展节奏从此完全变了。' },
+  { year: 2023, title: 'watsonx · GPT-4 · Claude', cat: 'commercial', short: '企业级 GenAI 平台',
+    body: '<b>IBM watsonx</b> 发布企业级 GenAI 平台（ai / data / governance）。同年 GPT-4、Claude 2、Llama 2 等纷纷发布，竞争白热化。' },
+  { year: 2024, title: 'MCP 协议', cat: 'breakthrough', short: 'Anthropic 开放协议',
+    body: '<b>Anthropic 2024.11</b> 提出 MCP（Model Context Protocol），让 AI 跟外部工具用统一方式对话。<br><br>之后 OpenAI、Google、IBM 都跟进 —— 事实上的开放标准。' },
+  { year: 2026, title: 'Agent 元年', cat: 'commercial', short: '从回答问题到完成任务',
+    body: '2026 年大模型同时在三个方向跑：<br><br><b>推理模型</b>（o 系列、DeepSeek-R1）让模型在回答前"想几步"。<br><b>多模态原生</b>（Gemini、GPT-5）同一模型理解文本图像音频视频。<br><b>Agent</b>（Cursor、Devin、Claude Code）从"回答问题"到"完成任务"。' }
+];
+
+const catColor = {
+  milestone: '#24a148',
+  breakthrough: '#ffaa00',
+  winter: '#6f5ed0',
+  commercial: '#4589ff'
+};
+
+let currentFilter = 'all';
+let selectedIdx = -1;
+
+function filter(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.control button').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  render();
+}
+
+function selectEvent(idx) {
+  selectedIdx = idx;
+  render();
+  drawDetail(events[idx]);
+}
+
+function render() {
+  const svg = document.getElementById('timelineSvg');
+  const W = 900, H = 580;
+  const xMin = 40, xMax = W - 30;
+  const yMin = 1948, yMax = 2028;
+  const yToPx = y => 30 + (y - yMin) / (yMax - yMin) * (H - 60);
+
+  let html = '';
+  // Vertical center axis
+  html += `<line x1="${W/2}" y1="20" x2="${W/2}" y2="${H-20}" stroke="#2a2a35" stroke-width="2"/>`;
+
+  // Year ticks every decade
+  for (let y = 1950; y <= 2030; y += 10) {
+    const py = yToPx(y);
+    html += `<line x1="${W/2 - 8}" y1="${py}" x2="${W/2 + 8}" y2="${py}" stroke="#444"/>`;
+    html += `<text x="${W/2 - 18}" y="${py + 4}" text-anchor="end" fill="#555" font-family="ui-monospace,monospace" font-size="10">${y}</text>`;
+  }
+
+  // Nodes
+  events.forEach((e, i) => {
+    const visible = currentFilter === 'all' || e.cat === currentFilter;
+    if (!visible) return;
+    const py = yToPx(e.year);
+    const side = i % 2 === 0 ? -1 : 1; // alternate left/right
+    const nx = W/2 + side * 60;
+    const tx = W/2 + side * 70;
+    const color = catColor[e.cat];
+
+    const sel = (selectedIdx === i) ? ' selected' : '';
+    html += `
+      <line x1="${W/2}" y1="${py}" x2="${nx}" y2="${py}" stroke="${color}" stroke-width="1" opacity="0.5"/>
+      <g class="node${sel}" onclick="selectEvent(${i})">
+        <circle cx="${nx}" cy="${py}" r="9" fill="${color}" stroke="#fff" stroke-width="1.5"/>
+        <text class="year" x="${tx}" y="${py + 4}" text-anchor="${side > 0 ? 'start' : 'end'}">${e.year}</text>
+        <text class="label" x="${tx}" y="${py + 18}" text-anchor="${side > 0 ? 'start' : 'end'}">${e.title}</text>
+      </g>
+    `;
+  });
+
+  svg.innerHTML = html;
+}
+
+function drawDetail(e) {
+  const detail = document.getElementById('detail');
+  const tag = { milestone: '里程碑', breakthrough: '技术突破', winter: '寒冬', commercial: '商业时刻' };
+  detail.innerHTML = `
+    <h3>EVENT DETAIL</h3>
+    <div class="year-big">${e.year}</div>
+    <div class="title-big">${e.title}</div>
+    <div class="tag ${e.cat}">${tag[e.cat]}</div>
+    <div class="body">${e.body}</div>
+  `;
+}
+
+render();
+</script>
+
+</body>
+</html>

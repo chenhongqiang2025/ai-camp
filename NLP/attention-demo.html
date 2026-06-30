@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Attention · 注意力机制</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; max-width: 1280px; margin-left: auto; margin-right: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+  .control button.active { background: #4589ff; border-color: #4589ff; }
+  .control button:hover { background: #2a2a35; }
+
+  .stage { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 360px; gap: 14px; }
+  .col { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 18px 22px; }
+  .col h3 { margin: 0 0 14px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid #2a2a35; }
+
+  .sentence { font-size: 16px; line-height: 1.8; padding: 14px 18px; background: #1a1a22; border-radius: 6px; margin-bottom: 14px; }
+  .tok { display: inline-block; padding: 4px 10px; margin: 2px; background: #2a2a35; color: #ddd; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .tok:hover { background: #3a3a48; }
+  .tok.q { background: rgba(255,213,102,0.2); color: #ffd566; border: 1px solid #ffd566; }
+  .tok.zh { font-family: -apple-system, "Noto Sans SC", sans-serif; }
+
+  .heatmap-wrap { overflow-x: auto; }
+  table.heatmap { border-collapse: separate; border-spacing: 2px; font-family: ui-monospace, monospace; font-size: 11px; }
+  table.heatmap th { color: #aab; font-weight: normal; padding: 4px 6px; text-align: center; }
+  table.heatmap th.row { text-align: right; padding-right: 10px; color: #ffd566; }
+  table.heatmap td { width: 50px; height: 28px; text-align: center; border-radius: 3px; color: #fff; transition: all 0.3s; cursor: pointer; }
+  table.heatmap td:hover { transform: scale(1.1); box-shadow: 0 0 6px rgba(69,137,255,0.5); }
+
+  .panel-title { color: #fff; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .panel-sub { color: #888; font-size: 12px; font-family: ui-monospace, monospace; margin-bottom: 14px; }
+
+  .att-bar { margin-bottom: 8px; }
+  .att-bar .lbl { display: flex; justify-content: space-between; font-family: ui-monospace, monospace; font-size: 11.5px; color: #aab; margin-bottom: 3px; }
+  .att-bar .lbl b { color: #fff; }
+  .att-bar .bar { height: 12px; background: #1a1a22; border-radius: 3px; overflow: hidden; }
+  .att-bar .bar .fill { height: 100%; background: linear-gradient(90deg, #4589ff, #6fa7ff); transition: width 0.4s; }
+
+  .footnote { max-width: 1280px; margin: 18px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Attention · 翻译时回头看 · 决定看谁多 · 看谁少</h1>
+<div class="sub">CH.04/03 · 2014 BAHDANAU · 翻译每个输出词时回头看整句原文 · 给每个原词一个权重</div>
+
+<div class="control">
+  <span style="color:#888;font-family:ui-monospace,monospace;font-size:11px;">示例：</span>
+  <button class="active" onclick="loadCase(0,this)">英 → 中 翻译</button>
+  <button onclick="loadCase(1,this)">代词消歧（it 指代谁）</button>
+  <button onclick="loadCase(2,this)">长依赖（结尾受开头影响）</button>
+</div>
+
+<div class="stage">
+
+  <div class="col">
+    <h3>注意力热力图 · 行 = 输出词 · 列 = 输入词 · 颜色 = 权重</h3>
+    <div class="sentence">
+      <div style="color:#888;font-size:11px;font-family:ui-monospace,monospace;margin-bottom:6px;">输入序列：</div>
+      <div id="inputTokens"></div>
+      <div style="color:#888;font-size:11px;font-family:ui-monospace,monospace;margin:10px 0 6px;">输出序列：</div>
+      <div id="outputTokens"></div>
+    </div>
+    <div class="heatmap-wrap">
+      <table class="heatmap" id="heatmap"></table>
+    </div>
+    <div style="font-family:ui-monospace,monospace;font-size:11px;color:#888;margin-top:14px;line-height:1.7;">
+      <b style="color:#aab;">怎么读：</b>看哪一行 = 这个输出词在翻译时，"注意力"分别落在哪些输入词上<br>
+      <b style="color:#ffd566;">关键洞察：</b>翻译 "猫" 这个字时，注意力主要集中在 "cat" 上 · 不是把整句话压成一个向量再硬翻
+    </div>
+  </div>
+
+  <div class="col">
+    <h3>当前点中：<span id="qLabel" style="color:#ffd566;">—</span></h3>
+    <div class="panel-sub" id="qDesc">点击下方表格任意单元格 → 看那一行的权重分布</div>
+    <div id="distList"></div>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid #2a2a35;font-family:ui-monospace,monospace;font-size:11px;color:#888;line-height:1.8;">
+      <b style="color:#aab;">Attention 公式（简化）：</b><br>
+      &nbsp;&nbsp;score(Q, K) = Q · K<sup>T</sup><br>
+      &nbsp;&nbsp;weights = softmax(score)<br>
+      &nbsp;&nbsp;output = Σ weights · V<br><br>
+      <b style="color:#ffd566;">三步：</b>对每个输出位置 → 跟每个输入位置算相关性 → softmax 归一化为概率 → 加权求和
+    </div>
+  </div>
+
+</div>
+
+<div class="footnote">
+  Attention 是 Transformer 的核心机制 · 2017 "Attention Is All You Need" 把它推向极致
+</div>
+
+<script>
+const cases = [
+  {
+    name: '英→中翻译',
+    input: ['The','cat','sat','on','the','mat'],
+    output: ['猫','坐','在','垫子','上'],
+    matrix: [
+      [0.05, 0.85, 0.05, 0.02, 0.01, 0.02],
+      [0.05, 0.10, 0.75, 0.05, 0.03, 0.02],
+      [0.03, 0.05, 0.20, 0.65, 0.05, 0.02],
+      [0.05, 0.05, 0.05, 0.05, 0.10, 0.70],
+      [0.05, 0.05, 0.10, 0.70, 0.05, 0.05]
+    ]
+  },
+  {
+    name: '代词消歧',
+    input: ['The','dog','chased','the','cat','because','it','was','hungry'],
+    output: ['it','解析为'],
+    matrix: [
+      [0.03, 0.72, 0.05, 0.02, 0.05, 0.04, 0.05, 0.02, 0.02],
+      [0.02, 0.85, 0.02, 0.02, 0.02, 0.02, 0.02, 0.01, 0.02]
+    ]
+  },
+  {
+    name: '长依赖',
+    input: ['I','grew','up','in','Paris','so','I','speak','fluent','___'],
+    output: ['法语'],
+    matrix: [
+      [0.02, 0.02, 0.02, 0.05, 0.78, 0.02, 0.02, 0.03, 0.02, 0.02]
+    ]
+  }
+];
+
+let curCase = 0;
+let qSel = null;
+
+function color(v) {
+  const a = Math.max(0, Math.min(1, v));
+  const r = Math.round(20 + a * 50);
+  const g = Math.round(50 + a * 100);
+  const b = Math.round(80 + a * 175);
+  return `rgb(${r},${g},${b})`;
+}
+
+function render() {
+  const c = cases[curCase];
+
+  // input tokens
+  document.getElementById('inputTokens').innerHTML = c.input.map(t => {
+    const isZh = /[一-龥]/.test(t);
+    return `<span class="tok ${isZh?'zh':''}">${t}</span>`;
+  }).join('');
+
+  // output tokens
+  document.getElementById('outputTokens').innerHTML = c.output.map((t, i) => {
+    const isZh = /[一-龥]/.test(t);
+    const cls = (qSel && qSel.row === i) ? 'q' : '';
+    return `<span class="tok ${isZh?'zh':''} ${cls}" onclick="selectRow(${i})">${t}</span>`;
+  }).join('');
+
+  // heatmap
+  let html = '<thead><tr><th></th>';
+  c.input.forEach(t => html += `<th>${t}</th>`);
+  html += '</tr></thead><tbody>';
+  c.matrix.forEach((row, i) => {
+    html += `<tr><th class="row">${c.output[i]}</th>`;
+    row.forEach((v, j) => {
+      const sel = (qSel && qSel.row === i && qSel.col === j) ? 'border: 2px solid #ffd566;' : '';
+      html += `<td style="background:${color(v)};${sel}" onclick="selectCell(${i},${j})" title="${v.toFixed(3)}">${v.toFixed(2)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  document.getElementById('heatmap').innerHTML = html;
+
+  // distribution panel
+  if (qSel) {
+    const row = c.matrix[qSel.row];
+    document.getElementById('qLabel').textContent = `输出 "${c.output[qSel.row]}" 的注意力分布`;
+    document.getElementById('qDesc').textContent = `翻译这个词时回头看 ${c.input.length} 个原词的权重`;
+    const sorted = c.input.map((t, j) => ({t, v: row[j], idx: j})).sort((a,b) => b.v - a.v);
+    document.getElementById('distList').innerHTML = sorted.map(({t, v}) => `
+      <div class="att-bar">
+        <div class="lbl"><span>${t}</span><b>${(v*100).toFixed(1)}%</b></div>
+        <div class="bar"><div class="fill" style="width:${(v*100).toFixed(1)}%"></div></div>
+      </div>
+    `).join('');
+  } else {
+    document.getElementById('qLabel').textContent = '—';
+    document.getElementById('qDesc').textContent = '点击下方表格任意单元格 → 看那一行的权重分布';
+    document.getElementById('distList').innerHTML = '';
+  }
+}
+
+function selectCell(r, col) {
+  qSel = { row: r, col: col };
+  render();
+}
+
+function selectRow(r) {
+  qSel = { row: r, col: -1 };
+  render();
+}
+
+function loadCase(i, btn) {
+  curCase = i;
+  qSel = { row: 0, col: -1 };
+  document.querySelectorAll('.control button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+qSel = { row: 0, col: 1 };
+render();
+</script>
+
+</body>
+</html>

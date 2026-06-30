@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Transformer · 自注意力 · 并行处理整句</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; max-width: 1280px; margin-left: auto; margin-right: auto; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .control button, .control select { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; font-family: inherit; }
+  .control button.active, .control button.primary { background: #4589ff; border-color: #4589ff; }
+  .control button:hover { background: #2a2a35; }
+  .control .gap { flex: 1; }
+
+  .stage { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 360px; gap: 14px; }
+  .col { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 18px 22px; }
+  .col h3 { margin: 0 0 14px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid #2a2a35; }
+
+  .sentence { padding: 16px 18px; background: #1a1a22; border-radius: 6px; margin-bottom: 16px; }
+  .tok-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tok { padding: 8px 14px; background: #2a2a35; color: #ddd; border-radius: 4px; font-family: ui-monospace, monospace; font-size: 14px; cursor: pointer; transition: all 0.2s; position: relative; }
+  .tok:hover { background: #3a3a48; }
+  .tok.q { background: rgba(255,213,102,0.25); color: #ffd566; border: 1.5px solid #ffd566; }
+  .tok.zh { font-family: -apple-system, "Noto Sans SC", sans-serif; }
+  .tok .att-pct { display: block; font-size: 9px; color: #aab; margin-top: 2px; font-weight: 400; }
+  .tok.q .att-pct { color: #ffd566; }
+
+  svg { width: 100%; display: block; }
+
+  .panel-title { color: #fff; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+  .panel-sub { color: #888; font-size: 12px; font-family: ui-monospace, monospace; margin-bottom: 14px; }
+  .info { color: #888; font-size: 12px; font-family: ui-monospace, monospace; line-height: 1.7; }
+  .info b { color: #aab; }
+
+  .head-tabs { display: flex; gap: 5px; margin-bottom: 12px; }
+  .head-tab { background: #1d1d24; color: #aab; border: 1px solid #2a2a35; border-radius: 4px; padding: 5px 10px; font-size: 11px; font-family: ui-monospace, monospace; cursor: pointer; }
+  .head-tab.active { background: #4589ff; color: #fff; border-color: #4589ff; }
+
+  .att-bar { margin-bottom: 7px; }
+  .att-bar .lbl { display: flex; justify-content: space-between; font-family: ui-monospace, monospace; font-size: 11px; color: #aab; margin-bottom: 3px; }
+  .att-bar .lbl b { color: #fff; }
+  .att-bar .bar { height: 10px; background: #1a1a22; border-radius: 3px; overflow: hidden; }
+  .att-bar .bar .fill { height: 100%; transition: width 0.4s; }
+
+  .footnote { max-width: 1280px; margin: 18px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Transformer · 自注意力 · 每个词同时看所有词</h1>
+<div class="sub">CH.04/04 · 2017 GOOGLE · ATTENTION IS ALL YOU NEED · 抛弃循环结构 · 全部位置并行处理</div>
+
+<div class="control">
+  <span style="color:#888;font-family:ui-monospace,monospace;font-size:11px;">示例句：</span>
+  <select id="caseSel" onchange="loadCase(this.value)">
+    <option value="0">代词消歧 · The animal didn't cross the street because it was too tired</option>
+    <option value="1">情感分析 · 这部电影虽然演员不错但剧情很糟糕</option>
+    <option value="2">长句依赖 · I bought it yesterday and it works perfectly</option>
+  </select>
+  <span class="gap"></span>
+  <span style="color:#888;font-family:ui-monospace,monospace;font-size:11px;">点击词查看它的注意力 ↓</span>
+</div>
+
+<div class="stage">
+
+  <div class="col">
+    <h3>自注意力可视化 · 选中词关注其他词的强度</h3>
+    <div class="sentence">
+      <div class="tok-row" id="tokRow"></div>
+    </div>
+    <svg id="arcs" viewBox="0 0 1200 200" preserveAspectRatio="xMidYMid meet"></svg>
+
+    <div style="margin-top:14px;font-family:ui-monospace,monospace;font-size:11px;color:#888;line-height:1.7;">
+      <b style="color:#aab;">关键 vs RNN：</b><br>
+      &nbsp;&nbsp;RNN：必须按顺序处理 · 第 10 个词需要等前 9 个词都算完<br>
+      &nbsp;&nbsp;Transformer：所有 10 个词<b style="color:#24a148;">同时</b>对全句做注意力 · GPU 一次算完<br><br>
+      <b style="color:#ffd566;">Self-Attention 三步：</b>每个词 → 算 Query · Key · Value 三个向量 → Q·K 算相关性 → softmax 归一化 → Σ weights·V 得新表示
+    </div>
+  </div>
+
+  <div class="col">
+    <h3>选中词 · 多头注意力分布</h3>
+    <div class="panel-title" id="qLabel">it</div>
+    <div class="panel-sub">每个"头"关注不同方面 · 真实 Transformer 通常 8-32 头</div>
+
+    <div class="head-tabs" id="headTabs">
+      <div class="head-tab active" onclick="selectHead(0,this)">Head 1 · 指代</div>
+      <div class="head-tab" onclick="selectHead(1,this)">Head 2 · 句法</div>
+      <div class="head-tab" onclick="selectHead(2,this)">Head 3 · 语义</div>
+    </div>
+
+    <div id="distList"></div>
+
+    <div class="info" style="margin-top:18px;padding-top:14px;border-top:1px solid #2a2a35;">
+      <b>多头注意力（Multi-Head Attention）</b><br>
+      每个头独立学一种"注意模式"：<br>
+      • Head 1 学指代关系（it → animal）<br>
+      • Head 2 学语法结构（动词 → 主语）<br>
+      • Head 3 学语义聚类<br>
+      → 拼接 → 输出最终表示
+    </div>
+  </div>
+
+</div>
+
+<div class="footnote">
+  Transformer · 2017 · GPT/BERT/Claude/Gemini 全部基于这个架构 · LLM 时代的真正起点
+</div>
+
+<script>
+const cases = [
+  {
+    tokens: ['The','animal','didn\'t','cross','the','street','because','it','was','too','tired'],
+    qDefault: 7, // it
+    heads: {
+      // [head][query][key]: attention weight
+      0: [ /* Head 1 - coreference */
+        [0.10,0.05,0.05,0.05,0.05,0.05,0.05,0.50,0.05,0.05,0.05],
+        [0.05,0.20,0.05,0.05,0.05,0.05,0.05,0.45,0.05,0.05,0.05],
+        [0.05,0.20,0.20,0.10,0.05,0.10,0.05,0.20,0.05,0.05,0.05],
+        [0.03,0.50,0.05,0.10,0.03,0.20,0.02,0.05,0.02,0.00,0.00],
+        [0.05,0.10,0.05,0.05,0.20,0.40,0.05,0.10,0.00,0.00,0.00],
+        [0.05,0.10,0.05,0.10,0.20,0.30,0.05,0.15,0.00,0.00,0.00],
+        [0.05,0.05,0.05,0.10,0.05,0.05,0.10,0.50,0.05,0.05,0.05],
+        [0.05,0.65,0.02,0.02,0.02,0.05,0.02,0.10,0.02,0.02,0.03], // it strongly attends animal
+        [0.05,0.30,0.05,0.05,0.05,0.05,0.05,0.30,0.10,0.05,0.05],
+        [0.02,0.10,0.02,0.02,0.02,0.02,0.02,0.20,0.10,0.10,0.38],
+        [0.02,0.10,0.02,0.02,0.02,0.02,0.02,0.10,0.20,0.10,0.38]
+      ],
+      1: [ /* Head 2 - syntactic */
+        [0.30,0.40,0.05,0.05,0.05,0.05,0.02,0.03,0.02,0.02,0.01],
+        [0.30,0.20,0.10,0.15,0.05,0.10,0.02,0.03,0.02,0.02,0.01],
+        [0.05,0.30,0.20,0.30,0.05,0.05,0.02,0.01,0.01,0.01,0.00],
+        [0.05,0.20,0.20,0.20,0.10,0.20,0.02,0.02,0.01,0.00,0.00],
+        [0.05,0.05,0.05,0.10,0.30,0.40,0.02,0.02,0.01,0.00,0.00],
+        [0.05,0.10,0.05,0.30,0.20,0.20,0.05,0.03,0.01,0.01,0.00],
+        [0.02,0.05,0.05,0.05,0.05,0.05,0.30,0.40,0.02,0.02,0.00],
+        [0.02,0.20,0.10,0.05,0.05,0.05,0.20,0.15,0.10,0.05,0.03],
+        [0.02,0.10,0.05,0.05,0.05,0.05,0.10,0.30,0.20,0.05,0.03],
+        [0.02,0.05,0.02,0.02,0.02,0.02,0.05,0.20,0.20,0.20,0.20],
+        [0.02,0.05,0.02,0.02,0.02,0.02,0.05,0.15,0.20,0.20,0.25]
+      ],
+      2: [ /* Head 3 - semantic */
+        [0.20,0.30,0.10,0.10,0.10,0.10,0.02,0.05,0.01,0.01,0.01],
+        [0.10,0.20,0.05,0.20,0.10,0.20,0.02,0.10,0.01,0.01,0.01],
+        [0.05,0.20,0.10,0.30,0.05,0.20,0.02,0.05,0.01,0.01,0.01],
+        [0.05,0.30,0.10,0.10,0.10,0.30,0.02,0.02,0.01,0.00,0.00],
+        [0.05,0.05,0.05,0.05,0.30,0.40,0.02,0.05,0.01,0.01,0.01],
+        [0.05,0.30,0.05,0.30,0.05,0.20,0.02,0.02,0.00,0.00,0.01],
+        [0.05,0.10,0.10,0.10,0.05,0.10,0.20,0.10,0.10,0.05,0.05],
+        [0.05,0.30,0.05,0.10,0.05,0.10,0.05,0.05,0.10,0.05,0.10],
+        [0.02,0.10,0.05,0.05,0.05,0.05,0.05,0.20,0.30,0.10,0.03],
+        [0.02,0.05,0.02,0.02,0.02,0.02,0.02,0.10,0.10,0.30,0.33],
+        [0.02,0.20,0.02,0.05,0.02,0.10,0.05,0.30,0.10,0.05,0.09]
+      ]
+    }
+  },
+  {
+    tokens: ['这部','电影','虽然','演员','不错','但','剧情','很','糟糕'],
+    qDefault: 8,
+    heads: {
+      0: [
+        [0.20,0.30,0.05,0.10,0.05,0.05,0.15,0.05,0.05],
+        [0.30,0.20,0.05,0.20,0.05,0.05,0.10,0.02,0.03],
+        [0.05,0.10,0.10,0.30,0.30,0.10,0.03,0.01,0.01],
+        [0.05,0.30,0.10,0.10,0.40,0.02,0.01,0.01,0.01],
+        [0.05,0.20,0.10,0.40,0.10,0.10,0.02,0.01,0.02],
+        [0.05,0.10,0.20,0.05,0.05,0.05,0.30,0.05,0.15],
+        [0.10,0.30,0.05,0.05,0.05,0.10,0.10,0.05,0.20],
+        [0.05,0.10,0.05,0.05,0.05,0.05,0.30,0.10,0.25],
+        [0.05,0.10,0.10,0.02,0.02,0.10,0.50,0.05,0.06]
+      ],
+      1: [
+        [0.20,0.30,0.05,0.10,0.10,0.05,0.15,0.02,0.03],
+        [0.30,0.20,0.05,0.20,0.10,0.05,0.05,0.02,0.03],
+        [0.05,0.10,0.30,0.20,0.20,0.10,0.02,0.01,0.02],
+        [0.05,0.30,0.05,0.10,0.40,0.02,0.05,0.01,0.02],
+        [0.05,0.20,0.05,0.40,0.20,0.05,0.02,0.01,0.02],
+        [0.05,0.05,0.30,0.05,0.05,0.10,0.30,0.05,0.05],
+        [0.10,0.30,0.05,0.05,0.05,0.05,0.15,0.05,0.20],
+        [0.05,0.05,0.05,0.05,0.05,0.05,0.30,0.20,0.20],
+        [0.05,0.10,0.05,0.02,0.02,0.10,0.40,0.20,0.06]
+      ],
+      2: [
+        [0.20,0.40,0.05,0.10,0.05,0.05,0.10,0.02,0.03],
+        [0.30,0.20,0.05,0.20,0.10,0.05,0.05,0.02,0.03],
+        [0.05,0.05,0.10,0.15,0.30,0.20,0.05,0.05,0.05],
+        [0.05,0.20,0.05,0.10,0.50,0.05,0.02,0.01,0.02],
+        [0.05,0.30,0.10,0.30,0.20,0.02,0.01,0.01,0.01],
+        [0.05,0.10,0.20,0.05,0.05,0.05,0.30,0.05,0.15],
+        [0.05,0.30,0.05,0.10,0.05,0.05,0.10,0.10,0.20],
+        [0.02,0.05,0.05,0.05,0.10,0.05,0.30,0.10,0.28],
+        [0.02,0.10,0.10,0.02,0.05,0.10,0.40,0.10,0.11]
+      ]
+    }
+  },
+  {
+    tokens: ['I','bought','it','yesterday','and','it','works','perfectly'],
+    qDefault: 5,
+    heads: {
+      0: [
+        [0.30,0.40,0.05,0.05,0.02,0.10,0.05,0.03],
+        [0.40,0.20,0.20,0.10,0.02,0.05,0.02,0.01],
+        [0.10,0.40,0.20,0.10,0.02,0.05,0.10,0.03],
+        [0.10,0.30,0.20,0.20,0.05,0.05,0.05,0.05],
+        [0.05,0.10,0.10,0.10,0.30,0.20,0.10,0.05],
+        [0.05,0.05,0.50,0.05,0.05,0.10,0.15,0.05],
+        [0.05,0.10,0.30,0.05,0.05,0.30,0.10,0.05],
+        [0.05,0.05,0.05,0.05,0.02,0.10,0.30,0.38]
+      ],
+      1: [
+        [0.20,0.40,0.10,0.05,0.05,0.10,0.05,0.05],
+        [0.40,0.20,0.20,0.10,0.02,0.05,0.02,0.01],
+        [0.10,0.30,0.20,0.20,0.05,0.05,0.05,0.05],
+        [0.10,0.30,0.20,0.10,0.10,0.10,0.05,0.05],
+        [0.05,0.10,0.05,0.10,0.30,0.30,0.05,0.05],
+        [0.10,0.05,0.30,0.05,0.10,0.10,0.20,0.10],
+        [0.05,0.10,0.20,0.05,0.05,0.30,0.10,0.15],
+        [0.05,0.05,0.05,0.05,0.02,0.20,0.30,0.28]
+      ],
+      2: [
+        [0.30,0.30,0.20,0.05,0.02,0.10,0.02,0.01],
+        [0.30,0.20,0.30,0.05,0.02,0.05,0.05,0.03],
+        [0.10,0.30,0.20,0.20,0.02,0.10,0.05,0.03],
+        [0.05,0.30,0.30,0.10,0.05,0.10,0.05,0.05],
+        [0.05,0.10,0.10,0.10,0.30,0.20,0.10,0.05],
+        [0.05,0.10,0.40,0.05,0.05,0.10,0.20,0.05],
+        [0.05,0.10,0.20,0.05,0.02,0.30,0.10,0.18],
+        [0.05,0.05,0.05,0.02,0.02,0.20,0.40,0.21]
+      ]
+    }
+  }
+];
+
+let curCase = 0;
+let qSel = cases[0].qDefault;
+let curHead = 0;
+const headColors = ['#4589ff','#ffaa00','#24a148'];
+
+function render() {
+  const c = cases[curCase];
+  const weights = c.heads[curHead][qSel];
+
+  // tokens
+  let html = '';
+  c.tokens.forEach((t, i) => {
+    const isZh = /[一-龥]/.test(t);
+    const w = weights[i];
+    const isQ = i === qSel;
+    html += `<div class="tok ${isZh?'zh':''} ${isQ?'q':''}" onclick="selectQ(${i})" style="${!isQ ? `background: rgba(69,137,255,${0.1 + w * 0.7});` : ''}">${t}${isQ?'':`<span class="att-pct">${(w*100).toFixed(0)}%</span>`}</div>`;
+  });
+  document.getElementById('tokRow').innerHTML = html;
+
+  // arcs
+  const svg = document.getElementById('arcs');
+  const W = 1200, H = 200;
+  const n = c.tokens.length;
+  const margin = 50;
+  const stride = (W - margin*2) / Math.max(n - 1, 1);
+  const yLine = 30;
+
+  let arcHtml = '';
+  // baseline
+  arcHtml += `<line x1="${margin-10}" y1="${yLine}" x2="${W-margin+10}" y2="${yLine}" stroke="#2a2a35"/>`;
+
+  // dots for each token
+  c.tokens.forEach((t, i) => {
+    const x = margin + i * stride;
+    const isQ = i === qSel;
+    arcHtml += `<circle cx="${x}" cy="${yLine}" r="${isQ?7:5}" fill="${isQ?'#ffd566':'#4589ff'}"/>`;
+    arcHtml += `<text x="${x}" y="${yLine-12}" text-anchor="middle" fill="${isQ?'#ffd566':'#aab'}" font-family="ui-monospace,monospace" font-size="11">${t}</text>`;
+  });
+
+  // arcs from qSel to all
+  const xq = margin + qSel * stride;
+  weights.forEach((w, i) => {
+    if (i === qSel) return;
+    const xt = margin + i * stride;
+    const cx = (xq + xt) / 2;
+    const dist = Math.abs(xq - xt);
+    const cy = yLine + Math.min(140, dist * 0.5 + 30);
+    const strokeW = Math.max(0.5, w * 8);
+    const opacity = Math.max(0.15, w);
+    arcHtml += `<path d="M ${xq} ${yLine} Q ${cx} ${cy} ${xt} ${yLine}" fill="none" stroke="${headColors[curHead]}" stroke-width="${strokeW}" opacity="${opacity}"/>`;
+  });
+
+  svg.innerHTML = arcHtml;
+
+  // panel
+  document.getElementById('qLabel').textContent = c.tokens[qSel];
+  const sorted = weights.map((w, i) => ({t: c.tokens[i], w, i})).filter(x => x.i !== qSel).sort((a,b) => b.w - a.w);
+  document.getElementById('distList').innerHTML = sorted.slice(0, 6).map(({t, w}) => `
+    <div class="att-bar">
+      <div class="lbl"><span>${t}</span><b>${(w*100).toFixed(1)}%</b></div>
+      <div class="bar"><div class="fill" style="width:${(w*100).toFixed(1)}%;background:${headColors[curHead]}"></div></div>
+    </div>
+  `).join('');
+}
+
+function selectQ(i) {
+  qSel = i;
+  render();
+}
+
+function selectHead(h, el) {
+  curHead = h;
+  document.querySelectorAll('.head-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function loadCase(idx) {
+  curCase = +idx;
+  qSel = cases[curCase].qDefault;
+  render();
+}
+
+render();
+</script>
+
+</body>
+</html>
