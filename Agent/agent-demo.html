@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Agent · ReAct 循环演示 · 月球营报名顾问</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 1280px; margin-left: auto; margin-right: auto; }
+  .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  .control button.primary { background: #4589ff; border-color: #4589ff; font-weight: 500; }
+  .control button.primary:hover { background: #6fa7ff; }
+  .control button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .stage { display: grid; grid-template-columns: 1fr 320px; gap: 16px; max-width: 1280px; margin: 0 auto; }
+  .left { display: flex; flex-direction: column; gap: 12px; }
+  .right { display: flex; flex-direction: column; gap: 12px; }
+
+  /* Agent center */
+  .agent {
+    background: #14141a; border: 1px solid #2a2a35; border-radius: 8px;
+    padding: 18px 22px; min-height: 220px;
+    position: relative; overflow: hidden;
+  }
+  .agent.thinking { border-color: #4589ff; box-shadow: 0 0 0 1px rgba(69,137,255,0.5), 0 0 24px rgba(69,137,255,0.15); }
+  .agent .head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2a2a35; }
+  .agent .name { font-size: 16px; color: #fff; font-weight: 600; }
+  .agent .status { font-family: ui-monospace, monospace; font-size: 10px; color: #ffd566; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; background: rgba(255,213,102,0.12); border-radius: 12px; }
+  .agent .status.idle { color: #666; background: transparent; }
+  .agent .status.acting { color: #6fa7ff; background: rgba(69,137,255,0.15); }
+  .agent .input-area { font-family: ui-monospace, monospace; font-size: 12px; color: #aaa; background: #1d1d24; padding: 10px 12px; border-left: 3px solid #ffd566; border-radius: 4px; margin-bottom: 12px; }
+  .agent .input-area b { color: #ffd566; }
+  .agent .thought-stream { font-family: ui-monospace, monospace; font-size: 12px; line-height: 1.6; color: #ddd; max-height: 130px; overflow-y: auto; }
+  .agent .thought-stream .step { padding: 5px 0; border-bottom: 1px dashed #2a2a35; }
+  .agent .thought-stream .step:last-child { border-bottom: none; }
+  .agent .thought-stream .step .lbl { color: #6fa7ff; font-weight: 600; margin-right: 6px; }
+  .agent .thought-stream .step.reason .lbl { color: #ffd566; }
+  .agent .thought-stream .step.act .lbl { color: #6fa7ff; }
+  .agent .thought-stream .step.obs .lbl { color: #24a148; }
+
+  /* Tools */
+  .tools-title { font-family: ui-monospace, monospace; font-size: 10.5px; color: #666; letter-spacing: 1.5px; text-transform: uppercase; padding-left: 4px; }
+  .tool {
+    background: #14141a; border: 1px solid #2a2a35; border-radius: 8px;
+    padding: 14px 16px; transition: all 0.35s;
+    position: relative;
+  }
+  .tool .ttop { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .tool .ticon { font-size: 16px; }
+  .tool .tname { font-size: 13px; color: #fff; font-weight: 500; flex: 1; padding-left: 10px; }
+  .tool .tbadge { font-family: ui-monospace, monospace; font-size: 9.5px; color: #555; letter-spacing: 1.2px; text-transform: uppercase; }
+  .tool .tdesc { color: #888; font-size: 11.5px; line-height: 1.5; }
+  .tool .tret { display: none; margin-top: 8px; padding: 8px 10px; background: rgba(36,161,72,0.08); border-left: 2px solid #24a148; border-radius: 3px; font-family: ui-monospace, monospace; font-size: 11px; color: #c0d8c5; line-height: 1.5; }
+  .tool.calling { border-color: #4589ff; box-shadow: 0 0 0 1px rgba(69,137,255,0.4); transform: translateX(-4px); }
+  .tool.calling .tbadge { color: #4589ff; }
+  .tool.done { border-color: #24a148; }
+  .tool.done .tbadge { color: #24a148; }
+  .tool.done .tret { display: block; }
+
+  /* Final answer */
+  .final { background: rgba(36,161,72,0.08); border: 1px solid #24a148; border-radius: 8px; padding: 18px 24px; margin: 20px auto 0; max-width: 1280px; opacity: 0; transition: opacity 0.4s; }
+  .final.show { opacity: 1; }
+  .final h3 { color: #24a148; font-family: ui-monospace, monospace; font-size: 11.5px; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 12px; }
+  .final .answer { font-size: 13.5px; color: #ddd; line-height: 1.75; }
+  .final .answer b { color: #ffd566; }
+  .final .answer .sec { color: #6fa7ff; font-weight: 600; margin-top: 10px; display: block; }
+
+  .footnote { max-width: 1280px; margin: 16px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; letter-spacing: 0.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Agent · ReAct 循环</h1>
+<div class="sub">CH.11 LIVE DEMO · REASONING → ACTING → OBSERVATION · 月球营报名顾问</div>
+
+<div class="control">
+  <span style="color:#888;font-size:13px;">学员请求：</span>
+  <button class="primary" onclick="runScenario('full')">📅 帮我看看 7.15 大连飞月球要准备什么</button>
+  <button onclick="runScenario('partial')">⏰ 只查时间换算</button>
+  <button onclick="reset()">↻ 重置</button>
+</div>
+
+<div class="stage">
+
+  <div class="left">
+    <div class="agent" id="agent">
+      <div class="head">
+        <div class="name">🤖 月球营报名顾问 Agent</div>
+        <div class="status idle" id="status">IDLE</div>
+      </div>
+      <div class="input-area" id="userInput" style="display:none;">
+        <b>USER:</b> <span id="userText"></span>
+      </div>
+      <div class="thought-stream" id="stream"></div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="tools-title">可调用的工具（Tool Set）</div>
+
+    <div class="tool" id="tool1">
+      <div class="ttop">
+        <span class="ticon">🌤</span>
+        <span class="tname">地球天气</span>
+        <span class="tbadge">TOOL · IDLE</span>
+      </div>
+      <div class="tdesc">查询指定城市指定日期的天气、降水、温度</div>
+      <div class="tret" id="ret1"></div>
+    </div>
+
+    <div class="tool" id="tool2">
+      <div class="ttop">
+        <span class="ticon">⏱</span>
+        <span class="tname">地月时间换算</span>
+        <span class="tbadge">TOOL · IDLE</span>
+      </div>
+      <div class="tdesc">地球 ↔ 月球营时刻；含静默时段与月相判断</div>
+      <div class="tret" id="ret2"></div>
+    </div>
+
+    <div class="tool" id="tool3">
+      <div class="ttop">
+        <span class="ticon">🧳</span>
+        <span class="tname">行李清单生成</span>
+        <span class="tbadge">TOOL · IDLE</span>
+      </div>
+      <div class="tdesc">基于天气、生保系统、月球接口标准生成清单</div>
+      <div class="tret" id="ret3"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="final" id="final">
+  <h3>↳ Agent Final Answer</h3>
+  <div class="answer" id="finalAnswer"></div>
+</div>
+
+<div class="footnote">
+  ReAct = Reasoning + Acting · Yao et al. 2022 · 想一步 → 调工具 → 看结果 → 再想再动 · MCP 给标准化的"手"，ReAct 给"脑"
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  function setStatus(text, cls) {
+    const el = $('status');
+    el.className = 'status ' + (cls || 'idle');
+    el.textContent = text;
+  }
+
+  function addStep(cls, label, text) {
+    const div = document.createElement('div');
+    div.className = 'step ' + cls;
+    div.innerHTML = '<span class="lbl">[' + label + ']</span>' + text;
+    $('stream').appendChild(div);
+    $('stream').scrollTop = $('stream').scrollHeight;
+  }
+
+  async function callTool(idx, retText) {
+    const tool = $('tool' + idx);
+    tool.classList.add('calling');
+    tool.querySelector('.tbadge').textContent = 'TOOL · CALLING…';
+    await sleep(1100);
+    tool.classList.remove('calling');
+    tool.classList.add('done');
+    tool.querySelector('.tbadge').textContent = 'TOOL · DONE ✓';
+    $('ret' + idx).textContent = retText;
+  }
+
+  function clearAll() {
+    $('stream').innerHTML = '';
+    $('userInput').style.display = 'none';
+    setStatus('IDLE', 'idle');
+    $('agent').classList.remove('thinking');
+    ['tool1','tool2','tool3'].forEach(id => {
+      $(id).classList.remove('calling','done');
+      $(id).querySelector('.tbadge').textContent = 'TOOL · IDLE';
+    });
+    ['ret1','ret2','ret3'].forEach(id => $(id).textContent = '');
+    $('final').classList.remove('show');
+  }
+
+  async function runScenario(key) {
+    document.querySelectorAll('.control button').forEach(b => b.disabled = true);
+    clearAll();
+    $('agent').classList.add('thinking');
+
+    if (key === 'full') {
+      $('userText').textContent = '帮我看看 2099 年 7 月 15 日大连飞月球要准备什么？';
+      $('userInput').style.display = 'block';
+      await sleep(400);
+
+      // Iteration 1: Reasoning → Act (weather)
+      setStatus('REASONING', 'acting');
+      addStep('reason', 'THOUGHT 1', '用户问出发日准备 → 先查大连那天天气，因为发射会受降水影响');
+      await sleep(900);
+      setStatus('ACTING', 'acting');
+      addStep('act', 'ACTION 1', 'call get_earth_weather(city="大连", date="2099-07-14")');
+      await callTool(1, '22°C, 小雨, 降水 70% · ≥8 mm/h 红色降水可延迟发射');
+      addStep('obs', 'OBSERVATION 1', '大连出发前一天小雨 · 风险中等');
+      await sleep(700);
+
+      // Iteration 2: Reasoning → Act (time)
+      setStatus('REASONING', 'acting');
+      addStep('reason', 'THOUGHT 2', '出发时间确认了 → 算地月时差，看抵达月球时是什么时段');
+      await sleep(800);
+      setStatus('ACTING', 'acting');
+      addStep('act', 'ACTION 2', 'call earth_to_moon_time(datetime="2099-07-15T09:00:00")');
+      await callTool(2, '月昼期 · 训练时段 · 通信延迟 1.8s · 3 天后抵达');
+      addStep('obs', 'OBSERVATION 2', '抵达即可进入训练 · 通信顺畅');
+      await sleep(700);
+
+      // Iteration 3: Reasoning → Act (packing)
+      setStatus('REASONING', 'acting');
+      addStep('reason', 'THOUGHT 3', '有了天气和时间 → 生成针对性行李清单');
+      await sleep(800);
+      setStatus('ACTING', 'acting');
+      addStep('act', 'ACTION 3', 'call generate_packing_list(...)');
+      await callTool(3, '必带 · 园区提供 · 禁带 三类清单已生成');
+      addStep('obs', 'OBSERVATION 3', '清单完整 · 含天气和接口标准约束');
+      await sleep(700);
+
+      // Final synthesis
+      setStatus('SYNTHESIZING', 'acting');
+      addStep('reason', 'FINAL', '综合三步结果 → 输出结构化回答');
+      await sleep(900);
+      setStatus('DONE', 'idle');
+      $('agent').classList.remove('thinking');
+
+      $('finalAnswer').innerHTML = `
+        <span class="sec">📅 出发当天 (2099.07.15) 大连天气</span>
+        22°C, 小雨, 降水 <b>70%</b> · 长征-30 如遇红色降水可能延迟 · 建议 <b>7.14</b> 抵达
+        <span class="sec">⏰ 地月时间</span>
+        大连 09:00 出发 · 飞行 72h · 抵达月球时为 <b>月昼训练时段</b> · 通信延迟 1.8s
+        <span class="sec">🧳 行李清单</span>
+        必带：AI 终端（华为 Mate XTerran / 联想 Yoga Lunar）、证件、个人药品<br>
+        园区提供：外骨骼适配服、舱内便服、餐食、培训装备<br>
+        禁带：私自 LLM 权重、私人卫星通信、活体动植物
+      `;
+      $('final').classList.add('show');
+
+    } else if (key === 'partial') {
+      $('userText').textContent = '从大连 9 点出发，到月球是几点？';
+      $('userInput').style.display = 'block';
+      await sleep(400);
+
+      setStatus('REASONING', 'acting');
+      addStep('reason', 'THOUGHT 1', '用户只问时间 → 不需要查天气或生成清单 → 只调时间工具');
+      await sleep(900);
+      setStatus('ACTING', 'acting');
+      addStep('act', 'ACTION 1', 'call earth_to_moon_time(...)');
+      await callTool(2, '飞行 72h · 抵达时为月昼期、训练时段 · 通信延迟 1.8s');
+      addStep('obs', 'OBSERVATION 1', '一个工具就够回答这个问题');
+      await sleep(600);
+
+      setStatus('SYNTHESIZING', 'acting');
+      addStep('reason', 'FINAL', '只用一个工具的结果 → 输出简短回答');
+      await sleep(700);
+      setStatus('DONE', 'idle');
+      $('agent').classList.remove('thinking');
+
+      $('finalAnswer').innerHTML = `
+        从大连 9:00 出发，长征-30 飞行约 <b>72 小时</b>，抵达月球时为月昼期、训练时段开放，地月单向通信延迟 1.8 秒。
+      `;
+      $('final').classList.add('show');
+    }
+
+    document.querySelectorAll('.control button').forEach(b => b.disabled = false);
+  }
+
+  function reset() { clearAll(); }
+</script>
+
+</body>
+</html>

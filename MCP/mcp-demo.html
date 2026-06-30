@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>MCP 三角色协议演示 · 月球营档案查询</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 1280px; margin-left: auto; margin-right: auto; }
+  .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  .control button.primary { background: #4589ff; border-color: #4589ff; font-weight: 500; }
+  .control button.primary:hover { background: #6fa7ff; }
+  .control button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .control .gap { flex: 1; }
+  .control .note { font-family: ui-monospace, monospace; font-size: 10.5px; color: #666; letter-spacing: 0.5px; }
+
+  .stage { display: grid; grid-template-columns: 1fr 70px 1fr 70px 1fr; gap: 10px; max-width: 1280px; margin: 0 auto; }
+  .role { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 16px; min-height: 360px; display: flex; flex-direction: column; transition: border-color 0.3s, box-shadow 0.3s; }
+  .role.active { border-color: #4589ff; box-shadow: 0 0 0 1px rgba(69,137,255,0.4); }
+  .role .icon { font-size: 28px; margin-bottom: 6px; }
+  .role .name { font-size: 15px; color: #fff; font-weight: 600; margin-bottom: 2px; }
+  .role .tag { font-family: ui-monospace, monospace; font-size: 10px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+  .role .desc { color: #999; font-size: 12px; line-height: 1.55; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #2a2a35; }
+  .role .log { flex: 1; font-family: ui-monospace, monospace; font-size: 11px; line-height: 1.55; overflow-y: auto; max-height: 240px; }
+  .role .log .entry { padding: 4px 0; color: #aaa; }
+  .role .log .entry.user { color: #ffd566; }
+  .role .log .entry.send { color: #6fa7ff; }
+  .role .log .entry.recv { color: #c7a3e0; }
+  .role .log .entry.work { color: #ddd; }
+  .role .log .entry.result { color: #24a148; }
+
+  .channel { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+  .channel .label { font-family: ui-monospace, monospace; font-size: 9px; color: #666; letter-spacing: 1.5px; }
+  .channel .pipe { width: 4px; height: 200px; background: linear-gradient(to bottom, transparent, #2a2a35 20%, #2a2a35 80%, transparent); position: relative; border-radius: 2px; }
+  .channel .pulse { position: absolute; width: 12px; height: 12px; background: #4589ff; border-radius: 50%; left: -4px; opacity: 0; box-shadow: 0 0 14px #4589ff; }
+  .channel .pulse.fwd.active { animation: travel 1.1s ease-out forwards; }
+  .channel .pulse.rev.active { animation: travelBack 1.1s ease-out forwards; background: #24a148; box-shadow: 0 0 14px #24a148; }
+  @keyframes travel { 0%{top:-8px;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:208px;opacity:0} }
+  @keyframes travelBack { 0%{top:208px;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:-8px;opacity:0} }
+
+  .files { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+  .file { background: #1d1d24; border: 1px solid #2a2a35; border-radius: 4px; padding: 6px 10px; font-size: 11.5px; font-family: ui-monospace, monospace; color: #aaa; transition: all 0.3s; }
+  .file.hot { background: rgba(69,137,255,0.16); border-color: #4589ff; color: #fff; transform: translateX(4px); }
+  .file.done { background: rgba(36,161,72,0.12); border-color: #24a148; color: #c0d8c5; }
+
+  .final { background: rgba(36,161,72,0.08); border: 1px solid #24a148; border-radius: 8px; padding: 16px 22px; margin: 22px auto 0; max-width: 1280px; opacity: 0; transition: opacity 0.4s; }
+  .final.show { opacity: 1; }
+  .final h3 { color: #24a148; font-family: ui-monospace, monospace; font-size: 11.5px; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 10px; }
+  .final .answer { font-size: 14.5px; color: #fff; line-height: 1.7; }
+  .final .answer b { color: #ffd566; }
+
+  .footnote { max-width: 1280px; margin: 18px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; letter-spacing: 0.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>MCP 三角色协议演示</h1>
+<div class="sub">CH.10 MODEL CONTEXT PROTOCOL · HOST → CLIENT → SERVER · 月球营档案查询</div>
+
+<div class="control">
+  <span style="color:#888;font-size:13px;">选一个演示场景：</span>
+  <button class="primary" onclick="runScenario('list')">📁 列出月球营档案目录</button>
+  <button class="primary" onclick="runScenario('read')">📖 读取营地规则</button>
+  <button class="primary" onclick="runScenario('cross')">🔍 跨文件汇总应急流程</button>
+  <span class="gap"></span>
+  <button onclick="reset()">↻ 重置</button>
+</div>
+
+<div class="stage">
+
+  <div class="role" id="host">
+    <div class="icon">◉</div>
+    <div class="name">Host · 主机</div>
+    <div class="tag">CLAUDE DESKTOP</div>
+    <div class="desc">学员直接对话的 AI 应用界面 — Claude Desktop / Cursor / VSCode 等</div>
+    <div class="log" id="logHost"></div>
+  </div>
+
+  <div class="channel">
+    <div class="label">MCP<br>PROTOCOL</div>
+    <div class="pipe">
+      <div class="pulse fwd" id="p1f"></div>
+      <div class="pulse rev" id="p1r"></div>
+    </div>
+  </div>
+
+  <div class="role" id="client">
+    <div class="icon">◐</div>
+    <div class="name">Client · 协议库</div>
+    <div class="tag">MCP CLIENT</div>
+    <div class="desc">Host 内嵌的 MCP 协议库 — 把 AI 意图翻译成标准 MCP 消息</div>
+    <div class="log" id="logClient"></div>
+  </div>
+
+  <div class="channel">
+    <div class="label">MCP<br>PROTOCOL</div>
+    <div class="pipe">
+      <div class="pulse fwd" id="p2f"></div>
+      <div class="pulse rev" id="p2r"></div>
+    </div>
+  </div>
+
+  <div class="role" id="server">
+    <div class="icon">◈</div>
+    <div class="name">Server · 工具端</div>
+    <div class="tag">FILESYSTEM-SERVER</div>
+    <div class="desc">实际干活的本地程序 — 读文件、写文件、查 Git、调企业 API…</div>
+    <div class="files" id="files">
+      <div class="file" data-name="营地规则.md">📄 营地规则.md</div>
+      <div class="file" data-name="训练计划-第一周.md">📄 训练计划-第一周.md</div>
+      <div class="file" data-name="应急预案.md">📄 应急预案.md</div>
+    </div>
+    <div class="log" id="logServer" style="margin-top:8px;"></div>
+  </div>
+
+</div>
+
+<div class="final" id="final">
+  <h3>↳ Final Answer to User</h3>
+  <div class="answer" id="finalAnswer"></div>
+</div>
+
+<div class="footnote">
+  MCP · Anthropic 2024.11 · 让任意 Agent 用统一方式调用任意工具 · 真实使用：Claude Desktop + filesystem-server / git-server / slack-server …
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+  function entry(logId, text, cls) {
+    const div = document.createElement('div');
+    div.className = 'entry ' + (cls || '');
+    div.textContent = text;
+    const log = $(logId);
+    log.appendChild(div);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  async function pulse(id) {
+    $(id).classList.add('active');
+    await sleep(1100);
+    $(id).classList.remove('active');
+  }
+
+  function setActive(...roles) {
+    ['host','client','server'].forEach(r => $(r).classList.remove('active'));
+    roles.forEach(r => $(r).classList.add('active'));
+  }
+
+  function highlightFiles(names, state) {
+    document.querySelectorAll('.file').forEach(f => {
+      if (names.includes(f.dataset.name)) {
+        f.classList.remove('hot','done');
+        if (state) f.classList.add(state);
+      }
+    });
+  }
+
+  function clearAll() {
+    ['logHost','logClient','logServer'].forEach(id => $(id).innerHTML = '');
+    document.querySelectorAll('.file').forEach(f => f.classList.remove('hot','done'));
+    setActive();
+    $('final').classList.remove('show');
+  }
+
+  const scenarios = {
+    list: {
+      userInput: '列出月球营档案目录有哪些文件',
+      finalAnswer: '<b>月球营档案/</b> 下包含 3 个文件：<br>· 营地规则.md<br>· 训练计划-第一周.md<br>· 应急预案.md'
+    },
+    read: {
+      userInput: '营地规则里学员每天有多少算力配额？',
+      finalAnswer: '根据 <b>营地规则.md</b> 第三章「训练系统访问规范」：每位学员每天 <b>8 PFLOPS-hour</b>，使用「蛟龙-3000」类脑芯片集群。'
+    },
+    cross: {
+      userInput: '遇到 EVA 紧急召回，学员要走哪些步骤？',
+      finalAnswer: '<b>跨 2 份文档汇总</b>：<br>触发条件（应急预案 C 类）：生命体征异常 / 月尘风暴 / 鹊桥-8 中断 / 玉兔-10 失控<br>流程：① 收到广播 + 外骨骼震动 → ② 返最近气闸室 H1/H2/H3 → ③ 14 分钟尘洗（营地规则二·5）→ ④ 监控室确认解除'
+    }
+  };
+
+  async function runScenario(key) {
+    document.querySelectorAll('.control button').forEach(b => b.disabled = true);
+    clearAll();
+    const s = scenarios[key];
+
+    // 1. User input in Host
+    setActive('host');
+    entry('logHost', '[USER] ' + s.userInput, 'user');
+    await sleep(700);
+    entry('logHost', 'Claude 决定调用 filesystem 工具');
+    await sleep(500);
+
+    // 2. Host → Client (MCP packet)
+    entry('logHost', '[SEND →] tools/call: read_*', 'send');
+    await pulse('p1f');
+
+    // 3. Client receives + forwards
+    setActive('client');
+    entry('logClient', '[RECV ←] AI tool intent', 'recv');
+    await sleep(400);
+    entry('logClient', '封装 MCP 消息 (JSON-RPC 2.0)');
+    await sleep(400);
+    entry('logClient', '[SEND →] MCP request to server', 'send');
+    await pulse('p2f');
+
+    // 4. Server reads files
+    setActive('server');
+    entry('logServer', '[RECV ←] MCP request', 'recv');
+    await sleep(400);
+
+    if (key === 'list') {
+      entry('logServer', 'list_directory("月球营档案/")', 'work');
+      highlightFiles(['营地规则.md','训练计划-第一周.md','应急预案.md'], 'hot');
+      await sleep(1000);
+      highlightFiles(['营地规则.md','训练计划-第一周.md','应急预案.md'], 'done');
+      entry('logServer', '返回 3 个 entries', 'result');
+    } else if (key === 'read') {
+      entry('logServer', 'read_file("营地规则.md")', 'work');
+      highlightFiles(['营地规则.md'], 'hot');
+      await sleep(900);
+      entry('logServer', '读取 2.3 KB · 解析第三章');
+      await sleep(600);
+      highlightFiles(['营地规则.md'], 'done');
+      entry('logServer', '返回 file content', 'result');
+    } else if (key === 'cross') {
+      entry('logServer', 'read_file("应急预案.md")', 'work');
+      highlightFiles(['应急预案.md'], 'hot');
+      await sleep(700);
+      highlightFiles(['应急预案.md'], 'done');
+      entry('logServer', 'read_file("营地规则.md")', 'work');
+      highlightFiles(['营地规则.md'], 'hot');
+      await sleep(700);
+      highlightFiles(['营地规则.md'], 'done');
+      entry('logServer', '返回 2 份 content', 'result');
+    }
+    await sleep(400);
+
+    // 5. Server → Client (response)
+    entry('logServer', '[SEND →] MCP response', 'send');
+    await pulse('p2r');
+
+    // 6. Client → Host
+    setActive('client');
+    entry('logClient', '[RECV ←] server response', 'recv');
+    await sleep(300);
+    entry('logClient', '解封装 MCP 消息');
+    await sleep(300);
+    entry('logClient', '[SEND →] tool result to AI', 'send');
+    await pulse('p1r');
+
+    // 7. Host AI synthesizes final
+    setActive('host');
+    entry('logHost', '[RECV ←] tool result', 'recv');
+    await sleep(400);
+    entry('logHost', 'Claude 综合回答 → 输出', 'result');
+    await sleep(500);
+
+    // Show final answer
+    setActive();
+    $('finalAnswer').innerHTML = s.finalAnswer;
+    $('final').classList.add('show');
+
+    document.querySelectorAll('.control button').forEach(b => b.disabled = false);
+  }
+
+  function reset() {
+    clearAll();
+  }
+</script>
+
+</body>
+</html>

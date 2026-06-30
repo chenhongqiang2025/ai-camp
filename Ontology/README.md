@@ -17,15 +17,18 @@
 
 ## 🛠 推荐演示路径
 
-**主路径**：**WebProtégé 在线版**（斯坦福官方，免费 + 浏览器，需注册）
+**最稳路径 ⭐**：**本目录 `ontology-demo.html` 交互动画演示**（浏览器直接打开，零依赖）
 
-- 注册并登录：<https://webprotege.stanford.edu>
-- 创建 New Project → Import OWL → 上传本目录的 `lunar-camp-ontology.ttl`
-- 在 Web 界面看类层次、属性、推理结果
+- 三栏布局：类层次树（左）/ 三元组（中）/ 推理过程（右）
+- 三按钮分段播放：构建类层次 → 加载实例 → 执行推理
+- 推理时动画展示三步规则推导，自动新增"推理出"的三元组（绿色标识）
+- 点类层次任一节点 → 自动高亮所有祖先类
 
-**备用路径**：
-- **WebVOWL 可视化**（仅可视化，免登录）—— <https://service.tib.eu/webvowl/>
-- **直接 slides 静态展示**：用本目录 `ontology-visualization.html`（我写了一个静态可视化页）
+**进阶路径**：**WebProtégé 在线版**（斯坦福官方）
+
+- <https://webprotege.stanford.edu> → New Project → Import OWL → 上传 `lunar-camp-ontology.ttl`
+
+**完全离线兜底**：本目录 `ontology-visualization.html`（纯静态可视化页，无交互）
 
 ---
 

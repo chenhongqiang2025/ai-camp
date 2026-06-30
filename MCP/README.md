@@ -15,11 +15,14 @@
 
 ## 🛠 推荐演示路径
 
-**主路径**：**Claude Desktop + filesystem-server**（最直观）
+**最稳路径 ⭐**：**本目录 `mcp-demo.html` 动画演示**（浏览器直接打开，零依赖，3 个场景一键播放）
+- 学员看到 Host → Client → Server 消息流动动画
+- 3 个场景：列目录 / 读单文件 / 跨文件汇总
+- **完全不需要装 Claude Desktop / 不需要联网** — 现场最稳
 
-下载：<https://claude.ai/download>
-
-配置：见本目录 `claude_desktop_config.example.json`
+**进阶路径**：**Claude Desktop + filesystem-server**（如有时间想给学员看真实工具调用）
+- 下载：<https://claude.ai/download>
+- 配置：见本目录 `claude_desktop_config.example.json`
 
 **备用路径**（不推荐放主线、可作扩展讨论）：
 - **Cursor IDE** —— 同支持 MCP，<https://www.cursor.com>

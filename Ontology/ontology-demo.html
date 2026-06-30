@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Ontology · 本体论推理演示 · 月球营领域</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 1280px; margin-left: auto; margin-right: auto; }
+  .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  .control button.primary { background: #4589ff; border-color: #4589ff; font-weight: 500; }
+  .control button.primary:hover { background: #6fa7ff; }
+  .control button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .control .gap { flex: 1; }
+
+  .stage { display: grid; grid-template-columns: 320px 1fr 360px; gap: 16px; max-width: 1280px; margin: 0 auto; }
+  .col { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 16px 18px; min-height: 540px; max-height: 600px; display: flex; flex-direction: column; }
+  .col h3 { margin: 0 0 10px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid #2a2a35; }
+
+  /* Class hierarchy tree */
+  .tree { flex: 1; font-family: ui-monospace, monospace; font-size: 12.5px; line-height: 1.95; overflow-y: auto; }
+  .tree .item { cursor: pointer; padding: 1px 0; transition: all 0.25s; opacity: 0; transform: translateX(-8px); }
+  .tree .item.show { opacity: 1; transform: translateX(0); }
+  .tree .item:hover { background: rgba(69,137,255,0.08); }
+  .tree .item.selected { background: rgba(255,213,102,0.12); color: #ffd566; }
+  .tree .item .ind { color: #444; }
+  .tree .item .n0 { color: #fff; font-weight: 600; }
+  .tree .item .n1 { color: #6fa7ff; }
+  .tree .item .n2 { color: #aab3e0; }
+  .tree .item .n3 { color: #888; }
+  .tree .item.highlight-anc { background: rgba(36,161,72,0.12); color: #c0d8c5; }
+
+  /* Triples panel */
+  .triples { flex: 1; overflow-y: auto; }
+  .triple { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; padding: 7px 0; align-items: center; font-size: 12px; border-bottom: 1px dashed #1d1d24; opacity: 0; transform: translateY(6px); transition: all 0.3s; }
+  .triple.show { opacity: 1; transform: translateY(0); }
+  .triple .subj { color: #ffd566; font-family: ui-monospace, monospace; }
+  .triple .pred { color: #888; font-family: ui-monospace, monospace; font-size: 10.5px; text-align: center; padding: 0 6px; }
+  .triple .obj { color: #6fa7ff; font-family: ui-monospace, monospace; }
+  .triple.inferred .subj { color: #24a148; }
+  .triple.inferred .obj { color: #24a148; }
+  .triple.inferred .pred::after { content: ' (推理)'; color: #24a148; font-style: italic; }
+
+  /* Inference panel */
+  .inf-step { background: #1d1d24; border-left: 3px solid #4589ff; border-radius: 4px; padding: 10px 12px; margin-bottom: 8px; font-size: 12px; line-height: 1.6; opacity: 0; transform: translateX(8px); transition: all 0.4s; }
+  .inf-step.show { opacity: 1; transform: translateX(0); }
+  .inf-step.conclude { border-left-color: #24a148; background: rgba(36,161,72,0.08); }
+  .inf-step b { color: #ffd566; }
+  .inf-step .arrow { color: #6fa7ff; font-family: ui-monospace, monospace; margin: 0 4px; }
+
+  .footnote { max-width: 1280px; margin: 16px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; letter-spacing: 0.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>Ontology · 本体论推理</h1>
+<div class="sub">CH.08/01 LIVE DEMO · CLASS HIERARCHY → TRIPLES → INFERENCE · 月球营领域</div>
+
+<div class="control">
+  <button class="primary" onclick="buildHierarchy()">▶ 构建本体类层次</button>
+  <button class="primary" onclick="loadInstances()">📥 加载实例 (S001)</button>
+  <button class="primary" onclick="runInference()">⚡ 执行推理</button>
+  <span class="gap"></span>
+  <button onclick="reset()">↻ 重置</button>
+</div>
+
+<div class="stage">
+
+  <div class="col">
+    <h3>Class Hierarchy · 类层次</h3>
+    <div class="tree" id="tree"></div>
+  </div>
+
+  <div class="col">
+    <h3>Triples · 三元组（主语 - 谓语 - 宾语）</h3>
+    <div class="triples" id="triples"></div>
+  </div>
+
+  <div class="col">
+    <h3>Inference · 推理过程</h3>
+    <div class="inf-list" id="infList" style="overflow-y:auto; flex:1;"></div>
+  </div>
+
+</div>
+
+<div class="footnote">
+  Ontology · OWL + RDF · Subclass Transitivity · 大模型擅长语言 / 本体擅长逻辑 · IBM Hybrid AI
+</div>
+
+<script>
+  // === Class hierarchy data ===
+  const hierarchy = [
+    { id: 'Thing', label: 'Thing', level: 0 },
+    { id: 'Person', label: 'Person', level: 1, parent: 'Thing' },
+    { id: 'Student', label: 'Student', level: 2, parent: 'Person' },
+    { id: 'Mentor', label: 'Mentor', level: 2, parent: 'Person' },
+    { id: 'College', label: 'College', level: 1, parent: 'Thing' },
+    { id: 'Mission', label: 'Mission', level: 1, parent: 'Thing' },
+    { id: 'EVA_Mission', label: 'EVA_Mission', level: 2, parent: 'Mission' },
+    { id: 'SLAM_Mission', label: 'SLAM_Mission', level: 2, parent: 'Mission' },
+    { id: 'Training_Mission', label: 'Training_Mission', level: 2, parent: 'Mission' },
+    { id: 'Interest', label: 'Interest', level: 1, parent: 'Thing' },
+    { id: 'AI_Interest', label: 'AI_Interest', level: 2, parent: 'Interest' },
+    { id: 'Interest_RAG', label: 'Interest_RAG', level: 3, parent: 'AI_Interest' },
+    { id: 'Interest_KG', label: 'Interest_KG', level: 3, parent: 'AI_Interest' },
+    { id: 'Interest_Agent', label: 'Interest_Agent', level: 3, parent: 'AI_Interest' },
+    { id: 'Interest_GenAI', label: 'Interest_GenAI', level: 3, parent: 'AI_Interest' }
+  ];
+
+  const explicitTriples = [
+    { s: 'S001', p: 'rdf:type', o: 'Student' },
+    { s: 'S001', p: 'enrolledIn', o: 'DLUT_Software' },
+    { s: 'S001', p: 'hasInterest', o: 'Interest_RAG' },
+    { s: 'S001', p: 'assignedTo', o: 'Mission_SeismicAnomaly' },
+    { s: 'DLUT_Software', p: 'rdf:type', o: 'College' },
+    { s: 'Interest_RAG', p: 'rdfs:subClassOf', o: 'AI_Interest' },
+    { s: 'AI_Interest', p: 'rdfs:subClassOf', o: 'Interest' },
+    { s: 'Interest', p: 'rdfs:subClassOf', o: 'Thing' },
+    { s: 'Mission_SeismicAnomaly', p: 'rdf:type', o: 'Training_Mission' },
+    { s: 'Training_Mission', p: 'rdfs:subClassOf', o: 'Mission' }
+  ];
+
+  const inferredTriples = [
+    { s: 'Interest_RAG', p: 'rdfs:subClassOf', o: 'Interest', inferred: true },
+    { s: 'Interest_RAG', p: 'rdfs:subClassOf', o: 'Thing', inferred: true },
+    { s: 'S001', p: 'hasInterest', o: 'AI_Interest', inferred: true },
+    { s: 'S001', p: 'hasInterest', o: 'Interest', inferred: true },
+    { s: 'Mission_SeismicAnomaly', p: 'rdf:type', o: 'Mission', inferred: true }
+  ];
+
+  // === Build hierarchy ===
+  async function buildHierarchy() {
+    document.querySelectorAll('.control button').forEach(b => b.disabled = true);
+    const tree = document.getElementById('tree');
+    tree.innerHTML = '';
+
+    for (const h of hierarchy) {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.dataset.id = h.id;
+      const indent = '│ '.repeat(Math.max(0, h.level - 1));
+      const branch = h.level === 0 ? '' : '├── ';
+      const cls = 'n' + h.level;
+      div.innerHTML = `<span class="ind">${indent}${branch}</span><span class="${cls}">${h.label}</span>`;
+      div.addEventListener('click', () => selectClass(h.id));
+      tree.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('show'));
+      await new Promise(r => setTimeout(r, 90));
+    }
+    document.querySelectorAll('.control button').forEach(b => b.disabled = false);
+  }
+
+  function selectClass(id) {
+    document.querySelectorAll('.tree .item').forEach(it => it.classList.remove('selected','highlight-anc'));
+    const node = document.querySelector('.tree .item[data-id="' + id + '"]');
+    if (!node) return;
+    node.classList.add('selected');
+    // Highlight ancestors
+    let cur = hierarchy.find(h => h.id === id);
+    while (cur && cur.parent) {
+      const p = document.querySelector('.tree .item[data-id="' + cur.parent + '"]');
+      if (p) p.classList.add('highlight-anc');
+      cur = hierarchy.find(h => h.id === cur.parent);
+    }
+  }
+
+  // === Load instances (explicit triples) ===
+  async function loadInstances() {
+    document.querySelectorAll('.control button').forEach(b => b.disabled = true);
+    const panel = document.getElementById('triples');
+    panel.innerHTML = '';
+    for (const t of explicitTriples) {
+      const div = document.createElement('div');
+      div.className = 'triple';
+      div.innerHTML = `<span class="subj">${t.s}</span><span class="pred">— ${t.p} →</span><span class="obj">${t.o}</span>`;
+      panel.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('show'));
+      await new Promise(r => setTimeout(r, 200));
+    }
+    document.querySelectorAll('.control button').forEach(b => b.disabled = false);
+  }
+
+  // === Run inference ===
+  async function runInference() {
+    document.querySelectorAll('.control button').forEach(b => b.disabled = true);
+    const inf = document.getElementById('infList');
+    inf.innerHTML = '';
+
+    const steps = [
+      { html: '<b>规则 1 · 子类传递（rdfs:subClassOf transitive）</b><br>Interest_RAG <span class="arrow">⊆</span> AI_Interest <span class="arrow">⊆</span> Interest <span class="arrow">⊆</span> Thing<br>→ 自动推出 Interest_RAG <span class="arrow">⊆</span> Interest 和 Thing' },
+      { html: '<b>规则 2 · 类型继承（rdf:type 沿层次上推）</b><br>Mission_SeismicAnomaly <span class="arrow">a</span> Training_Mission<br>Training_Mission <span class="arrow">⊆</span> Mission<br>→ 推出 Mission_SeismicAnomaly <span class="arrow">a</span> Mission' },
+      { html: '<b>规则 3 · 属性沿类层次扩展</b><br>S001 <span class="arrow">hasInterest</span> Interest_RAG (显式)<br>Interest_RAG <span class="arrow">⊆</span> AI_Interest (子类)<br>→ 推出 S001 <span class="arrow">hasInterest</span> AI_Interest 和 Interest' },
+      { html: '<b>结论 · 给学员演示</b><br>我们只标了 "S001 喜欢 RAG"，本体自动推出他对 AI 感兴趣，对 Interest 感兴趣 — <b style="color:#24a148;">无需手工标注</b>', cls: 'conclude' }
+    ];
+
+    for (const step of steps) {
+      const div = document.createElement('div');
+      div.className = 'inf-step ' + (step.cls || '');
+      div.innerHTML = step.html;
+      inf.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('show'));
+      await new Promise(r => setTimeout(r, 1200));
+    }
+
+    // Add inferred triples to the triples panel
+    const panel = document.getElementById('triples');
+    for (const t of inferredTriples) {
+      const div = document.createElement('div');
+      div.className = 'triple inferred';
+      div.innerHTML = `<span class="subj">${t.s}</span><span class="pred">— ${t.p} →</span><span class="obj">${t.o}</span>`;
+      panel.appendChild(div);
+      requestAnimationFrame(() => div.classList.add('show'));
+      await new Promise(r => setTimeout(r, 250));
+    }
+
+    document.querySelectorAll('.control button').forEach(b => b.disabled = false);
+  }
+
+  function reset() {
+    document.getElementById('tree').innerHTML = '<div style="color:#666;font-size:12px;font-family:ui-monospace,monospace;">点「构建本体类层次」开始</div>';
+    document.getElementById('triples').innerHTML = '<div style="color:#666;font-size:12px;font-family:ui-monospace,monospace;">点「加载实例」加载三元组</div>';
+    document.getElementById('infList').innerHTML = '<div style="color:#666;font-size:12px;font-family:ui-monospace,monospace;">点「执行推理」看 AI 自动推出新事实</div>';
+  }
+
+  reset();
+</script>
+
+</body>
+</html>

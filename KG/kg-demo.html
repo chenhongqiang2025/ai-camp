@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>KG · 知识图谱演示 · 月球营组队推理</title>
+<style>
+  * { box-sizing: border-box; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; margin: 0; padding: 24px; }
+  h1 { color: #fff; font-size: 22px; margin: 0 0 4px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 22px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  .control { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; margin-bottom: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; max-width: 1280px; margin-left: auto; margin-right: auto; }
+  .control button { background: #1d1d24; color: #fff; border: 1px solid #2a2a35; border-radius: 4px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  .control button.primary { background: #4589ff; border-color: #4589ff; font-weight: 500; }
+  .control button.primary:hover { background: #6fa7ff; }
+  .control button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .control .gap { flex: 1; }
+
+  .stage { display: grid; grid-template-columns: 1fr 320px; gap: 16px; max-width: 1280px; margin: 0 auto; }
+  .canvas-wrap { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 8px; height: 520px; position: relative; overflow: hidden; }
+  svg { width: 100%; height: 100%; display: block; }
+
+  .panel { display: flex; flex-direction: column; gap: 12px; }
+  .panel .box { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 14px 18px; }
+  .panel .box h3 { margin: 0 0 8px; font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 6px; border-bottom: 1px solid #2a2a35; }
+  .panel .legend { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+  .panel .legend .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+  .panel .log { font-family: ui-monospace, monospace; font-size: 11.5px; line-height: 1.7; color: #aaa; max-height: 200px; overflow-y: auto; }
+  .panel .log .ent { padding: 3px 0; border-bottom: 1px dashed #1d1d24; }
+  .panel .log .ent.hl { color: #ffd566; }
+  .panel .log .ent.res { color: #24a148; }
+
+  /* SVG node styles */
+  .node circle { transition: all 0.4s; cursor: pointer; }
+  .node text { fill: #ddd; font-size: 10.5px; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; pointer-events: none; user-select: none; }
+  .node.student circle { fill: #4589ff; stroke: #fff; stroke-width: 1.5; }
+  .node.student text { fill: #fff; font-weight: 600; }
+  .node.college circle { fill: #6f5ed0; }
+  .node.interest circle { fill: #c7a3e0; }
+  .node.mission circle { fill: #ffaa00; }
+  .node.highlighted circle { stroke: #ffd566; stroke-width: 3; filter: drop-shadow(0 0 10px #ffd566); }
+  .node.recommended circle { stroke: #24a148; stroke-width: 3; filter: drop-shadow(0 0 12px #24a148); }
+  .link { stroke: #2a2a35; stroke-width: 1; opacity: 0.5; transition: all 0.3s; }
+  .link.active { stroke: #ffd566; stroke-width: 2; opacity: 0.9; }
+  .link.team { stroke: #24a148; stroke-width: 2.5; opacity: 0.95; }
+
+  /* Appear animation */
+  .node { opacity: 0; transform-origin: center; }
+  .node.show { opacity: 1; animation: pop 0.5s ease-out; }
+  @keyframes pop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .link { opacity: 0; }
+  .link.show { opacity: 0.5; transition: opacity 0.6s; }
+
+  .footnote { max-width: 1280px; margin: 16px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; letter-spacing: 0.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>KG · 知识图谱演示</h1>
+<div class="sub">CH.08 LIVE DEMO · 8 月球营学员 · 实体-关系-实体 · Jaccard 共同邻居 + Louvain 聚类</div>
+
+<div class="control">
+  <button class="primary" onclick="loadAll()">▶ 加载图谱</button>
+  <button onclick="highlight('S001')">🔍 高亮 S001 林知远</button>
+  <button onclick="highlight('S002')">🔍 高亮 S002 陈雨桐</button>
+  <button onclick="recommendTeam()">★ 推荐组队</button>
+  <span class="gap"></span>
+  <button onclick="reset()">↻ 重置</button>
+</div>
+
+<div class="stage">
+
+  <div class="canvas-wrap">
+    <svg viewBox="0 0 920 520" id="svg"></svg>
+  </div>
+
+  <div class="panel">
+    <div class="box">
+      <h3>图例</h3>
+      <div class="legend">
+        <div><span class="dot" style="background:#4589ff"></span>学员 (Student)</div>
+        <div><span class="dot" style="background:#6f5ed0"></span>学院 (College)</div>
+        <div><span class="dot" style="background:#c7a3e0"></span>兴趣 (Interest)</div>
+        <div><span class="dot" style="background:#ffaa00"></span>任务 (Mission)</div>
+        <div style="margin-top:8px;font-size:11px;color:#888;">线条 = 关系（enrolledIn / hasInterest / assignedTo）</div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h3>AI 推理日志</h3>
+      <div class="log" id="log"><div class="ent">点击「加载图谱」开始</div></div>
+    </div>
+
+    <div class="box" id="resultBox" style="display:none;">
+      <h3>组队推荐</h3>
+      <div id="result" style="font-size:13px;line-height:1.7;color:#ddd;"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footnote">
+  KG · Knowledge Graph · 大模型读 30 条三元组要 5 秒；图算法用毫秒级 · IBM Hybrid AI 路线
+</div>
+
+<script>
+  // ===== Data (subset of seed-students.json, hand-positioned for clean layout) =====
+  const nodes = [
+    // 学员 (左侧两列)
+    { id: 'S001', label: '林知远', type: 'student', x: 130, y: 90 },
+    { id: 'S002', label: '陈雨桐', type: 'student', x: 130, y: 175 },
+    { id: 'S003', label: '苏明翰', type: 'student', x: 130, y: 260 },
+    { id: 'S004', label: '周清越', type: 'student', x: 130, y: 345 },
+    { id: 'S005', label: '黄星禾', type: 'student', x: 130, y: 430 },
+    { id: 'S006', label: '李南屿', type: 'student', x: 230, y: 90 },
+    { id: 'S007', label: '宋桐羽', type: 'student', x: 230, y: 260 },
+    { id: 'S008', label: '孟书晗', type: 'student', x: 230, y: 430 },
+
+    // 学院 (右上)
+    { id: 'C1', label: '大工·软件', type: 'college', x: 460, y: 80 },
+    { id: 'C2', label: '东北·计算机', type: 'college', x: 580, y: 80 },
+    { id: 'C3', label: '海事·信息', type: 'college', x: 700, y: 80 },
+    { id: 'C4', label: '大工·数学', type: 'college', x: 820, y: 80 },
+    { id: 'C5', label: '东北·自动化', type: 'college', x: 820, y: 160 },
+
+    // 兴趣 (中部)
+    { id: 'I_RAG', label: 'RAG', type: 'interest', x: 430, y: 230 },
+    { id: 'I_KG', label: 'KG', type: 'interest', x: 530, y: 230 },
+    { id: 'I_Agent', label: 'Agent', type: 'interest', x: 630, y: 230 },
+    { id: 'I_MCP', label: 'MCP', type: 'interest', x: 730, y: 230 },
+    { id: 'I_GenAI', label: 'GenAI', type: 'interest', x: 820, y: 230 },
+    { id: 'I_RL', label: 'RL', type: 'interest', x: 470, y: 310 },
+    { id: 'I_Tune', label: '推理优化', type: 'interest', x: 580, y: 310 },
+
+    // 任务 (底部)
+    { id: 'M_Seismic', label: '月震检测', type: 'mission', x: 460, y: 410 },
+    { id: 'M_SLAM', label: 'VisionSLAM', type: 'mission', x: 600, y: 410 },
+    { id: 'M_Pangu', label: '盘古部署', type: 'mission', x: 740, y: 410 },
+    { id: 'M_Twin', label: '数字孪生', type: 'mission', x: 850, y: 410 }
+  ];
+
+  const links = [
+    // 学员→学院
+    ['S001','C1'], ['S006','C1'],
+    ['S002','C2'], ['S008','C2'],
+    ['S004','C3'], ['S007','C3'],
+    ['S003','C4'],
+    ['S005','C5'],
+
+    // 学员→兴趣
+    ['S001','I_GenAI'], ['S001','I_RAG'],
+    ['S002','I_Agent'], ['S002','I_MCP'], ['S002','I_RAG'],
+    ['S003','I_KG'],
+    ['S004','I_Tune'],
+    ['S005','I_RL'], ['S005','I_Agent'],
+    ['S006','I_GenAI'], ['S006','I_RAG'],
+    ['S007','I_MCP'], ['S007','I_Agent'],
+    ['S008','I_KG'], ['S008','I_RAG'],
+
+    // 学员→任务
+    ['S001','M_Seismic'], ['S003','M_Seismic'],
+    ['S002','M_SLAM'], ['S005','M_SLAM'],
+    ['S004','M_Pangu'], ['S007','M_Pangu'],
+    ['S006','M_Twin'], ['S008','M_Twin']
+  ];
+
+  // Pre-computed recommendations (deterministic for demo)
+  const teamRecs = {
+    S001: { team: ['S006','S003'], reason: 'S006 同学院+同兴趣 RAG/GenAI；S003 同 mission（月震）天然搭档' },
+    S002: { team: ['S007','S008'], reason: 'S007 同兴趣 Agent/MCP + 同 mission；S008 同学院 + 同兴趣 RAG' }
+  };
+
+  const svg = document.getElementById('svg');
+  let currentHighlight = null;
+
+  function nodeById(id) { return nodes.find(n => n.id === id); }
+
+  function clearLog() { document.getElementById('log').innerHTML = ''; }
+  function log(text, cls) {
+    const div = document.createElement('div');
+    div.className = 'ent ' + (cls || '');
+    div.textContent = text;
+    document.getElementById('log').appendChild(div);
+    document.getElementById('log').scrollTop = 1e9;
+  }
+
+  function renderAll() {
+    svg.innerHTML = '';
+    // links first (so they're behind nodes)
+    links.forEach(([a, b]) => {
+      const na = nodeById(a), nb = nodeById(b);
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', na.x); line.setAttribute('y1', na.y);
+      line.setAttribute('x2', nb.x); line.setAttribute('y2', nb.y);
+      line.setAttribute('class', 'link');
+      line.dataset.from = a; line.dataset.to = b;
+      svg.appendChild(line);
+    });
+    nodes.forEach(n => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'node ' + n.type);
+      g.dataset.id = n.id;
+      const r = n.type === 'student' ? 22 : (n.type === 'college' ? 18 : 16);
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', n.x); c.setAttribute('cy', n.y); c.setAttribute('r', r);
+      g.appendChild(c);
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', n.x); t.setAttribute('y', n.y + r + 12);
+      t.setAttribute('text-anchor', 'middle');
+      t.textContent = (n.type === 'student' ? n.id + ' ' : '') + n.label;
+      g.appendChild(t);
+      g.addEventListener('click', () => {
+        if (n.type === 'student') highlight(n.id);
+      });
+      svg.appendChild(g);
+    });
+  }
+
+  async function loadAll() {
+    clearLog();
+    renderAll();
+    log('开始构建知识图谱...');
+    const nodeEls = svg.querySelectorAll('.node');
+    const linkEls = svg.querySelectorAll('.link');
+
+    // Stage 1: Show students
+    log('① 加载学员节点 (8 人)', 'hl');
+    for (let i = 0; i < nodeEls.length; i++) {
+      const n = nodeEls[i];
+      if (n.classList.contains('student')) {
+        n.classList.add('show');
+        await new Promise(r => setTimeout(r, 80));
+      }
+    }
+    await new Promise(r => setTimeout(r, 200));
+
+    // Stage 2: Show colleges + their links
+    log('② 关联学员到学院 (5 学院)', 'hl');
+    for (let i = 0; i < nodeEls.length; i++) {
+      const n = nodeEls[i];
+      if (n.classList.contains('college')) { n.classList.add('show'); await new Promise(r => setTimeout(r, 60)); }
+    }
+    linkEls.forEach(l => {
+      const t = nodeById(l.dataset.to);
+      if (t && t.type === 'college') l.classList.add('show');
+    });
+    await new Promise(r => setTimeout(r, 400));
+
+    // Stage 3: Show interests
+    log('③ 关联学员到兴趣领域 (7 类兴趣)', 'hl');
+    for (let i = 0; i < nodeEls.length; i++) {
+      const n = nodeEls[i];
+      if (n.classList.contains('interest')) { n.classList.add('show'); await new Promise(r => setTimeout(r, 50)); }
+    }
+    linkEls.forEach(l => {
+      const t = nodeById(l.dataset.to);
+      if (t && t.type === 'interest') l.classList.add('show');
+    });
+    await new Promise(r => setTimeout(r, 400));
+
+    // Stage 4: Show missions
+    log('④ 关联学员到任务 (4 月球任务)', 'hl');
+    for (let i = 0; i < nodeEls.length; i++) {
+      const n = nodeEls[i];
+      if (n.classList.contains('mission')) { n.classList.add('show'); await new Promise(r => setTimeout(r, 70)); }
+    }
+    linkEls.forEach(l => {
+      const t = nodeById(l.dataset.to);
+      if (t && t.type === 'mission') l.classList.add('show');
+    });
+    await new Promise(r => setTimeout(r, 300));
+
+    log('图谱构建完成 · ' + nodes.length + ' 节点 / ' + links.length + ' 关系', 'res');
+    log('点击任一学员节点（或上方按钮）查看推理', '');
+  }
+
+  function highlight(sid) {
+    // Clear previous
+    svg.querySelectorAll('.node').forEach(n => n.classList.remove('highlighted','recommended'));
+    svg.querySelectorAll('.link').forEach(l => l.classList.remove('active','team'));
+    document.getElementById('resultBox').style.display = 'none';
+
+    const node = svg.querySelector('.node[data-id="' + sid + '"]');
+    if (!node || !node.classList.contains('show')) {
+      log('请先加载图谱', 'hl'); return;
+    }
+    currentHighlight = sid;
+    node.classList.add('highlighted');
+
+    // Highlight all links from this student
+    const related = new Set();
+    svg.querySelectorAll('.link').forEach(l => {
+      if (l.dataset.from === sid || l.dataset.to === sid) {
+        l.classList.add('active');
+        related.add(l.dataset.from);
+        related.add(l.dataset.to);
+      }
+    });
+    related.delete(sid);
+
+    log('—— 选中学员 ' + sid + ' ——', 'hl');
+    log('查询：' + sid + ' 的所有关系');
+    const s = nodeById(sid);
+    log('实体：' + sid + ' ' + s.label + ' (Student)', '');
+    log('关联学院、兴趣、任务节点数：' + related.size);
+  }
+
+  async function recommendTeam() {
+    if (!currentHighlight) { log('请先选中一位学员', 'hl'); return; }
+    const sid = currentHighlight;
+    const rec = teamRecs[sid] || { team: [], reason: '该学员的兜底推荐请用 admin 端手动配置（当前 demo 仅 S001 / S002 有内置推荐）' };
+
+    log('—— 跑图算法 ——', 'hl');
+    log('Step 1 · 找邻居 (兴趣 ∪ 学院 ∪ mission)');
+    await new Promise(r => setTimeout(r, 600));
+    log('Step 2 · 计算 Jaccard 共同邻居系数');
+    await new Promise(r => setTimeout(r, 600));
+    log('Step 3 · 多维加权 (mission > 学院 > 兴趣)');
+    await new Promise(r => setTimeout(r, 600));
+    log('Step 4 · 输出 Top-2 推荐组队', 'res');
+
+    // Highlight recommended nodes
+    rec.team.forEach(rid => {
+      const rn = svg.querySelector('.node[data-id="' + rid + '"]');
+      if (rn) rn.classList.add('recommended');
+      // Highlight their links
+      svg.querySelectorAll('.link').forEach(l => {
+        if (l.dataset.from === rid || l.dataset.to === rid) {
+          if (!l.classList.contains('active')) l.classList.add('team');
+        }
+      });
+    });
+
+    document.getElementById('resultBox').style.display = 'block';
+    const members = [sid, ...rec.team].map(id => {
+      const n = nodeById(id);
+      return id + ' ' + (n ? n.label : '');
+    });
+    document.getElementById('result').innerHTML =
+      '<b style="color:#ffd566;">3 人组：</b>' + members.join(' + ') +
+      '<br><br><span style="color:#888;font-size:12px;">理由：' + rec.reason + '</span>';
+  }
+
+  function reset() {
+    clearLog();
+    document.getElementById('resultBox').style.display = 'none';
+    currentHighlight = null;
+    svg.innerHTML = '';
+    log('已重置 · 点「加载图谱」开始', '');
+  }
+
+  // Initial: just render empty stage
+  log('点「加载图谱」开始构建月球营关系网络', '');
+</script>
+
+</body>
+</html>
