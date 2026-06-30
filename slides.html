@@ -206,8 +206,19 @@
   .speaker-card-grid { display: flex; flex-direction: column; align-items: flex-start; max-width: 720px; margin: 24px auto 0; padding-left: 6px; }
   .speaker-photo { display: none; }
   .speaker-card-grid.has-photo { display: grid; grid-template-columns: 220px 1fr; gap: 40px; max-width: 940px; align-items: center; padding-left: 0; }
-  .speaker-card-grid.has-photo .speaker-photo { display: block; width: 220px; height: 280px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--bg-2); }
-  .speaker-card-grid.has-photo .speaker-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .speaker-card-grid.has-photo .speaker-photo {
+    display: block; width: 220px; height: 280px;
+    border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border); background: var(--bg-2);
+    /* Friction layer to discourage casual save/drag (won't stop DevTools or screen-capture) */
+    user-select: none; -webkit-user-select: none;
+    -webkit-touch-callout: none; /* iOS Safari long-press save */
+  }
+  .speaker-card-grid.has-photo .speaker-photo img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    -webkit-user-drag: none; user-drag: none;
+    pointer-events: none; /* right-click + drag now hit the wrapper, which blocks context menu */
+  }
   .speaker-card-grid.has-photo .speaker-id { margin: 0; }
 
   /* Speaker ID block — IBM business card style for chapter-title page */
@@ -792,8 +803,8 @@
         <div class="chapter-num">CHAPTER · 01</div>
         <h1 class="chapter-h1">讲师介绍</h1>
         <div class="speaker-card-grid" id="speakerGrid">
-          <div class="speaker-photo">
-            <img src="assets/speaker/richard.jpg" alt="Richard Chen"
+          <div class="speaker-photo" oncontextmenu="return false;">
+            <img src="assets/speaker/richard.jpg" alt="Richard Chen" draggable="false"
                  onload="document.getElementById('speakerGrid').classList.add('has-photo')"
                  onerror="this.style.display='none'">
           </div>
