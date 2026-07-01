@@ -21,9 +21,8 @@
 <!-- Reveal.js — load black theme first to get proper dark background baseline, then we override with IBM Carbon palette -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
-<!-- 2D force-directed graph — 朴素丝滑, 学生加载从 750KB 降到 ~80KB
-     力导图同作者 Vasco Asturiano (vasturiano/force-graph) — 原生 Canvas 2D + 粒子流 -->
-<script src="https://cdn.jsdelivr.net/npm/force-graph@1.43.0/dist/force-graph.min.js"></script>
+<!-- D3.js v7 for SVG-based Knowledge Graph (Nongfu-Spring inspired) -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 
 <style>
   :root {
@@ -569,275 +568,118 @@
   .chat-verdict.good b { color: #fff; }
 
   /* ============================================================
-     KG (Knowledge Graph) — ECharts force-directed container
+     KG · Knowledge Graph slide  (D3 + SVG, redesigned 2026-06-30)
+     Two-column: left SVG graph (~62%) | right Ontology Copilot (~38%)
      ============================================================ */
-  /* KG full-bleed slide: chart fills the slide, header/stats/actions are floating overlays (Google Maps 风) */
-  /* ============================================================
-     KG Universe Slide · redesigned 2026-06-30
-     Layered canvases: bg starfield + main force-graph + node glow
-     Right slide-in AI Copilot panel (nongfu-inspired)
-     ============================================================ */
-  .reveal .slides > section > section.kg-full-slide,
-  body.theme-light .reveal .slides > section > section.kg-full-slide {
-    padding: 0 !important; display: block !important;
+  .kg-full-slide {
+    padding: 0 !important; display: grid !important;
+    grid-template-columns: 1fr 400px;
     width: 100% !important; height: 100% !important;
     min-height: 720px !important;
+    background: #050510 !important; color: #e2e8f0 !important;
     position: relative; overflow: hidden;
-    background: #050510 !important;
-    color: #e2e8f0 !important;
     isolation: isolate;
   }
-  /* KG slide is always dark — hide any global chrome that would leak
-     the theme (chapter indicator, help tip, theme toggle button).
-     Uses body class toggled by JS on slidechanged for broadest support. */
+  body.on-kg-slide,
+  body.on-kg-slide .reveal-viewport { background: #050510 !important; }
   body.on-kg-slide .chap-indicator,
   body.on-kg-slide .help-tip,
   body.on-kg-slide .theme-toggle,
   body.on-kg-slide .review-toolbar { display: none !important; }
-  body.on-kg-slide { background: #050510 !important; }
 
-  /* Force-graph built-in nodeLabel tooltip — style it into our theme */
-  .graph-tooltip {
-    background: rgba(10,10,24,0.94) !important;
-    border: 1px solid rgba(0,212,170,0.35) !important;
-    border-radius: 10px !important;
-    padding: 14px 16px !important;
-    color: #e2e8f0 !important;
-    font-family: 'IBM Plex Sans','Noto Sans SC',sans-serif !important;
-    box-shadow: 0 10px 32px rgba(0,0,0,0.6), 0 0 24px rgba(0,212,170,0.15) !important;
-    max-width: 340px !important;
-    line-height: 1.65 !important;
-    font-size: 12.5px !important;
-    backdrop-filter: blur(12px);
-  }
-  .graph-tooltip .gt-h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-  .graph-tooltip .gt-h .nm { font-weight: 600; color: #fff; font-size: 14px; }
-  .graph-tooltip .gt-h .role { font-family: ui-monospace,monospace; font-size: 10px; color: rgba(226,232,240,0.55); letter-spacing: 1.5px; padding: 2px 7px; background: rgba(0,212,170,0.15); color: #00D4AA; border-radius: 8px; }
-  .graph-tooltip .gt-row { font-size: 12px; margin: 3px 0; color: rgba(226,232,240,0.88); }
-  .graph-tooltip .gt-row .k { font-family: ui-monospace,monospace; font-size: 10px; letter-spacing: 1px; color: rgba(226,232,240,0.5); margin-right: 6px; text-transform: uppercase; }
-  .graph-tooltip .gt-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-  .graph-tooltip .gt-tag { background: rgba(124,58,237,0.15); color: #c7b3ff; padding: 2px 8px; border-radius: 10px; font-family: ui-monospace,monospace; font-size: 10px; }
-  .graph-tooltip .gt-bio { color: rgba(226,232,240,0.6); font-style: italic; margin-top: 6px; font-size: 11.5px; padding-top: 6px; border-top: 1px dashed rgba(255,255,255,0.08); }
-  /* Layer 1 · star / nebula field (32fps, offscreen-cached) */
-  .kg-full-slide .kg-stars {
-    position: absolute !important; inset: 0 !important;
-    z-index: 0; pointer-events: none;
-    background: radial-gradient(ellipse at 30% 40%, #0a0a1e 0%, #050510 65%);
-  }
-  /* Layer 2 · force-graph chart · transparent above stars,
-     but keep a fallback gradient so a broken canvas still shows dark */
-  .kg-full-slide .kg-chart {
-    position: absolute !important; inset: 0 !important;
-    z-index: 1; border: 0; border-radius: 0; height: auto !important;
-    background: radial-gradient(ellipse at center, rgba(15,15,30,0.35) 0%, rgba(5,5,16,0.15) 65%, transparent 100%);
-  }
-  .kg-full-slide .kg-chart canvas { display: block; background: transparent !important; }
+  .kg-graph { position: relative; overflow: hidden; border-right: 1px solid rgba(0,212,170,0.18); background: radial-gradient(ellipse at center, #0a0a1e 0%, #050510 65%); }
+  .kg-graph svg { width: 100%; height: 100%; display: block; }
 
-  /* Floating chrome — glassmorphism */
-  .kg-overlay {
-    position: absolute; z-index: 10;
-    background: rgba(10,10,24,0.72);
-    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(0,212,170,0.18);
-    border-radius: 12px;
-    box-shadow: 0 10px 32px rgba(0,0,0,0.55);
-  }
+  .kg-graph .kg-status { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 12px; padding: 8px 18px; background: rgba(10,10,24,0.75); border: 1px solid rgba(0,212,170,0.28); border-radius: 100px; backdrop-filter: blur(10px); font-family: 'Orbitron', var(--r-code-font); font-size: 11px; letter-spacing: 2px; color: rgba(226,232,240,0.7); }
+  .kg-graph .kg-status b { color: #fff; letter-spacing: 3px; text-shadow: 0 0 12px rgba(0,212,170,0.55); }
+  .kg-graph .kg-status .num { color: #00D4AA; font-family: var(--r-code-font); font-size: 12px; letter-spacing: 1px; }
+  .kg-graph .kg-status .live { color: #00D4AA; font-size: 10px; letter-spacing: 1.5px; }
+  .kg-graph .kg-status .live.flash { color: #F59E0B; animation: kgFlash 0.6s ease-in-out 2; }
+  @keyframes kgFlash { 50% { opacity: 0.3; text-shadow: 0 0 12px #F59E0B; } }
 
-  /* Top-center status pill */
-  .kg-full-slide .kg-statusbar {
-    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
-    z-index: 11;
-    display: flex; align-items: center; gap: 14px;
-    padding: 8px 20px;
-    background: rgba(10,10,24,0.68);
-    border: 1px solid rgba(0,212,170,0.28);
-    border-radius: 100px;
-    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    font-family: 'Orbitron', var(--r-code-font); font-size: 11.5px;
-    letter-spacing: 2px;
-    color: var(--text-dim);
-    box-shadow: 0 4px 20px rgba(0,212,170,0.18);
-  }
-  .kg-full-slide .kg-statusbar b { color: #fff; font-weight: 700; letter-spacing: 3px; text-shadow: 0 0 12px rgba(0,212,170,0.6); }
-  .kg-full-slide .kg-statusbar .kg-count { color: #00D4AA; font-size: 12px; letter-spacing: 1px; }
-  .kg-full-slide .kg-statusbar #kgLiveBadge { color: #00D4AA; font-size: 10.5px; letter-spacing: 1.5px; }
-  .kg-full-slide .kg-statusbar #kgLiveBadge.flash { color: #F59E0B; animation: flash-badge 0.6s ease-in-out 2; }
-  @keyframes flash-badge { 50% { opacity: 0.3; text-shadow: 0 0 12px #F59E0B; } }
+  .kg-graph .kg-actions { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 10; display: flex; gap: 5px; padding: 5px 6px; background: rgba(10,10,24,0.75); border: 1px solid rgba(0,212,170,0.22); border-radius: 100px; backdrop-filter: blur(10px); }
+  .kg-graph .kg-actions button { background: transparent; border: 1px solid transparent; color: rgba(226,232,240,0.78); padding: 8px 14px; border-radius: 100px; cursor: pointer; font-family: inherit; font-size: 12.5px; font-weight: 500; white-space: nowrap; transition: all .2s; }
+  .kg-graph .kg-actions button:hover { background: rgba(0,212,170,0.12); color: #00D4AA; border-color: rgba(0,212,170,0.35); }
+  .kg-graph .kg-actions button.primary { background: linear-gradient(135deg, #00D4AA, #00b894); color: #051f18; font-weight: 600; box-shadow: 0 0 14px rgba(0,212,170,0.35); }
 
-  /* Bottom pill toolbar */
-  .kg-overlay.kg-actions {
-    bottom: 26px; left: 50%; transform: translateX(-50%);
-    display: flex; gap: 6px; padding: 6px 8px; border-radius: 100px;
-    border-color: rgba(0,212,170,0.22);
-  }
-  .kg-overlay.kg-actions button {
-    background: transparent; border: 1px solid transparent;
-    color: rgba(226,232,240,0.75); padding: 9px 18px;
-    border-radius: 100px; cursor: pointer;
-    font-family: inherit; font-size: 13px; font-weight: 500;
-    white-space: nowrap; transition: all .2s;
-  }
-  .kg-overlay.kg-actions button:hover {
-    background: rgba(0,212,170,0.12); color: #00D4AA;
-    border-color: rgba(0,212,170,0.35);
-  }
-  .kg-overlay.kg-actions button.primary {
-    background: linear-gradient(135deg, #00D4AA, #00b894);
-    color: #051f18; font-weight: 600;
-    box-shadow: 0 0 18px rgba(0,212,170,0.35);
-  }
-  .kg-overlay.kg-actions button.primary:hover { transform: translateY(-1px); box-shadow: 0 0 24px rgba(0,212,170,0.6); }
+  .kg-graph .kg-legend { position: absolute; bottom: 20px; left: 20px; z-index: 9; display: flex; flex-direction: column; gap: 5px; padding: 10px 14px; background: rgba(10,10,24,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; font-family: var(--r-code-font); font-size: 11px; color: rgba(226,232,240,0.75); backdrop-filter: blur(8px); }
+  .kg-graph .kg-legend .item { display: flex; align-items: center; gap: 8px; }
+  .kg-graph .kg-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .kg-graph .kg-legend .dot.p { background: #4589ff; box-shadow: 0 0 6px #4589ff; }
+  .kg-graph .kg-legend .dot.c { background: #F59E0B; box-shadow: 0 0 6px #F59E0B; }
+  .kg-graph .kg-legend .dot.i { background: #c08bff; box-shadow: 0 0 6px #c08bff; }
 
-  /* ============================================================
-     Right slide-in AI Copilot panel (nongfu-inspired)
-     ============================================================ */
-  .kg-copilot {
-    position: absolute; top: 60px; bottom: 90px; right: 20px;
-    width: 380px; max-width: 40vw;
-    z-index: 12;
-    display: flex; flex-direction: column;
-    background: rgba(10,10,24,0.85);
-    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(124,58,237,0.32);
-    border-radius: 16px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 40px rgba(124,58,237,0.15);
-    transform: translateX(calc(100% + 30px));
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .kg-copilot.open { transform: translateX(0); }
-  .kg-copilot-h {
-    padding: 14px 18px; display: flex; align-items: center; gap: 10px;
-    background: linear-gradient(135deg, rgba(0,212,170,0.16), rgba(124,58,237,0.16));
-    border-bottom: 1px solid rgba(124,58,237,0.24);
-    border-radius: 16px 16px 0 0;
-  }
-  .kg-copilot-h .avatar {
-    width: 34px; height: 34px; border-radius: 50%;
-    background: linear-gradient(135deg, #00D4AA, #7C3AED);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; color: #fff;
-    box-shadow: 0 0 16px rgba(0,212,170,0.5);
-  }
-  .kg-copilot-h .ttl {
-    flex: 1; color: #fff; font-weight: 600; font-size: 14px;
-    font-family: 'Orbitron', var(--r-code-font); letter-spacing: 1.5px;
-  }
-  .kg-copilot-h .ttl .sub {
-    display: block; font-size: 10px; color: rgba(226,232,240,0.55);
-    letter-spacing: 2px; margin-top: 2px; font-weight: 400;
-  }
-  .kg-copilot-h .close-btn {
-    background: transparent; border: 0; color: rgba(226,232,240,0.6);
-    font-size: 20px; cursor: pointer; padding: 0 6px;
-  }
-  .kg-copilot-h .close-btn:hover { color: #fff; }
+  .kg-graph .node { cursor: pointer; }
+  .kg-graph .node.dim { opacity: 0.18; }
+  .kg-graph .node text.lbl { fill: rgba(255,255,255,0.92); font-family: 'IBM Plex Sans','Noto Sans SC',sans-serif; font-size: 11px; text-anchor: middle; pointer-events: none; font-weight: 500; }
+  .kg-graph .node.college text.lbl { fill: #F59E0B; font-weight: 700; font-size: 12px; }
+  .kg-graph .node.interest text.lbl { fill: #c08bff; font-size: 10px; }
+  .kg-graph .link { stroke-width: 1; stroke: rgba(140,140,180,0.28); fill: none; }
+  .kg-graph .link.dim { stroke: rgba(140,140,180,0.05); }
+  .kg-graph .link.highlighted { stroke: #00D4AA; stroke-width: 2.5; filter: drop-shadow(0 0 6px #00D4AA); }
+
+  .kg-tooltip { position: fixed; z-index: 1000; pointer-events: none; background: rgba(10,10,24,0.96); border: 1px solid rgba(0,212,170,0.35); border-radius: 10px; padding: 12px 14px; max-width: 320px; box-shadow: 0 12px 32px rgba(0,0,0,0.7); font-family: 'IBM Plex Sans','Noto Sans SC',sans-serif; font-size: 12px; color: #e2e8f0; line-height: 1.65; opacity: 0; transition: opacity .15s; backdrop-filter: blur(10px); }
+  .kg-tooltip.show { opacity: 1; }
+  .kg-tooltip .h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .kg-tooltip .h .nm { color: #fff; font-weight: 600; font-size: 14px; }
+  .kg-tooltip .h .type-tag { font-family: var(--r-code-font); font-size: 9.5px; letter-spacing: 1.2px; padding: 2px 7px; border-radius: 8px; }
+  .kg-tooltip .h .type-tag.p { background: rgba(69,137,255,0.15); color: #6fa7ff; }
+  .kg-tooltip .h .type-tag.c { background: rgba(245,158,11,0.15); color: #F59E0B; }
+  .kg-tooltip .h .type-tag.i { background: rgba(192,139,255,0.15); color: #c7b3ff; }
+  .kg-tooltip .row { font-size: 11.5px; margin: 3px 0; }
+  .kg-tooltip .row .k { color: rgba(226,232,240,0.5); font-family: var(--r-code-font); font-size: 10px; letter-spacing: 1px; margin-right: 6px; text-transform: uppercase; }
+  .kg-tooltip .tags { margin-top: 5px; display: flex; gap: 3px; flex-wrap: wrap; }
+  .kg-tooltip .tag { background: rgba(192,139,255,0.14); color: #c7b3ff; padding: 2px 7px; border-radius: 8px; font-family: var(--r-code-font); font-size: 10px; }
+  .kg-tooltip .bio { color: rgba(226,232,240,0.7); font-style: italic; padding-top: 6px; margin-top: 6px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 11.5px; }
+
+  .kg-copilot { background: rgba(10,10,24,0.55); border-left: 1px solid rgba(124,58,237,0.25); display: flex; flex-direction: column; overflow: hidden; }
+  .kg-copilot-h { padding: 14px 18px; background: linear-gradient(135deg, rgba(0,212,170,0.12), rgba(124,58,237,0.14)); border-bottom: 1px solid rgba(124,58,237,0.24); display: flex; align-items: center; gap: 10px; }
+  .kg-copilot-h .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #00D4AA, #7C3AED); display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 16px rgba(0,212,170,0.4); }
+  .kg-copilot-h .title-block { flex: 1; }
+  .kg-copilot-h .title { color: #fff; font-family: 'Orbitron', var(--r-code-font); font-size: 13px; font-weight: 700; letter-spacing: 2px; }
+  .kg-copilot-h .subtitle { color: rgba(226,232,240,0.55); font-size: 10px; letter-spacing: 1.5px; margin-top: 3px; font-family: var(--r-code-font); }
 
   .kg-copilot-body { flex: 1; overflow-y: auto; padding: 16px 18px; scrollbar-width: thin; scrollbar-color: rgba(124,58,237,0.4) transparent; }
   .kg-copilot-body::-webkit-scrollbar { width: 4px; }
-  .kg-copilot-body::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 2px; }
+  .kg-copilot-body::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.35); border-radius: 2px; }
 
-  .kg-scenarios { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-  .kg-scenario {
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 10px;
-    padding: 11px 12px;
-    cursor: pointer;
-    transition: all 0.25s;
-    text-align: left;
-    font-family: inherit;
-    color: #fff;
-  }
-  .kg-scenario:hover {
-    background: rgba(0,212,170,0.08);
-    border-color: rgba(0,212,170,0.35);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0,212,170,0.15);
-  }
-  .kg-scenario .ico { font-size: 18px; display: block; margin-bottom: 4px; }
-  .kg-scenario .name { font-size: 12px; font-weight: 600; color: #fff; }
-  .kg-scenario .desc { font-size: 10.5px; color: rgba(226,232,240,0.55); margin-top: 2px; line-height: 1.4; }
+  .kg-copilot-body .sec-label { font-family: 'Orbitron', var(--r-code-font); font-size: 10px; letter-spacing: 2.2px; color: rgba(226,232,240,0.45); margin: 4px 0 8px; }
+  .kg-copilot-body .divider { height: 1px; margin: 14px 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent); }
 
-  .kg-msgs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
-  .kg-msg {
-    padding: 10px 14px; border-radius: 10px;
-    font-size: 13px; line-height: 1.7;
-    max-width: 100%;
-    animation: msg-in 0.3s ease-out;
-  }
-  @keyframes msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  .kg-msg.ai {
-    background: rgba(0,212,170,0.08);
-    border: 1px solid rgba(0,212,170,0.22);
-    color: #e2e8f0;
-    align-self: flex-start;
-  }
+  .kg-questions { display: flex; flex-direction: column; gap: 6px; }
+  .kg-q { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 12px; cursor: pointer; text-align: left; font-family: inherit; color: #e2e8f0; transition: all .2s; }
+  .kg-q:hover { background: rgba(0,212,170,0.10); border-color: rgba(0,212,170,0.35); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,212,170,0.13); }
+  .kg-q .qhead { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+  .kg-q .qhead .ico { font-size: 13px; }
+  .kg-q .qhead .qname { color: #fff; font-size: 12.5px; font-weight: 600; }
+  .kg-q .qhead .qtech { margin-left: auto; font-family: var(--r-code-font); font-size: 9px; color: rgba(226,232,240,0.4); letter-spacing: 1px; padding: 2px 6px; background: rgba(124,58,237,0.10); border-radius: 6px; }
+  .kg-q .qdesc { color: rgba(226,232,240,0.6); font-size: 10.5px; line-height: 1.5; padding-left: 21px; }
+
+  .kg-msgs { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+  .kg-msg { padding: 10px 13px; border-radius: 10px; font-size: 12.5px; line-height: 1.7; animation: kgMsgIn 0.3s ease-out; }
+  @keyframes kgMsgIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .kg-msg.ai { background: rgba(0,212,170,0.08); border: 1px solid rgba(0,212,170,0.22); align-self: flex-start; }
   .kg-msg.ai b { color: #00D4AA; }
-  .kg-msg.ai i { color: #F59E0B; font-style: normal; font-weight: 600; }
-  .kg-msg.user {
-    background: rgba(124,58,237,0.15);
-    border: 1px solid rgba(124,58,237,0.35);
-    color: #fff; align-self: flex-end;
-    font-size: 12px; padding: 8px 12px;
-  }
-  .kg-msg.thinking {
-    color: rgba(226,232,240,0.5); font-style: italic;
-    background: transparent; border-color: rgba(255,255,255,0.08);
-  }
-  .kg-msg.thinking::after {
-    content: ' ▊'; animation: caret-blink 0.9s steps(2) infinite;
-  }
-  @keyframes caret-blink { 50% { opacity: 0; } }
+  .kg-msg.ai .infer-step { display: block; padding: 4px 0; color: rgba(226,232,240,0.75); font-size: 11.5px; }
+  .kg-msg.ai .infer-step::before { content: '▸ '; color: #7C3AED; }
+  .kg-msg.ai .infer-step.conclusion { color: #F59E0B; font-weight: 500; padding-top: 6px; margin-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); }
+  .kg-msg.user { background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.35); color: #fff; align-self: flex-end; font-size: 11.5px; padding: 7px 11px; max-width: 90%; }
+  .kg-msg.thinking { color: rgba(226,232,240,0.5); font-style: italic; }
+  .kg-msg.thinking::after { content: ' ▊'; animation: kgCaret 0.9s steps(2) infinite; }
+  @keyframes kgCaret { 50% { opacity: 0; } }
 
-  .kg-copilot-body .divider {
-    height: 1px; margin: 12px 0;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-  }
-  .kg-copilot-body .sec-label {
-    font-family: 'Orbitron', var(--r-code-font);
-    font-size: 10px; letter-spacing: 2px;
-    color: rgba(226,232,240,0.4); margin-bottom: 8px;
-  }
+  .kg-detail { padding: 12px 14px; border-radius: 10px; margin-top: 10px; background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.22); }
+  .kg-detail .h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .kg-detail .h .nm { color: #F59E0B; font-weight: 600; font-size: 14px; }
+  .kg-detail .h .code { font-family: var(--r-code-font); font-size: 10px; color: rgba(226,232,240,0.5); }
+  .kg-detail .row { font-size: 12px; margin: 4px 0; color: rgba(226,232,240,0.88); }
+  .kg-detail .row .k { display: inline-block; min-width: 56px; color: rgba(226,232,240,0.5); font-family: var(--r-code-font); font-size: 10px; letter-spacing: 1px; margin-right: 6px; text-transform: uppercase; }
+  .kg-detail .tags { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
+  .kg-detail .tag { background: rgba(192,139,255,0.14); color: #c7b3ff; padding: 2px 8px; border-radius: 10px; font-family: var(--r-code-font); font-size: 10px; }
 
-  /* Node detail slot at bottom of copilot */
-  .kg-node-detail {
-    padding: 12px 14px; background: rgba(245,158,11,0.06);
-    border: 1px solid rgba(245,158,11,0.22); border-radius: 10px;
-    margin-top: 12px;
-  }
-  .kg-node-detail .h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .kg-node-detail .h .nm { color: #F59E0B; font-weight: 600; font-size: 13px; }
-  .kg-node-detail .h .role { font-family: var(--r-code-font); font-size: 10px; color: rgba(226,232,240,0.5); padding: 2px 8px; background: rgba(245,158,11,0.15); border-radius: 10px; }
-  .kg-node-detail .row { font-size: 12px; margin: 4px 0; color: rgba(226,232,240,0.85); }
-  .kg-node-detail .row .k { color: rgba(226,232,240,0.5); font-family: var(--r-code-font); font-size: 10px; letter-spacing: 1px; margin-right: 6px; }
-  .kg-node-detail .tags { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
-  .kg-node-detail .tag { background: rgba(255,255,255,0.06); color: #e2e8f0; padding: 2px 8px; border-radius: 10px; font-family: var(--r-code-font); font-size: 10px; }
-
-  /* Floating trigger button when copilot closed */
-  .kg-copilot-launcher {
-    position: absolute; bottom: 26px; right: 26px; z-index: 11;
-    width: 56px; height: 56px; border-radius: 50%; border: 0;
-    background: linear-gradient(135deg, #00D4AA, #7C3AED);
-    color: #fff; font-size: 24px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 24px rgba(124,58,237,0.4), 0 0 0 0 rgba(0,212,170,0.5);
-    animation: launcher-pulse 2.6s infinite;
-    transition: transform 0.2s;
-  }
-  .kg-copilot-launcher:hover { transform: scale(1.08); }
-  .kg-copilot-launcher.hidden { display: none; }
-  @keyframes launcher-pulse {
-    0%,100% { box-shadow: 0 8px 24px rgba(124,58,237,0.4), 0 0 0 0 rgba(0,212,170,0.5); }
-    50%    { box-shadow: 0 8px 24px rgba(124,58,237,0.4), 0 0 0 16px rgba(0,212,170,0); }
-  }
-
-  @media (max-width: 900px) {
-    .kg-copilot { width: calc(100vw - 32px); max-width: 100%; top: 90px; bottom: 100px; }
-    .kg-scenarios { grid-template-columns: 1fr; }
-    .kg-full-slide .kg-statusbar { font-size: 10.5px; padding: 6px 12px; gap: 8px; }
-    .kg-overlay.kg-actions { bottom: 16px; flex-wrap: wrap; justify-content: center; }
-    .kg-overlay.kg-actions button { font-size: 11.5px; padding: 6px 12px; }
-    .kg-copilot-launcher { bottom: 16px; right: 16px; width: 48px; height: 48px; font-size: 20px; }
+  @media (max-width: 1000px) {
+    .kg-full-slide { grid-template-columns: 1fr; grid-template-rows: 1fr auto; }
+    .kg-copilot { border-left: none; border-top: 1px solid rgba(124,58,237,0.25); max-height: 40vh; }
   }
 
   /* ============================================================
@@ -1972,94 +1814,105 @@ IBM 在这条路上走得很久。Watson 时代有大量医疗本体的积累，
         </aside>
       </section>
       <section data-state="kg-stage" id="slide-kg" class="kg-full-slide">
-        <!-- Layer 1 · starfield + nebulae background -->
-        <canvas class="kg-stars" id="kgStars"></canvas>
+        <!-- LEFT: SVG force-directed graph (D3) -->
+        <div class="kg-graph" id="kgGraph">
+          <svg id="kgSvg" xmlns="http://www.w3.org/2000/svg"></svg>
 
-        <!-- Layer 2 · main force-graph -->
-        <div class="kg-chart" id="kgChart"></div>
-
-        <!-- Top pill status bar -->
-        <div class="kg-statusbar">
-          <b>KNOWLEDGE GRAPH</b>
-          <span>·</span>
-          <span class="kg-count"><span id="kgPeople">0</span> 学员</span>
-          <span>·</span>
-          <span class="kg-count"><span id="kgEdges">0</span> 关系</span>
-          <span>·</span>
-          <span id="kgLiveBadge">● LIVE</span>
-        </div>
-        <span id="kgClusters" style="display:none;">0</span>
-
-        <!-- Bottom pill toolbar -->
-        <div class="kg-overlay kg-actions">
-          <button class="primary" onclick="kgInjectDemo()">▶ 加载演示数据</button>
-          <button onclick="kgRefreshFromKB()">↻ 刷新学生数据</button>
-          <button onclick="kgHighlightRandom()">★ 随机高亮</button>
-          <button onclick="kgClearHighlight()">清除高亮</button>
-        </div>
-
-        <!-- Right slide-in AI Copilot panel (nongfu-inspired) -->
-        <button class="kg-copilot-launcher" id="kgCopilotLauncher" onclick="toggleKGCopilot()" title="打开 AI 推理助手">🤖</button>
-        <div class="kg-copilot" id="kgCopilot">
-          <div class="kg-copilot-h">
-            <div class="avatar">🤖</div>
-            <div class="ttl">KG COPILOT<span class="sub">图谱推理演示 · 完全本地</span></div>
-            <button class="close-btn" onclick="toggleKGCopilot()">✕</button>
+          <div class="kg-status">
+            <b>KNOWLEDGE GRAPH</b>
+            <span>·</span>
+            <span class="num"><span id="kgPeople">0</span> 学员</span>
+            <span>·</span>
+            <span class="num"><span id="kgEdges">0</span> 三元组</span>
+            <span>·</span>
+            <span class="live" id="kgLiveBadge">● LIVE</span>
           </div>
-          <div class="kg-copilot-body">
-            <div class="sec-label">SCENARIO · 一键触发推理</div>
-            <div class="kg-scenarios">
-              <button class="kg-scenario" onclick="askKG('similar')">
-                <span class="ico">🔍</span>
-                <div class="name">兴趣孪生对</div>
-                <div class="desc">找兴趣重叠最高的两位学员</div>
+          <span id="kgClusters" style="display:none;">0</span>
+
+          <div class="kg-legend">
+            <div class="item"><span class="dot p"></span> Person · 学员实例</div>
+            <div class="item"><span class="dot c"></span> College · 学院分类</div>
+            <div class="item"><span class="dot i"></span> Skill · 兴趣领域</div>
+          </div>
+
+          <div class="kg-actions">
+            <button class="primary" onclick="kgInjectDemo()">▶ 加载演示数据</button>
+            <button onclick="kgRefreshFromKB()">↻ 从学员库刷新</button>
+            <button onclick="kgClearHighlight()">清除高亮</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Ontology Copilot panel (always open) -->
+        <div class="kg-copilot">
+          <div class="kg-copilot-h">
+            <div class="avatar">◈</div>
+            <div class="title-block">
+              <div class="title">ONTOLOGY COPILOT</div>
+              <div class="subtitle">基于三元组 · 本地推理 · 零 LLM</div>
+            </div>
+          </div>
+          <div class="kg-copilot-body" id="kgCopilotBody">
+            <div class="sec-label">五个本体论推理问题</div>
+            <div class="kg-questions">
+              <button class="kg-q" onclick="askKG('degree')">
+                <div class="qhead"><span class="ico">①</span><span class="qname">度中心性</span><span class="qtech">Degree Centrality</span></div>
+                <div class="qdesc">找连接边数最多的学员 · 是这个图谱的中心人物</div>
               </button>
-              <button class="kg-scenario" onclick="askKG('central')">
-                <span class="ico">⭐</span>
-                <div class="name">图谱中心</div>
-                <div class="desc">连接度最高的核心人物</div>
+              <button class="kg-q" onclick="askKG('jaccard')">
+                <div class="qhead"><span class="ico">②</span><span class="qname">兴趣相似度</span><span class="qtech">Jaccard</span></div>
+                <div class="qdesc">共享兴趣集合的比例 · 找兴趣最像的一对</div>
               </button>
-              <button class="kg-scenario" onclick="askKG('aiCollege')">
-                <span class="ico">🎓</span>
-                <div class="name">AI 大院</div>
-                <div class="desc">AI 兴趣浓度最高的学院</div>
+              <button class="kg-q" onclick="askKG('bridge')">
+                <div class="qhead"><span class="ico">③</span><span class="qname">跨类桥接</span><span class="qtech">Cross-domain</span></div>
+                <div class="qdesc">横跨最多学院的兴趣 · 是学科交叉最活跃的方向</div>
               </button>
-              <button class="kg-scenario" onclick="askKG('team')">
-                <span class="ico">👥</span>
-                <div class="name">3 人组队</div>
-                <div class="desc">跨学院互补 + 兴趣重叠</div>
+              <button class="kg-q" onclick="askKG('twohop')">
+                <div class="qhead"><span class="ico">④</span><span class="qname">二跳共兴趣</span><span class="qtech">2-hop path</span></div>
+                <div class="qdesc">通过共同兴趣可组队的三人 · 图上找长度 2 的路径</div>
               </button>
-              <button class="kg-scenario" onclick="askKG('cross')">
-                <span class="ico">🌐</span>
-                <div class="name">跨学科兴趣</div>
-                <div class="desc">横跨最多学院的方向</div>
-              </button>
-              <button class="kg-scenario" onclick="kgClearHighlight()">
-                <span class="ico">✕</span>
-                <div class="name">清除高亮</div>
-                <div class="desc">恢复完整图谱视图</div>
+              <button class="kg-q" onclick="askKG('cover')">
+                <div class="qhead"><span class="ico">⑤</span><span class="qname">兴趣覆盖率</span><span class="qtech">Coverage</span></div>
+                <div class="qdesc">每个学院被哪些兴趣覆盖 · 找覆盖面最广的学院</div>
               </button>
             </div>
 
             <div class="divider"></div>
-            <div class="sec-label">CHAT · 推理输出</div>
+            <div class="sec-label">对话记录</div>
             <div class="kg-msgs" id="kgMsgs">
-              <div class="kg-msg ai">你好 · 我基于这张图谱做本地推理 · 点击上面场景卡片开始 <b>或直接点图上任一节点看详情</b></div>
+              <div class="kg-msg ai">
+                这张图是三种实体 · 两种关系构成的：
+                <span class="infer-step"><b>Person</b>——belongsTo——&gt;<b>College</b></span>
+                <span class="infer-step"><b>Person</b>——hasInterest——&gt;<b>Skill</b></span>
+                点上方五个问题看基于三元组的推理 · 或点图上任一节点看它的属性。
+              </div>
             </div>
 
-            <!-- Node detail slot (shown when a person node is clicked) -->
-            <div class="kg-node-detail" id="kgNodeDetail" style="display:none;"></div>
+            <div id="kgDetail"></div>
           </div>
         </div>
 
         <aside class="notes">
-屏幕上看到的是大家今天提交的信息——姓名、学院、兴趣——现在已经接成一张关系网了。
+大家看到屏幕上左边这张图。这不是我准备好的假数据·是刚才你们在报名页填的信息——姓名、学院、兴趣——被批量导入之后·自动构建出的一张知识图谱。
 
-接下来 AI 会自动选一位同学，高亮跟他兴趣最近的两位，给出 3 人组队建议。
+图上有三种颜色的球：蓝色是每一位学员·金色是学院·紫色是兴趣领域。学员和学院之间用一根线连着·代表"属于"·学员和兴趣之间用另一根线·代表"关心"。
 
-被推荐到的同学可以现场打个招呼、加个微信。
+这就是本体论最基本的三样东西——实体 Entity·关系 Relation·属性 Attribute。三个组成一个三元组：主体·谓词·宾语。比如：张三·hasInterest·机器学习。
 
-世界是由实体和关系组成的。大模型擅长语言，图谱擅长这种结构。两个放在一起，才是真正能用的 AI。
+图谱最强的地方·不是它存了多少事实·是接起来之后能推出新事实。右边这个 Ontology Copilot 就是干这个的。我给大家跑五个真实的图算法。
+
+第一个·度中心性。我点一下·它会找出图上边最多的那个学员·这就是这个班的"中心人物"·信息流最汇聚的节点。
+
+第二个·Jaccard 相似度。找出兴趣重叠度最高的两位学员——他们共享的兴趣占并集的比例最大。这是知识图谱里最经典的相似度算法。
+
+第三个·跨类桥接。找出横跨最多学院的兴趣·这是学科交叉最活跃的方向·未来最容易出创新的地方。
+
+第四个·二跳路径。三个人 A B C·A 和 B 共享兴趣 X·B 和 C 共享兴趣 Y·那 A B C 就能组队。图算法叫二跳邻居。
+
+第五个·兴趣覆盖率。看看哪个学院能被最多兴趣覆盖·代表这个学院的学员方向最多元。
+
+看到没有·同样的一张图·不同的算法·推出不同的洞察。这就是知识图谱的价值——结构化 · 加上推理·让 AI 不只是记住·而是真正能推出结论。
+
+放大到亿级·就是 Google 知识图谱·医疗知识图谱·企业知识图谱。今天 IBM watsonx.data 的核心底座·就是这个逻辑。
         </aside>
       </section>
     </section>
@@ -2784,532 +2637,273 @@ FNC 全称 FutureNow Center，是 IBM Consulting 在中国本地的落地团队�
   setTimeout(() => tip && tip.classList.add('dim'), 12000);
 
   // ============================================================
-  // KG Force-Directed Graph (Ch.08 子页 3)
-  // - 从本机 localStorage 'fnc_camp_kb_v1' 读取学生数据
-  // - 学生 / 学院 / 兴趣 三类节点，三类边
-  // - 支持注入演示数据、高亮、点击 2 跳邻居
+  // KG · Knowledge Graph (Ch.08 子页 3) — D3 SVG rewrite 2026-06-30
+  //   Ontology: Person ─belongsTo→ College ; Person ─hasInterest→ Skill
+  //   Rendering: SVG (D3 force layout) — no canvas, no library timing hell
+  //   Copilot: 5 rigorous graph algorithms (no fabricated business scenarios)
   // ============================================================
-  let kgInstance = null;
-  let kgData = { people: [], colleges: new Set(), interests: new Set() };
-  let kgHighlighted = null;
+  const KG_KB_KEY = 'fnc_camp_kb_v1';
 
-  // ===== Layer 1 · Starfield + drifting nebulae (universe-style) =====
-  //   Two-buffer approach: nebulae layer cached on offscreen canvas,
-  //   only stars twinkle on main canvas. ~32fps, negligible CPU.
-  let kgStarsAnim = null, kgStarsData = null, kgStarsStarted = false;
-  function startKGParticles() {
-    if (kgStarsStarted) return;
-    const canvas = document.getElementById('kgStars');
-    if (!canvas) {
-      // slide-kg not yet in DOM (Reveal may be initializing) — retry
-      setTimeout(startKGParticles, 300);
-      return;
-    }
-    kgStarsStarted = true;
-    const ctx = canvas.getContext('2d');
-    let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let stars = [], nebulae = [];
-
-    function resize() {
-      const rect = canvas.getBoundingClientRect();
-      w = rect.width || window.innerWidth;
-      h = rect.height || window.innerHeight;
-      if (w < 10 || h < 10) { w = 1280; h = 720; }
-      canvas.width = w * dpr; canvas.height = h * dpr;
-      canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      // Rebuild sky
-      stars = Array.from({ length: 320 }, () => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        r: Math.random() * 2.0 + 0.5,
-        alpha: Math.random(),
-        speed: Math.random() * 0.012 + 0.004,
-        phase: Math.random() * Math.PI * 2
-      }));
-      nebulae = [
-        { x: w * 0.15, y: h * 0.30, r: 340, hue: 168, alpha: 0.11, dx:  0.10, dy: 0.06 },
-        { x: w * 0.80, y: h * 0.70, r: 400, hue: 265, alpha: 0.12, dx: -0.08, dy: 0.09 },
-        { x: w * 0.60, y: h * 0.15, r: 280, hue:  35, alpha: 0.075, dx:  0.05, dy: 0.04 },
-        { x: w * 0.30, y: h * 0.80, r: 300, hue: 200, alpha: 0.09, dx:  0.06, dy: -0.05 }
-      ];
-    }
-    resize();
-    if (typeof ResizeObserver !== 'undefined' && !canvas._roBound) {
-      canvas._roBound = true;
-      new ResizeObserver(resize).observe(canvas);
-    }
-
-    if (kgStarsAnim) { cancelAnimationFrame(kgStarsAnim); kgStarsAnim = null; }
-    let lastFrame = 0, frameInterval = 1000 / 32; // cap ~32fps
-    function tick(now) {
-      kgStarsAnim = requestAnimationFrame(tick);
-      if (!lastFrame) lastFrame = now;
-      if (now - lastFrame < frameInterval) return;
-      lastFrame = now;
-
-      // Base black
-      ctx.fillStyle = '#050510';
-      ctx.fillRect(0, 0, w, h);
-
-      // Nebulae — soft radial glow, slow drift
-      for (const n of nebulae) {
-        n.x += n.dx; n.y += n.dy;
-        if (n.x < -n.r) n.x = w + n.r;
-        if (n.x > w + n.r) n.x = -n.r;
-        if (n.y < -n.r) n.y = h + n.r;
-        if (n.y > h + n.r) n.y = -n.r;
-        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
-        grad.addColorStop(0, `hsla(${n.hue},80%,50%,${n.alpha})`);
-        grad.addColorStop(0.5, `hsla(${n.hue},60%,30%,${n.alpha * 0.4})`);
-        grad.addColorStop(1, 'transparent');
-        ctx.fillStyle = grad;
-        ctx.fillRect(n.x - n.r, n.y - n.r, n.r * 2, n.r * 2);
-      }
-
-      // Stars — 220 pinpoints twinkling
-      const t = now * 0.001;
-      for (const s of stars) {
-        const a = 0.3 + 0.7 * Math.abs(Math.sin(t * s.speed * 1000 + s.phase));
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(220,230,255,${a})`;
-        ctx.fill();
-        if (s.r > 1.1) {
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r * 2.6, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(200,220,255,${a * 0.08})`;
-          ctx.fill();
-        }
-      }
-    }
-    kgStarsAnim = requestAnimationFrame(tick);
-    kgStarsData = { stars, nebulae };
-  }
-
-  // ===== Live-listener visual feedback =====
-  function flashLiveBadge() {
-    const el = document.getElementById('kgLiveBadge');
-    if (!el) return;
-    el.classList.add('flash');
-    setTimeout(() => el.classList.remove('flash'), 2400);
-  }
-
-  // Title is now static in HTML ("KG 知识图谱演示" + 实时监听 badge), no dynamic updates needed.
-  function updateKGTitle() { /* no-op kept for back-compat with existing callsite */ }
-
-  // 12 位仿真学生 · 学院多样 · 兴趣有重叠也有差异 · 适合演示关系推理
-  // 2099 · 大连高新园区 · 月球 AI 未来领袖夏令营 · 12 名先遣学员
-  // 每人：先遣队编号 M2099-XX + 所属学院 + 到月球营岗位职责 + 兴趣领域
-  const DEMO_SEED_KG = [
+  // 12 seed students (used when KB empty). Bio anchored in 月球营 lore but
+  // stays generic enough to be believable if repurposed for real students.
+  const KG_SEED = [
     { code:'M2099-01', name:'张明远', college:'计算机学院',   interests:['机器学习','RAG','大模型'],
-      bio:'先遣队 01 号 · 负责月面基地 RAG 检索管线的近月低延迟部署（0.3 秒响应目标）。' },
+      bio:'先遣队 01 号 · 月面基地 RAG 检索管线负责人 · 目标 0.3s 首 token 响应。' },
     { code:'M2099-02', name:'李知微', college:'软件学院',     interests:['知识图谱','Agent / 智能体','自然语言处理'],
-      bio:'先遣队 02 号 · 医疗 KG 转月面生命维持系统调度 · 三元组资产总库设计人。' },
+      bio:'先遣队 02 号 · 医疗 KG 转月面生命维持系统调度 · 三元组库主设计。' },
     { code:'M2099-03', name:'王雪松', college:'电子信息学院', interests:['深度学习','计算机视觉','强化学习'],
-      bio:'先遣队 03 号 · 月面自主车视觉感知项目 · 应对月尘 + 极端光照。' },
+      bio:'先遣队 03 号 · 月面自主车视觉感知项目 · 应对月尘和极端光照。' },
     { code:'M2099-04', name:'陈静怡', college:'管理学院',     interests:['推荐系统','产品设计','大模型'],
-      bio:'先遣队 04 号 · 学员日程与协作推荐 · 起草月球营 AI 伦理框架 v1.0。' },
+      bio:'先遣队 04 号 · 学员日程 + 协作推荐 · 起草月球营 AI 伦理框架。' },
     { code:'M2099-05', name:'刘启航', college:'数学学院',     interests:['机器学习','深度学习','大模型'],
-      bio:'先遣队 05 号 · 数学背景 · 主导 Transformer 微调轨道通信噪声抑制。' },
+      bio:'先遣队 05 号 · 数学背景 · Transformer 微调轨道通信噪声抑制。' },
     { code:'M2099-06', name:'赵思颖', college:'计算机学院',   interests:['自然语言处理','大模型','RAG'],
-      bio:'先遣队 06 号 · 中英俄三语 RAG 语料校对 · 前地表金融科技算法工程师。' },
+      bio:'先遣队 06 号 · 中英俄三语 RAG 语料校对 · 前地表金融科技工程师。' },
     { code:'M2099-07', name:'孙浩然', college:'软件学院',     interests:['Agent / 智能体','大模型'],
       bio:'先遣队 07 号 · Agent 工作流架构师 · 舱内维修 ReAct 任务链主责。' },
     { code:'M2099-08', name:'周梦琪', college:'数据科学学院', interests:['机器学习','推荐系统','计算机视觉'],
       bio:'先遣队 08 号 · Kaggle 银牌 · 月面地形分类模型主训练师。' },
     { code:'M2099-09', name:'吴志远', college:'自动化学院',   interests:['强化学习','深度学习'],
-      bio:'先遣队 09 号 · 具身智能 · LLM 辅助月面机械臂动作规划器。' },
+      bio:'先遣队 09 号 · 具身智能 · LLM 辅助月面机械臂动作规划。' },
     { code:'M2099-10', name:'郑佳怡', college:'管理学院',     interests:['产品设计','大模型','知识图谱'],
-      bio:'先遣队 10 号 · 企业级 AI 落地 · 月面居住区物流 KG 规范起草人。' },
+      bio:'先遣队 10 号 · 企业级 AI 落地 · 月面物流 KG 规范起草人。' },
     { code:'M2099-11', name:'冯子墨', college:'电子信息学院', interests:['计算机视觉','深度学习'],
       bio:'先遣队 11 号 · 前无人机视觉工程师 · 月面多摄像头多模态融合。' },
     { code:'M2099-12', name:'黄文琪', college:'软件学院',     interests:['RAG','知识图谱','自然语言处理'],
       bio:'先遣队 12 号 · watsonx 平台专家 · 月球营知识库检索评测主责。' }
   ];
 
-  function loadKBFromStorage() {
+  const kgState = {
+    people: [],
+    nodes: [],
+    links: [],
+    simulation: null,
+    highlightNodes: new Set(),
+    highlightLinks: new Set(),
+    tooltipEl: null,
+    hasBooted: false
+  };
+
+  function _kgLoadPeople() {
     try {
-      const raw = localStorage.getItem('fnc_camp_kb_v1');
-      const arr = JSON.parse(raw || '[]');
-      return Array.isArray(arr) ? arr : [];
-    } catch { return []; }
+      const arr = JSON.parse(localStorage.getItem(KG_KB_KEY) || '[]');
+      if (Array.isArray(arr) && arr.length) return arr;
+    } catch {}
+    return KG_SEED.slice();
   }
 
-  function buildGraphData(people) {
-    const collegeSet = new Set();
-    const interestSet = new Set();
+  function _kgBuildGraph(people) {
+    const collegeSet = new Set(), interestSet = new Set();
     people.forEach(p => {
       if (p.college) collegeSet.add(p.college);
       (p.interests || []).forEach(i => interestSet.add(i));
     });
-
-    const COL = {
-      person:   '#4589ff',
-      college:  '#f1c21b',
-      interest: '#c08bff'
-    };
     const nodes = [];
     const links = [];
-
-    // category: 0=person 1=college 2=interest — used for FG3D coloring & highlighting
-    // id uses idx (not code) so multiple students sharing one access code each get their own node
     people.forEach((p, idx) => {
       nodes.push({
         id: 'p_' + idx,
-        name: p.name || '学生' + (idx+1),
-        category: 0,
-        color: COL.person,
-        size: 6,
-        _meta: p
+        name: p.name || ('学员' + (idx+1)),
+        type: 'person', color: '#4589ff', r: 9,
+        meta: p
       });
     });
-    Array.from(collegeSet).forEach((c, idx) => {
-      nodes.push({ id: 'c_' + idx, name: c, category: 1, color: COL.college, size: 8 });
-    });
-    Array.from(interestSet).forEach((i, idx) => {
-      nodes.push({ id: 'i_' + idx, name: i, category: 2, color: COL.interest, size: 5 });
-    });
-
+    Array.from(collegeSet).forEach(c => nodes.push({ id: 'c_' + c, name: c, type: 'college', color: '#F59E0B', r: 13 }));
+    Array.from(interestSet).forEach(i => nodes.push({ id: 'i_' + i, name: i, type: 'interest', color: '#c08bff', r: 8 }));
     people.forEach((p, idx) => {
-      const personId = 'p_' + idx;
-      if (p.college) {
-        const cIdx = Array.from(collegeSet).indexOf(p.college);
-        if (cIdx >= 0) links.push({ source: personId, target: 'c_' + cIdx, type: 'college' });
-      }
-      (p.interests || []).forEach(itr => {
-        const iIdx = Array.from(interestSet).indexOf(itr);
-        if (iIdx >= 0) links.push({ source: personId, target: 'i_' + iIdx, type: 'interest' });
-      });
+      const src = 'p_' + idx;
+      if (p.college) links.push({ source: src, target: 'c_' + p.college, rel: 'belongsTo' });
+      (p.interests || []).forEach(i => links.push({ source: src, target: 'i_' + i, rel: 'hasInterest' }));
     });
-
-    return { nodes, links, collegeSet, interestSet };
+    return { nodes, links };
   }
 
-  // Highlight state for 3D force graph
-  let kgHL_nodes = new Set();
-  let kgHL_links = new Set();
-
   function initKG() {
-    const dom = document.getElementById('kgChart');
-    if (!dom) return;
-    const FG = (typeof ForceGraph !== 'undefined') ? (ForceGraph.default || ForceGraph) : null;
-    if (!FG) {
-      if (!dom._kgRetries) dom._kgRetries = 0;
-      dom._kgRetries++;
-      if (dom._kgRetries > 60) {
-        dom.innerHTML = '<div style="padding:40px;color:#fa4d56;text-align:center;font-family:var(--r-code-font);font-size:13px;">⚠️ force-graph 库未加载<br><br><span style="color:#a8a8b0;font-size:11px;">请检查 jsdelivr CDN 网络</span></div>';
-        return;
-      }
-      setTimeout(initKG, 150);
-      return;
+    const container = document.getElementById('kgGraph');
+    const svgEl = document.getElementById('kgSvg');
+    if (!container || !svgEl || typeof d3 === 'undefined') {
+      setTimeout(initKG, 200); return;
     }
-    if (dom.clientWidth < 10 || dom.clientHeight < 10) {
-      if (!dom._sizeRetries) dom._sizeRetries = 0;
-      dom._sizeRetries++;
-      if (dom._sizeRetries < 40) {
-        setTimeout(initKG, 120);
-        return;
-      }
-      // Force sensible dimensions as a last resort
-      dom.style.width = '100%'; dom.style.height = '100%';
-    }
-    // Ensure the star field is running (idempotent)
-    if (!kgStarsAnim) { try { startKGParticles(); } catch(e) {} }
+    const w = container.clientWidth || 900;
+    const h = container.clientHeight || 700;
+    if (w < 20 || h < 20) { setTimeout(initKG, 200); return; }
 
-    let people = loadKBFromStorage();
-    if (!people.length) people = DEMO_SEED_KG.slice();
-    const { nodes, links, collegeSet } = buildGraphData(people);
+    const people = _kgLoadPeople();
+    const { nodes, links } = _kgBuildGraph(people);
+    kgState.people = people;
+    kgState.nodes = nodes;
+    kgState.links = links;
 
     document.getElementById('kgPeople').textContent = people.length;
     document.getElementById('kgEdges').textContent = links.length;
-    document.getElementById('kgClusters').textContent = collegeSet.size;
-    updateKGTitle(people);
 
-    try {
-      if (!kgInstance) {
-        kgInstance = FG()(dom)
-          .width(dom.clientWidth)
-          .height(dom.clientHeight)
-          .backgroundColor('rgba(0,0,0,0)')
-          .nodeRelSize(5)
-          // Multi-layer glow node — resilient version using shadowBlur (no
-          // radial gradients, so any bad values never break the render loop).
-          .nodeCanvasObjectMode(() => 'replace')
-          .nodeCanvasObject((node, ctx, scale) => {
-            // Defensive: force-graph gives x/y after first tick; skip until then
-            if (!isFinite(node.x) || !isFinite(node.y)) return;
-            const isPerson  = node.category === 0;
-            const isCollege = node.category === 1;
-            const baseR = isCollege ? 7 : (isPerson ? 5.5 : 4);
-            const dim = kgHL_nodes.size > 0 && !kgHL_nodes.has(node.id);
-            const on = !dim;
-            const highlighted = kgHL_nodes.has(node.id);
-            // Deterministic per-node pulse
-            if (node._pulse === undefined) {
-              node._pulse = ((node.id || '').split('').reduce((a,c)=>a+c.charCodeAt(0),0) % 100) / 100 * Math.PI * 2;
-            }
-            const pulseScale = on ? (1 + 0.08 * Math.sin(performance.now() * 0.002 + node._pulse)) : 1;
-            const r = baseR * pulseScale;
+    const svg = d3.select('#kgSvg').attr('viewBox', `0 0 ${w} ${h}`);
+    svg.selectAll('*').remove();
 
-            // Outer glow via shadowBlur — cheap and robust
-            if (on) {
-              ctx.save();
-              ctx.beginPath();
-              ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
-              ctx.shadowColor = node.color;
-              ctx.shadowBlur = highlighted ? 24 : 14;
-              ctx.fillStyle = node.color;
-              ctx.fill();
-              ctx.restore();
-            } else {
-              ctx.beginPath();
-              ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
-              ctx.fillStyle = 'rgba(90,93,108,0.28)';
-              ctx.fill();
-            }
+    // Zoomable group
+    const g = svg.append('g').attr('class', 'kg-g');
+    const zoom = d3.zoom().scaleExtent([0.35, 3]).on('zoom', ev => g.attr('transform', ev.transform));
+    svg.call(zoom).on('dblclick.zoom', null);
+    svg.on('click', () => kgClearHighlight());
 
-            // Small white highlight dot (top-left) to give a "gem" feel
-            if (on) {
-              ctx.beginPath();
-              ctx.arc(node.x - r * 0.35, node.y - r * 0.35, Math.max(1, r * 0.28), 0, 2 * Math.PI, false);
-              ctx.fillStyle = 'rgba(255,255,255,0.7)';
-              ctx.fill();
-            }
-
-            // Thin ring
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, r + 1.4, 0, 2 * Math.PI, false);
-            ctx.strokeStyle = on ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            // Label
-            if (scale > 0.5) {
-              const fw = isCollege ? 700 : (isPerson ? 500 : 400);
-              const fs = Math.max(9, Math.min(13, 12 / scale));
-              ctx.font = `${fw} ${fs}px "IBM Plex Sans","Noto Sans SC",sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'top';
-              ctx.fillStyle = on
-                ? (isCollege ? '#F59E0B' : (isPerson ? 'rgba(255,255,255,0.95)' : 'rgba(192,139,255,0.85)'))
-                : 'rgba(140,143,156,0.35)';
-              ctx.fillText(node.name || '', node.x, node.y + r + 4);
-            }
-          })
-          .nodePointerAreaPaint((node, color, ctx) => {
-            const r = node.category === 1 ? 10 : 7;
-            ctx.beginPath(); ctx.arc(node.x, node.y, r, 0, 2*Math.PI, false);
-            ctx.fillStyle = color; ctx.fill();
-          })
-          // Hover tooltip — richer per-category info
-          .nodeLabel(node => {
-            const esc = s => String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-            if (node.category === 0 && node._meta) {
-              const p = node._meta;
-              const tags = (p.interests || []).map(t => `<span class="gt-tag">${esc(t)}</span>`).join('');
-              return `<div class="gt-h"><span class="nm">${esc(p.name||'?')}</span><span class="role">学员 · ${esc(p.code||'?')}</span></div>` +
-                     `<div class="gt-row"><span class="k">学院</span>${esc(p.college||'?')}</div>` +
-                     (tags ? `<div class="gt-row"><span class="k">兴趣</span></div><div class="gt-tags">${tags}</div>` : '') +
-                     (p.bio ? `<div class="gt-bio">"${esc(p.bio)}"</div>` : '');
-            }
-            if (node.category === 1) {
-              // college node: count how many students
-              const links = kgInstance ? kgInstance.graphData().links : [];
-              const cnt = links.filter(l => (typeof l.target === 'object' ? l.target.id : l.target) === node.id).length;
-              return `<div class="gt-h"><span class="nm">${esc(node.name)}</span><span class="role" style="background:rgba(245,158,11,0.15);color:#F59E0B;">学院</span></div>` +
-                     `<div class="gt-row"><span class="k">在营学员</span>${cnt} 人</div>` +
-                     `<div class="gt-bio">2099 大连高新园区 · 月球营宇宙 · 该学院代表当前登营科研团队</div>`;
-            }
-            // interest node
-            const links = kgInstance ? kgInstance.graphData().links : [];
-            const cnt = links.filter(l => (typeof l.target === 'object' ? l.target.id : l.target) === node.id).length;
-            return `<div class="gt-h"><span class="nm">${esc(node.name)}</span><span class="role" style="background:rgba(124,58,237,0.15);color:#c7b3ff;">兴趣</span></div>` +
-                   `<div class="gt-row"><span class="k">关注人数</span>${cnt} 位学员</div>` +
-                   `<div class="gt-bio">Skill / Interest 三元组的 object 节点 · 学员通过 hasInterest 关系连到这里</div>`;
-          })
-          .onNodeHover(node => {
-            const c = document.getElementById('kgChart');
-            if (c) c.style.cursor = node ? 'pointer' : 'default';
-          })
-          .linkColor(l => {
-            if (kgHL_links.size === 0) {
-              return l.type === 'college' ? 'rgba(245,158,11,0.28)' : 'rgba(124,58,237,0.28)';
-            }
-            return kgHL_links.has(l) ? 'rgba(0,212,170,0.95)' : 'rgba(120,130,150,0.05)';
-          })
-          .linkWidth(l => kgHL_links.has(l) ? 2 : 0.7)
-          // Traveling energy particles — universe-style, more visible
-          .linkDirectionalParticles(l => kgHL_links.has(l) ? 4 : 1)
-          .linkDirectionalParticleSpeed(l => kgHL_links.has(l) ? 0.010 : 0.0038)
-          .linkDirectionalParticleWidth(l => kgHL_links.has(l) ? 3 : 1.6)
-          .linkDirectionalParticleColor(l => {
-            if (kgHL_links.has(l)) return '#ffffff';
-            return l.type === 'college' ? 'rgba(245,158,11,0.75)' : 'rgba(192,139,255,0.65)';
-          })
-          .onNodeClick(node => {
-            kgHighlightNode(node.id);
-            kgInstance.centerAt(node.x, node.y, 700);
-            kgInstance.zoom(2.2, 700);
-            // Open copilot with node detail if a person
-            if (node.category === 0 && node._meta) {
-              showNodeDetail(node._meta);
-              openKGCopilot(true);
-            }
-          })
-          .onBackgroundClick(() => {
-            kgClearHighlight();
-            kgInstance.centerAt(0, 0, 700);
-            kgInstance.zoom(1, 700);
-            hideNodeDetail();
-          })
-          .d3VelocityDecay(0.28)
-          .cooldownTicks(220);
-        // Loosen the layout so nodes breathe out across the canvas
-        try {
-          const chargeF = kgInstance.d3Force && kgInstance.d3Force('charge');
-          if (chargeF && chargeF.strength) chargeF.strength(-260);
-          const linkF = kgInstance.d3Force && kgInstance.d3Force('link');
-          if (linkF && linkF.distance) linkF.distance(l => l.type === 'college' ? 80 : 55);
-          const centerF = kgInstance.d3Force && kgInstance.d3Force('center');
-          if (centerF && centerF.strength) centerF.strength(0.05);
-        } catch (e) { /* fall back to defaults */ }
-
-        if (typeof ResizeObserver !== 'undefined' && !dom._roBound) {
-          dom._roBound = true;
-          new ResizeObserver(() => {
-            if (kgInstance) {
-              try { kgInstance.width(dom.clientWidth).height(dom.clientHeight); } catch (e) {}
-            }
-          }).observe(dom);
-        }
-      } else {
-        kgInstance.width(dom.clientWidth).height(dom.clientHeight);
-      }
-
-      kgInstance.graphData({ nodes, links });
-      setTimeout(() => {
-        if (kgInstance) {
-          try { kgInstance.width(dom.clientWidth).height(dom.clientHeight); } catch (e) {}
-        }
-      }, 80);
-
-    } catch (err) {
-      console.error('[KG] 力导图初始化失败:', err);
-      dom.innerHTML = '<div style="padding:40px;color:#fa4d56;text-align:center;font-family:var(--r-code-font);font-size:13px;line-height:1.7;">'
-        + '⚠️ 力导图初始化失败<br><br>'
-        + '<span style="color:#a8a8b0;">' + (err.message || err) + '</span><br><br>'
-        + '<span style="color:#a8a8b0;font-size:11px;">请按 F12 打开控制台查看详细错误</span>'
-        + '</div>';
-    }
-  }
-
-  // 触发渲染刷新（修改高亮状态后重新应用颜色函数）
-  function _kgRedraw() {
-    if (!kgInstance) return;
-    try {
-      kgInstance
-        .linkColor(kgInstance.linkColor())
-        .linkWidth(kgInstance.linkWidth())
-        .linkDirectionalParticles(kgInstance.linkDirectionalParticles())
-        .linkDirectionalParticleSpeed(kgInstance.linkDirectionalParticleSpeed())
-        .linkDirectionalParticleWidth(kgInstance.linkDirectionalParticleWidth())
-        .linkDirectionalParticleColor(kgInstance.linkDirectionalParticleColor());
-      // Custom canvas needs no re-apply — it reads kgHL_nodes each frame
-    } catch (e) { /* harmless */ }
-  }
-
-  function kgInjectDemo() {
-    // Merge demo students with existing KB
-    const cur = loadKBFromStorage();
-    const codes = new Set(cur.map(s => s.code));
-    DEMO_SEED_KG.forEach(s => { if (!codes.has(s.code)) cur.push(s); });
-    localStorage.setItem('fnc_camp_kb_v1', JSON.stringify(cur));
-    initKG();
-  }
-
-  function kgRefreshFromKB() {
-    initKG();
-  }
-
-  function _idOf(end) { return typeof end === 'object' ? end.id : end; }
-
-  function kgHighlightNode(id) {
-    if (!kgInstance) return;
-    kgHL_nodes = new Set([id]);
-    kgHL_links = new Set();
-    const data = kgInstance.graphData();
-    data.links.forEach(l => {
-      const s = _idOf(l.source), t = _idOf(l.target);
-      if (s === id) { kgHL_nodes.add(t); kgHL_links.add(l); }
-      if (t === id) { kgHL_nodes.add(s); kgHL_links.add(l); }
+    // Halo defs for node glow
+    const defs = svg.append('defs');
+    ['#4589ff','#F59E0B','#c08bff','#00D4AA'].forEach(c => {
+      const id = 'glow-' + c.replace('#','');
+      const f = defs.append('filter').attr('id', id).attr('x','-50%').attr('y','-50%').attr('width','200%').attr('height','200%');
+      f.append('feGaussianBlur').attr('stdDeviation', 3).attr('result','blur');
+      const m = f.append('feMerge');
+      m.append('feMergeNode').attr('in','blur');
+      m.append('feMergeNode').attr('in','SourceGraphic');
     });
-    _kgRedraw();
-  }
 
-  function kgHighlightRandom() {
-    if (!kgInstance) return;
-    const peopleNodes = kgInstance.graphData().nodes.filter(n => n.category === 0);
-    if (!peopleNodes.length) return;
-    const pick = peopleNodes[Math.floor(Math.random() * peopleNodes.length)];
-    kgHighlightNode(pick.id);
-    try {
-      kgInstance.centerAt(pick.x || 0, pick.y || 0, 700);
-      kgInstance.zoom(2.2, 700);
-    } catch (e) { /* center optional */ }
-  }
+    // Links
+    const linkSel = g.append('g').attr('class','links').selectAll('line')
+      .data(links).enter().append('line')
+      .attr('class', d => 'link link-' + d.rel);
 
-  function kgClearHighlight() {
-    kgHL_nodes = new Set();
-    kgHL_links = new Set();
-    _kgRedraw();
-  }
+    // Nodes
+    const nodeSel = g.append('g').attr('class','nodes').selectAll('g.node')
+      .data(nodes).enter().append('g')
+      .attr('class', d => 'node ' + d.type)
+      .on('mouseenter', function(ev, d) { showKGTooltip(ev, d); })
+      .on('mousemove', function(ev, d) { moveKGTooltip(ev); })
+      .on('mouseleave', function() { hideKGTooltip(); })
+      .on('click', function(ev, d) { ev.stopPropagation(); kgHighlightNode(d.id); if (d.type === 'person') showKGDetail(d.meta); })
+      .call(d3.drag()
+        .on('start', (ev, d) => { if (!ev.active) kgState.simulation.alphaTarget(0.25).restart(); d.fx = d.x; d.fy = d.y; })
+        .on('drag',  (ev, d) => { d.fx = ev.x; d.fy = ev.y; })
+        .on('end',   (ev, d) => { if (!ev.active) kgState.simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
 
-  // Expose globally for inline onclick
-  window.kgInjectDemo = kgInjectDemo;
-  window.kgRefreshFromKB = kgRefreshFromKB;
-  window.kgHighlightRandom = kgHighlightRandom;
-  window.kgClearHighlight = kgClearHighlight;
+    nodeSel.append('circle').attr('class','halo').attr('r', d => d.r * 2.4)
+      .attr('fill', d => d.color).attr('fill-opacity', 0.18).attr('filter', d => 'url(#glow-' + d.color.replace('#','') + ')');
+    nodeSel.append('circle').attr('class','core').attr('r', d => d.r)
+      .attr('fill', d => d.color).attr('stroke', 'rgba(255,255,255,0.35)').attr('stroke-width', 1);
+    nodeSel.append('circle').attr('class','highlight').attr('r', d => d.r * 0.35)
+      .attr('cx', d => -d.r * 0.35).attr('cy', d => -d.r * 0.35)
+      .attr('fill', 'rgba(255,255,255,0.7)');
+    nodeSel.append('text').attr('class','lbl').attr('y', d => d.r + 14).text(d => d.name);
 
-  // ============================================================
-  // KG Copilot — right slide-in panel with scenario cards
-  // typewriter output, node detail, multi-hop highlight
-  // ============================================================
-  function hexToRgba(hex, a) {
-    if (!hex) return `rgba(255,255,255,${a})`;
-    if (hex.startsWith('rgb')) {
-      // already rgb(a); replace/append alpha
-      return hex.replace(/rgba?\(([^)]+)\)/, (m, inner) => {
-        const parts = inner.split(',').map(s => s.trim());
-        return `rgba(${parts[0]},${parts[1]},${parts[2]},${a})`;
+    // Simulation
+    const sim = d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(links).id(d => d.id).distance(l => l.rel === 'belongsTo' ? 90 : 65).strength(0.4))
+      .force('charge', d3.forceManyBody().strength(-280))
+      .force('center', d3.forceCenter(w / 2, h / 2).strength(0.06))
+      .force('collision', d3.forceCollide().radius(d => d.r + 12))
+      .on('tick', () => {
+        linkSel.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+               .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        nodeSel.attr('transform', d => `translate(${d.x},${d.y})`);
       });
-    }
-    const h = hex.replace('#', '');
-    const r = parseInt(h.substring(0, 2), 16);
-    const g = parseInt(h.substring(2, 4), 16);
-    const b = parseInt(h.substring(4, 6), 16);
-    return `rgba(${r},${g},${b},${a})`;
+    kgState.simulation = sim;
+
+    // Ensure viewport fit after settling
+    setTimeout(() => sim.alpha(0.3).restart(), 100);
   }
 
-  function toggleKGCopilot() {
-    const cp = document.getElementById('kgCopilot');
-    const launcher = document.getElementById('kgCopilotLauncher');
-    if (!cp) return;
-    const opening = !cp.classList.contains('open');
-    cp.classList.toggle('open', opening);
-    if (launcher) launcher.classList.toggle('hidden', opening);
-  }
-  function openKGCopilot(force) {
-    const cp = document.getElementById('kgCopilot');
-    const launcher = document.getElementById('kgCopilotLauncher');
-    if (!cp) return;
-    if (force || !cp.classList.contains('open')) {
-      cp.classList.add('open');
-      if (launcher) launcher.classList.add('hidden');
+  // ============ Tooltip ============
+  function _kgTooltipEl() {
+    if (!kgState.tooltipEl) {
+      const t = document.createElement('div');
+      t.className = 'kg-tooltip';
+      document.body.appendChild(t);
+      kgState.tooltipEl = t;
     }
+    return kgState.tooltipEl;
   }
-  window.toggleKGCopilot = toggleKGCopilot;
+  function _esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function showKGTooltip(ev, d) {
+    const t = _kgTooltipEl();
+    let html = '';
+    if (d.type === 'person') {
+      const p = d.meta;
+      const tags = (p.interests || []).map(x => `<span class="tag">${_esc(x)}</span>`).join('');
+      html = `<div class="h"><span class="nm">${_esc(p.name||'?')}</span><span class="type-tag p">Person · ${_esc(p.code||'?')}</span></div>`
+           + `<div class="row"><span class="k">College</span>${_esc(p.college||'?')}</div>`
+           + (tags ? `<div class="row"><span class="k">Skills</span></div><div class="tags">${tags}</div>` : '')
+           + (p.bio ? `<div class="bio">"${_esc(p.bio)}"</div>` : '');
+    } else if (d.type === 'college') {
+      const cnt = kgState.links.filter(l => (l.target.id || l.target) === d.id).length;
+      html = `<div class="h"><span class="nm">${_esc(d.name)}</span><span class="type-tag c">College</span></div>`
+           + `<div class="row"><span class="k">Students</span>${cnt} 人</div>`
+           + `<div class="bio">分类节点 · rdf:type = Organization/College · Person 通过 belongsTo 关联到此</div>`;
+    } else {
+      const cnt = kgState.links.filter(l => (l.target.id || l.target) === d.id).length;
+      html = `<div class="h"><span class="nm">${_esc(d.name)}</span><span class="type-tag i">Skill</span></div>`
+           + `<div class="row"><span class="k">Followers</span>${cnt} 位学员</div>`
+           + `<div class="bio">兴趣节点 · Person 通过 hasInterest 关联到此 · 图谱中该节点度 = 感兴趣人数</div>`;
+    }
+    t.innerHTML = html;
+    moveKGTooltip(ev);
+    t.classList.add('show');
+  }
+  function moveKGTooltip(ev) {
+    const t = kgState.tooltipEl;
+    if (!t) return;
+    const pad = 14;
+    let x = ev.clientX + pad, y = ev.clientY + pad;
+    const rect = t.getBoundingClientRect();
+    if (x + rect.width > window.innerWidth - 10) x = ev.clientX - rect.width - pad;
+    if (y + rect.height > window.innerHeight - 10) y = ev.clientY - rect.height - pad;
+    t.style.left = x + 'px';
+    t.style.top = y + 'px';
+  }
+  function hideKGTooltip() {
+    const t = kgState.tooltipEl;
+    if (t) t.classList.remove('show');
+  }
 
+  // ============ Highlight ============
+  function kgHighlightNode(id) {
+    const nbr = new Set([id]);
+    const linkSet = new Set();
+    kgState.links.forEach(l => {
+      const s = l.source.id || l.source, t = l.target.id || l.target;
+      if (s === id) { nbr.add(t); linkSet.add(l); }
+      if (t === id) { nbr.add(s); linkSet.add(l); }
+    });
+    kgState.highlightNodes = nbr;
+    kgState.highlightLinks = linkSet;
+    _kgApplyHighlight();
+  }
+  function kgHighlightNodes(ids) {
+    const set = new Set(ids);
+    const linkSet = new Set();
+    kgState.links.forEach(l => {
+      const s = l.source.id || l.source, t = l.target.id || l.target;
+      if (set.has(s)) { set.add(t); linkSet.add(l); }
+      if (set.has(t)) { set.add(s); linkSet.add(l); }
+    });
+    kgState.highlightNodes = set;
+    kgState.highlightLinks = linkSet;
+    _kgApplyHighlight();
+  }
+  function kgClearHighlight() {
+    kgState.highlightNodes = new Set();
+    kgState.highlightLinks = new Set();
+    _kgApplyHighlight();
+  }
+  function _kgApplyHighlight() {
+    const dim = kgState.highlightNodes.size > 0;
+    d3.selectAll('#kgSvg .node').classed('dim', d => dim && !kgState.highlightNodes.has(d.id));
+    d3.selectAll('#kgSvg .link').classed('dim', l => dim && !kgState.highlightLinks.has(l))
+                                 .classed('highlighted', l => kgState.highlightLinks.has(l));
+  }
+
+  // ============ Node detail card ============
+  function showKGDetail(p) {
+    const el = document.getElementById('kgDetail');
+    if (!el || !p) return;
+    const tags = (p.interests || []).map(t => `<span class="tag">${_esc(t)}</span>`).join('');
+    el.innerHTML = `<div class="kg-detail">
+      <div class="h"><span class="nm">${_esc(p.name)}</span><span class="code">${_esc(p.code||'')}</span></div>
+      <div class="row"><span class="k">学院</span>${_esc(p.college||'?')}</div>
+      ${p.bio ? `<div class="row"><span class="k">Bio</span>${_esc(p.bio)}</div>` : ''}
+      ${tags ? `<div class="tags">${tags}</div>` : ''}
+    </div>`;
+  }
+
+  // ============ Copilot messaging ============
   function pushKGMsg(html, klass) {
     const el = document.getElementById('kgMsgs');
     if (!el) return null;
@@ -3317,277 +2911,232 @@ FNC 全称 FutureNow Center，是 IBM Consulting 在中国本地的落地团队�
     msg.className = 'kg-msg ' + (klass || 'ai');
     msg.innerHTML = html;
     el.appendChild(msg);
-    // Scroll body to bottom
-    const body = el.closest('.kg-copilot-body');
+    const body = document.getElementById('kgCopilotBody');
     if (body) body.scrollTop = body.scrollHeight;
     return msg;
   }
 
-  // Typewriter effect for AI answers — feels alive
-  function typewriteInto(el, html, speedMs) {
-    if (!el) return;
-    speedMs = speedMs || 14;
-    // Split by tags so HTML stays valid — we reveal text nodes char by char
-    el.innerHTML = '';
-    const tmp = document.createElement('div');
-    tmp.innerHTML = html;
-    const chunks = [];
-    (function walk(node) {
-      if (node.nodeType === 3) chunks.push({ text: node.textContent });
-      else if (node.nodeType === 1) {
-        const tag = node.tagName.toLowerCase();
-        chunks.push({ openTag: tag, attrs: [...node.attributes].map(a => `${a.name}="${a.value}"`).join(' ') });
-        node.childNodes.forEach(walk);
-        chunks.push({ closeTag: tag });
-      }
-    })(tmp);
-
-    let i = 0, currentText = '', openStack = [];
-    function render() {
-      // Rebuild HTML from processed chunks + partial current text
-      let out = '';
-      for (let k = 0; k < i; k++) {
-        const c = chunks[k];
-        if (c.text) out += c.text;
-        else if (c.openTag) out += `<${c.openTag}${c.attrs ? ' ' + c.attrs : ''}>`;
-        else if (c.closeTag) out += `</${c.closeTag}>`;
-      }
-      out += currentText;
-      // Close any still-open tags for valid HTML during animation
-      openStack.forEach(tag => { out += `</${tag}>`; });
-      el.innerHTML = out;
-    }
-
-    function step() {
-      if (i >= chunks.length) return;
-      const c = chunks[i];
-      if (c.openTag) { openStack.push(c.openTag); i++; render(); step(); return; }
-      if (c.closeTag) { openStack.pop(); i++; render(); step(); return; }
-      // text chunk — reveal char by char
-      if (currentText.length < c.text.length) {
-        currentText += c.text[currentText.length];
-        render();
-        setTimeout(step, speedMs);
-      } else {
-        currentText = ''; i++;
-        // reset openStack representation since text was inside those tags
-        render(); step();
-      }
-    }
-    step();
-  }
-
-  const KG_QUERIES = {
-    similar:   '🔍 找兴趣孪生对',
-    central:   '⭐ 找图谱中心',
-    aiCollege: '🎓 AI 兴趣浓度最高学院',
-    team:      '👥 推荐 3 人组队',
-    cross:     '🌐 跨学科兴趣'
+  // ============ 5 rigorous ontology-driven graph algorithms ============
+  const KG_QLABELS = {
+    degree:  '① 找度中心性最高的学员',
+    jaccard: '② 找 Jaccard 相似度最高的一对学员',
+    bridge:  '③ 找跨越学院最多的兴趣（桥接节点）',
+    twohop:  '④ 找长度为 2 的共兴趣路径（三人组）',
+    cover:   '⑤ 找兴趣覆盖面最广的学院'
   };
 
   function askKG(qid) {
-    openKGCopilot(true);
-    pushKGMsg(KG_QUERIES[qid] || qid, 'user');
-    const thinkingMsg = pushKGMsg('正在基于图谱推理', 'ai thinking');
+    pushKGMsg(KG_QLABELS[qid] || qid, 'user');
+    const thinking = pushKGMsg('计算中', 'ai thinking');
     setTimeout(() => {
-      const people = loadKBFromStorage();
       let result;
       try {
-        if (qid === 'similar')   result = kgQ_mostSimilar(people);
-        if (qid === 'central')   result = kgQ_centralNode(people);
-        if (qid === 'aiCollege') result = kgQ_aiCollege(people);
-        if (qid === 'team')      result = kgQ_recommend(people);
-        if (qid === 'cross')     result = kgQ_crossCollege(people);
-      } catch (e) { result = { text: '推理出错：' + e.message }; }
-      thinkingMsg.classList.remove('thinking');
-      const output = (typeof result === 'string') ? result : (result.text || '没找到答案');
-      typewriteInto(thinkingMsg, output, 12);
-      if (result && result.highlightId) {
-        kgHighlightNode(result.highlightId);
-      } else if (result && result.highlightIds && result.highlightIds.length) {
-        kgHighlightNodes(result.highlightIds);
-      }
-    }, 550);
+        if (qid === 'degree')  result = kgAlg_degree();
+        if (qid === 'jaccard') result = kgAlg_jaccard();
+        if (qid === 'bridge')  result = kgAlg_bridge();
+        if (qid === 'twohop')  result = kgAlg_twohop();
+        if (qid === 'cover')   result = kgAlg_cover();
+      } catch (e) { result = { text: '推理失败：' + e.message }; }
+      thinking.classList.remove('thinking');
+      thinking.innerHTML = result.text || '未找到答案';
+      if (result.highlightIds && result.highlightIds.length) kgHighlightNodes(result.highlightIds);
+    }, 500);
   }
   window.askKG = askKG;
 
-  // Show a person node's detail in the copilot bottom slot
-  function showNodeDetail(person) {
-    const el = document.getElementById('kgNodeDetail');
-    if (!el || !person) return;
-    const tags = (person.interests || []).map(t => `<span class="tag">${escapeHTML(t)}</span>`).join('');
-    el.innerHTML = `
-      <div class="h">
-        <span class="nm">${escapeHTML(person.name || '?')}</span>
-        <span class="role">${escapeHTML(person.college || '?')}</span>
-      </div>
-      <div class="row"><span class="k">CODE</span>${escapeHTML(person.code || '?')}</div>
-      ${person.bio ? `<div class="row"><span class="k">BIO</span>${escapeHTML(person.bio)}</div>` : ''}
-      ${tags ? `<div class="tags">${tags}</div>` : ''}
-    `;
-    el.style.display = 'block';
-  }
-  function hideNodeDetail() {
-    const el = document.getElementById('kgNodeDetail');
-    if (el) el.style.display = 'none';
-  }
-  function escapeHTML(s) {
-    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
-  // Highlight multiple nodes (用于 AI 助手推荐组队等多节点结果)
-  function kgHighlightNodes(ids) {
-    if (!kgInstance || !ids || !ids.length) return;
-    const idSet = new Set(ids);
-    kgHL_nodes = new Set(ids);
-    kgHL_links = new Set();
-    const data = kgInstance.graphData();
-    data.links.forEach(l => {
-      const s = _idOf(l.source), t = _idOf(l.target);
-      if (idSet.has(s)) { kgHL_nodes.add(t); kgHL_links.add(l); }
-      if (idSet.has(t)) { kgHL_nodes.add(s); kgHL_links.add(l); }
+  // ---- ① Degree Centrality ----
+  function kgAlg_degree() {
+    const nodes = kgState.nodes.filter(n => n.type === 'person');
+    if (!nodes.length) return { text: '当前没有学员数据 · 点"加载演示数据"' };
+    const deg = {};
+    nodes.forEach(n => deg[n.id] = 0);
+    kgState.links.forEach(l => {
+      const s = l.source.id || l.source;
+      if (deg[s] !== undefined) deg[s]++;
     });
-    _kgRedraw();
+    const ranked = Object.entries(deg).sort((a,b) => b[1]-a[1]);
+    const [topId, topDeg] = ranked[0];
+    const person = kgState.nodes.find(n => n.id === topId).meta;
+    return {
+      text: `<b>${_esc(person.name)}</b>（${_esc(person.college)}）度 = <b>${topDeg}</b>` +
+            `<span class="infer-step">算法：对每个 Person 节点数出边数（belongsTo + hasInterest）</span>` +
+            `<span class="infer-step">度 = 1 个学院边 + ${topDeg - 1} 个兴趣边</span>` +
+            `<span class="infer-step conclusion">→ 这是图上"信息流最汇聚"的节点 · 组队优先联系他</span>`,
+      highlightIds: [topId]
+    };
   }
 
-  // === 5 推理函数 — 完全本地 ===
+  // ---- ② Jaccard similarity ----
   function jaccard(a, b) {
     const A = new Set(a || []), B = new Set(b || []);
+    if (!A.size || !B.size) return 0;
     const inter = [...A].filter(x => B.has(x)).length;
-    const union = new Set([...A, ...B]).size;
-    return union ? inter / union : 0;
+    const uni = new Set([...A, ...B]).size;
+    return inter / uni;
   }
-
-  function kgQ_mostSimilar(students) {
-    if (students.length < 2) return '同学不够 2 人。先点 ▶ 注入演示 或 ↻ 重载 KB';
+  function kgAlg_jaccard() {
+    const ps = kgState.people;
+    if (ps.length < 2) return { text: '学员少于 2 人 · 无法比较' };
     let best = { sim: -1 };
-    for (let i = 0; i < students.length; i++) {
-      for (let j = i + 1; j < students.length; j++) {
-        const s = jaccard(students[i].interests, students[j].interests);
-        if (s > best.sim) {
-          const shared = (students[i].interests || []).filter(x => (students[j].interests || []).includes(x));
-          best = { sim: s, a: students[i], b: students[j], shared };
-        }
+    for (let i = 0; i < ps.length; i++) {
+      for (let j = i + 1; j < ps.length; j++) {
+        const s = jaccard(ps[i].interests, ps[j].interests);
+        if (s > best.sim) best = { sim: s, a: ps[i], b: ps[j], ai: i, bi: j,
+          shared: (ps[i].interests || []).filter(x => (ps[j].interests || []).includes(x)) };
       }
     }
-    if (best.sim <= 0) return '没找到共同兴趣的同学对（数据太分散）';
+    if (best.sim <= 0) return { text: '没有一对学员有共同兴趣（数据太分散）' };
     return {
-      text: `最像的一对：<b>${best.a.name}</b>（${best.a.college}）和 <b>${best.b.name}</b>（${best.b.college}）<br>相似度 ${(best.sim*100).toFixed(0)}%，都喜欢：<b>${best.shared.join('、')}</b>`,
-      highlightIds: ['p_' + best.a.code, 'p_' + best.b.code]
+      text: `<b>${_esc(best.a.name)}</b> 和 <b>${_esc(best.b.name)}</b> · Jaccard = <b>${(best.sim*100).toFixed(0)}%</b>` +
+            `<span class="infer-step">共同兴趣：${best.shared.map(_esc).join(' · ')}</span>` +
+            `<span class="infer-step">公式：J(A,B) = |A ∩ B| / |A ∪ B|</span>` +
+            `<span class="infer-step conclusion">→ 兴趣重叠最高的一对 · 跨学院时是天然组队候选</span>`,
+      highlightIds: ['p_' + best.ai, 'p_' + best.bi]
     };
   }
 
-  function kgQ_centralNode(students) {
-    if (!students.length) return '还没数据。';
-    const ranked = students.map(s => ({
-      s, deg: (s.interests || []).length + (s.college ? 1 : 0)
-    })).sort((a, b) => b.deg - a.deg);
-    const top = ranked[0];
-    return {
-      text: `中心人物是 <b>${top.s.name}</b>（${top.s.college}）<br>连接度 <b>${top.deg}</b>（${(top.s.interests||[]).length} 个兴趣 + 1 个学院），<br>整个图谱里"信息流最汇聚"的节点`,
-      highlightId: 'p_' + top.s.code
-    };
-  }
-
-  function kgQ_aiCollege(students) {
-    const AI_TERMS = new Set(['机器学习','深度学习','大模型','RAG','自然语言处理','计算机视觉','强化学习','Agent / 智能体','知识图谱']);
-    const stats = {};
-    students.forEach(s => {
-      if (!s.college) return;
-      if (!stats[s.college]) stats[s.college] = { count: 0, people: 0 };
-      stats[s.college].people++;
-      (s.interests || []).forEach(i => { if (AI_TERMS.has(i)) stats[s.college].count++; });
-    });
-    const ranked = Object.entries(stats).sort((a, b) => b[1].count - a[1].count);
-    if (!ranked.length) return '还没数据。';
-    const [name, info] = ranked[0];
-    return {
-      text: `最热衷 AI 的学院是 <b>${name}</b>：<br>${info.people} 个同学，累计提交 <b>${info.count}</b> 个 AI 相关兴趣标签<br>平均每人 ${(info.count/info.people).toFixed(1)} 个 AI 兴趣`
-    };
-  }
-
-  function kgQ_recommend(students) {
-    if (students.length < 3) return '同学不够 3 人，无法推荐组队。';
-    const me = students[Math.floor(Math.random() * students.length)];
-    const others = students.filter(s => s.code !== me.code).map(s => ({
-      s, sim: jaccard(me.interests, s.interests)
-    })).sort((a, b) => b.sim - a.sim);
-    const t1 = others[0], t2 = others[1];
-    return {
-      text: `<b>${me.name}</b>（${me.college}）的推荐组队：<br>① <b>${t1.s.name}</b>（${t1.s.college}）— 相似度 ${(t1.sim*100).toFixed(0)}%<br>② <b>${t2.s.name}</b>（${t2.s.college}）— 相似度 ${(t2.sim*100).toFixed(0)}%<br><br>💡 跨学院互补 + 兴趣重叠，组队最稳`,
-      highlightIds: ['p_' + me.code, 'p_' + t1.s.code, 'p_' + t2.s.code]
-    };
-  }
-
-  function kgQ_crossCollege(students) {
+  // ---- ③ Bridge / cross-college interest ----
+  function kgAlg_bridge() {
     const interestColleges = {};
-    students.forEach(s => {
-      if (!s.college) return;
-      (s.interests || []).forEach(i => {
+    kgState.people.forEach(p => {
+      if (!p.college) return;
+      (p.interests || []).forEach(i => {
         if (!interestColleges[i]) interestColleges[i] = new Set();
-        interestColleges[i].add(s.college);
+        interestColleges[i].add(p.college);
       });
     });
     const ranked = Object.entries(interestColleges)
-      .map(([interest, set]) => ({ interest, colleges: [...set] }))
+      .map(([itr, set]) => ({ itr, colleges: [...set] }))
       .filter(x => x.colleges.length >= 2)
       .sort((a, b) => b.colleges.length - a.colleges.length);
-    if (!ranked.length) return '还没出现跨学院共同兴趣（数据不够多）';
+    if (!ranked.length) return { text: '没有跨学院兴趣（当前数据太集中）' };
     const top = ranked[0];
+    // highlight all persons whose interests include top.itr
+    const hids = [];
+    kgState.people.forEach((p, idx) => {
+      if ((p.interests || []).includes(top.itr)) hids.push('p_' + idx);
+    });
+    hids.push('i_' + top.itr);
+    top.colleges.forEach(c => hids.push('c_' + c));
     return {
-      text: `跨学院最广的兴趣是 <b>${top.interest}</b>：<br>横跨 <b>${top.colleges.length}</b> 个学院 — ${top.colleges.join('、')}<br><br>💡 这是真正的"跨学科领域"，未来交叉创新最有可能的方向`
+      text: `<b>${_esc(top.itr)}</b> · 横跨 <b>${top.colleges.length}</b> 个学院` +
+            `<span class="infer-step">涉及：${top.colleges.map(_esc).join(' · ')}</span>` +
+            `<span class="infer-step">算法：对每个兴趣节点 · 收集其邻居 Person 的 belongsTo 学院集合</span>` +
+            `<span class="infer-step conclusion">→ 这是学科交叉最活跃的方向 · 未来出跨界创新的概率最高</span>`,
+      highlightIds: hids
     };
   }
 
-  // Init KG when its slide becomes visible.
-  // Multiple triggers cover Reveal 5 nested-subsection timing:
-  //   slidechanged (outer + inner) + slidetransitionend + fragmentshown
+  // ---- ④ 2-hop shared-interest path (three-person team) ----
+  function kgAlg_twohop() {
+    const ps = kgState.people;
+    if (ps.length < 3) return { text: '学员不足 3 人 · 无法组三人组' };
+    // Pick anchor = person with most interests
+    let anchor = null, maxI = -1, anchorIdx = -1;
+    ps.forEach((p, idx) => {
+      const c = (p.interests || []).length;
+      if (c > maxI) { maxI = c; anchor = p; anchorIdx = idx; }
+    });
+    // Rank others by Jaccard with anchor
+    const scored = ps.map((p, idx) => ({ p, idx, sim: idx === anchorIdx ? -1 : jaccard(anchor.interests, p.interests) }))
+      .filter(x => x.sim > 0).sort((a, b) => b.sim - a.sim);
+    if (scored.length < 2) return { text: '找不到两个共兴趣邻居' };
+    const [t1, t2] = scored;
+    const shared1 = (anchor.interests || []).filter(x => (t1.p.interests || []).includes(x));
+    const shared2 = (anchor.interests || []).filter(x => (t2.p.interests || []).includes(x));
+    return {
+      text: `建议三人组：<b>${_esc(anchor.name)}</b> · <b>${_esc(t1.p.name)}</b> · <b>${_esc(t2.p.name)}</b>` +
+            `<span class="infer-step">锚点 = 兴趣数最多的 ${_esc(anchor.name)}（${maxI} 个兴趣）</span>` +
+            `<span class="infer-step">${_esc(anchor.name)} ─${_esc(shared1[0]||'')}─ ${_esc(t1.p.name)} · Jaccard ${(t1.sim*100).toFixed(0)}%</span>` +
+            `<span class="infer-step">${_esc(anchor.name)} ─${_esc(shared2[0]||'')}─ ${_esc(t2.p.name)} · Jaccard ${(t2.sim*100).toFixed(0)}%</span>` +
+            `<span class="infer-step conclusion">→ 长度为 2 的共兴趣路径 · 图算法上叫 "2-hop neighbor"</span>`,
+      highlightIds: ['p_' + anchorIdx, 'p_' + t1.idx, 'p_' + t2.idx]
+    };
+  }
+
+  // ---- ⑤ Interest coverage per college ----
+  function kgAlg_cover() {
+    const collegeInterests = {};
+    kgState.people.forEach(p => {
+      if (!p.college) return;
+      if (!collegeInterests[p.college]) collegeInterests[p.college] = { interests: new Set(), people: 0 };
+      collegeInterests[p.college].people++;
+      (p.interests || []).forEach(i => collegeInterests[p.college].interests.add(i));
+    });
+    const ranked = Object.entries(collegeInterests)
+      .map(([c, s]) => ({ college: c, cnt: s.interests.size, people: s.people, items: [...s.interests] }))
+      .sort((a, b) => b.cnt - a.cnt);
+    if (!ranked.length) return { text: '当前没有学院数据' };
+    const top = ranked[0];
+    const hids = ['c_' + top.college];
+    kgState.people.forEach((p, idx) => { if (p.college === top.college) hids.push('p_' + idx); });
+    top.items.forEach(i => hids.push('i_' + i));
+    return {
+      text: `<b>${_esc(top.college)}</b> · 覆盖 <b>${top.cnt}</b> 个不同兴趣（学员 ${top.people} 人）` +
+            `<span class="infer-step">涵盖：${top.items.map(_esc).join(' · ')}</span>` +
+            `<span class="infer-step">算法：对每个 College · 通过 belongsTo⁻¹ 拿到 Person 集合 · 再取兴趣并集</span>` +
+            `<span class="infer-step conclusion">→ 兴趣覆盖面最广 = 这个学院学员研究方向最多元</span>`,
+      highlightIds: hids
+    };
+  }
+
+  // ============ Public commands (bottom pill toolbar) ============
+  function kgInjectDemo() {
+    const cur = _kgLoadPeople();
+    if (cur.length && cur[0].code && cur[0].code.startsWith('M2099')) { initKG(); return; }
+    const codes = new Set(cur.map(s => s.code + '::' + s.name));
+    KG_SEED.forEach(s => { if (!codes.has(s.code + '::' + s.name)) cur.push(s); });
+    localStorage.setItem(KG_KB_KEY, JSON.stringify(cur));
+    initKG();
+    pushKGMsg('✓ 已注入 12 名月球营先遣队学员 · 图谱已刷新', 'ai');
+  }
+  function kgRefreshFromKB() {
+    initKG();
+    pushKGMsg('↻ 已从本机 localStorage 重新加载学员数据', 'ai');
+  }
+  window.kgInjectDemo = kgInjectDemo;
+  window.kgRefreshFromKB = kgRefreshFromKB;
+  window.kgClearHighlight = kgClearHighlight;
+
+  function flashKGLive() {
+    const el = document.getElementById('kgLiveBadge');
+    if (!el) return;
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 1500);
+  }
+
+  // ============ Reveal integration ============
   function _kgUpdateBodyClass() {
     const cur = deck.getCurrentSlide();
-    const on = !!(cur && cur.id === 'slide-kg');
-    document.body.classList.toggle('on-kg-slide', on);
+    document.body.classList.toggle('on-kg-slide', !!(cur && cur.id === 'slide-kg'));
   }
   function _kgSlideBoot() {
     _kgUpdateBodyClass();
     const cur = deck.getCurrentSlide();
     if (!cur || cur.id !== 'slide-kg') return;
-    startKGParticles();
     initKG();
-    setTimeout(() => { initKG(); }, 200);
-    setTimeout(() => kgInstance && kgInstance.resize(), 500);
-    setTimeout(() => kgInstance && kgInstance.resize(), 1200);
+    setTimeout(initKG, 300);
+    setTimeout(initKG, 900);
   }
   deck.on('slidechanged', _kgSlideBoot);
   deck.on('slidetransitionend', _kgSlideBoot);
-  // Also kick off if user lands directly on #/slide-kg (deck.ready)
   if (deck.getCurrentSlide && deck.getCurrentSlide()?.id === 'slide-kg') _kgSlideBoot();
-  // And once DOM is fully ready — safety net when hash points here
-  setTimeout(_kgSlideBoot, 800);
-  setTimeout(_kgSlideBoot, 1800);
+  setTimeout(_kgSlideBoot, 600);
+  setTimeout(_kgSlideBoot, 1600);
 
-  // Auto-refresh KG when localStorage 'fnc_camp_kb_v1' changes
-  // Triggers on: (1) student submits in another tab/window of same browser
-  //              (2) admin "inject demo data" URL was opened in another tab
+  // Auto-refresh when collect.html or enroll.html writes new data in another tab
   window.addEventListener('storage', (e) => {
-    if (e.key === 'fnc_camp_kb_v1') {
-      const curSlide = deck.getCurrentSlide();
-      if (curSlide && curSlide.id === 'slide-kg') {
-        initKG();
-        flashLiveBadge();
-      }
+    if (e.key === KG_KB_KEY) {
+      const cur = deck.getCurrentSlide();
+      if (cur && cur.id === 'slide-kg') { initKG(); flashKGLive(); }
     }
   });
 
-  // ResizeObserver: if Reveal scales the slide, ECharts needs to know
-  if (typeof ResizeObserver !== 'undefined') {
-    const ro = new ResizeObserver(() => {
-      if (kgInstance) kgInstance.resize();
-    });
-    setTimeout(() => {
-      const dom = document.getElementById('kgChart');
-      if (dom) ro.observe(dom);
-    }, 1000);
-  }
+  // Resize awareness — Reveal 5 may resize on window change
+  window.addEventListener('resize', () => {
+    const cur = deck.getCurrentSlide();
+    if (cur && cur.id === 'slide-kg') initKG();
+  });
 
   // ============================================================
   // Review Mode — activated by ?review=1
