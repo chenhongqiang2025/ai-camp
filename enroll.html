@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>AI Camp 2026 · 学生入口</title>
-<meta name="description" content="2026 IBM × 大连高新园区 AI 夏令营 · 学生注册入口" />
+<title>AI Camp 2026 · 登记入口</title>
+<meta name="description" content="2026 IBM × 大连高新园区 AI 夏令营 · 参与登记入口 · 欢迎学生 · 行业朋友 · 观察者" />
 <meta name="theme-color" content="#0b0b0c" />
 
 <script src="./teacher-auth.js" defer></script>
@@ -252,9 +252,9 @@ function render() {
 /* ---------- Stage 1: code entry ---------- */
 function renderCode() {
   card.innerHTML = `
-    <div class="badge"><span class="dot2"></span>欢迎报名</div>
-    <h1>AI 夏令营 2026 · 学生入口</h1>
-    <p class="desc">请输入讲师在课前发给你的<b>访问码</b>。访问码形如 <code style="background:var(--bg-3);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);">FNC-001</code>。</p>
+    <div class="badge"><span class="dot2"></span>欢迎登记 · 可选</div>
+    <h1>AI 夏令营 2026 · 登记入口</h1>
+    <p class="desc">请输入讲师发给你的<b>访问码</b>·形如 <code style="background:var(--bg-3);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);">FNC-001</code>·登记<b>非必须</b>·欢迎学生 · 行业朋友 · 观察者。</p>
     <div class="field">
       <label>访问码</label>
       <input id="codeInput" class="uppercase" placeholder="FNC-XXX" autocomplete="off" maxlength="16" />
@@ -287,8 +287,8 @@ function renderForm(s) {
   const isTeacher = s.code === 'TEACHER-2026';
   card.innerHTML = `
     <div class="badge"><span class="dot2"></span>${isTeacher ? '讲师 · 课前预演' : '已识别 · ' + s.code}</div>
-    <h1>${isTeacher ? '讲师 · 课前预演通道' : '告诉我们关于你'}</h1>
-    <p class="desc">${isTeacher ? '以讲师身份完整走一遍学员流程，确认每一步都顺畅。预演数据可用于现场演示兜底。' : '这些信息将用于课堂上的<b>知识图谱互动</b>和<b>智能组队推荐</b>。提交后任何时候都可以修改。'}</p>
+    <h1>${isTeacher ? '讲师 · 课前预演通道' : '简单说说你 · 讲师认识一下'}</h1>
+    <p class="desc">${isTeacher ? '以讲师身份完整走一遍学员流程·确认每一步都顺畅·预演数据可用于现场演示兜底。' : '讲师课上<b>可能</b>用你的信息做<b>知识图谱互动</b>演示·也<b>可能</b>用 DEMO 数据。无论用不用·填了讲师能认识你。<span style="color:var(--text-faint);">提交后随时可修改。</span>'}</p>
 
     <div class="field">
       <label>姓名或昵称 <span class="hint">让大屏图谱叫你什么</span></label>
@@ -365,8 +365,8 @@ function renderSuccess(s) {
   card.innerHTML = `
     <div class="success-state">
       <div class="icon">✓</div>
-      <h2>${isTeacher ? '✓ 讲师预演通过' : '已记录 · 期待与你课堂见面'}</h2>
-      <p class="desc" style="text-align:center;margin-top:8px;">${isTeacher ? '所有流程已跑通。可继续测试课件、KG 图谱、AI 推理助手等下游环节。' : '请把<b>"我的信息"</b>复制并发送到课程微信群<br>这样讲师就能在大屏的"校园关系网"看到你的节点。'}</p>
+      <h2>${isTeacher ? '✓ 讲师预演通过' : '✓ 登记完成 · 感谢参与'}</h2>
+      <p class="desc" style="text-align:center;margin-top:8px;">${isTeacher ? '所有流程已跑通·可继续测试课件、KG 图谱、AI 推理助手等下游环节。' : '如果讲师建了课程微信群·<b>可选</b>把「我的信息」复制发到群里·讲师课上可能用你的节点做图谱演示。<br><span style="color:var(--text-faint);">没群或不想发也完全 OK·讲师有 DEMO 数据兜底。</span>'}</p>
 
       <div class="me">
         <div class="row"><span class="k">CODE</span><span class="v" style="font-family:var(--font-mono);">${s.code}</span></div>
@@ -377,7 +377,7 @@ function renderSuccess(s) {
       </div>
 
       ${!isTeacher ? `
-      <button id="fCopyInfo" class="primary" style="width:100%;margin-top:14px;padding:12px 16px;font-size:14px;font-weight:500;">📋 复制我的信息 · 发到课程微信群</button>
+      <button id="fCopyInfo" class="primary" style="width:100%;margin-top:14px;padding:12px 16px;font-size:14px;font-weight:500;">📋 复制我的信息（可选 · 发到讲师群）</button>
       <div style="font-size:11.5px;color:var(--text-faint);margin-top:8px;text-align:center;line-height:1.6;">点一下就把你的信息复制到剪贴板。<br>切到微信，长按粘贴到群里即可。</div>
       ` : ''}
 
@@ -402,7 +402,7 @@ function renderSuccess(s) {
         copyBtn.style.background = 'var(--success)';
         copyBtn.style.borderColor = 'var(--success)';
         setTimeout(() => {
-          copyBtn.textContent = '📋 复制我的信息 · 发到课程微信群';
+          copyBtn.textContent = '📋 复制我的信息（可选 · 发到讲师群）';
           copyBtn.style.background = '';
           copyBtn.style.borderColor = '';
         }, 2500);
