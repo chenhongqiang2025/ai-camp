@@ -1784,66 +1784,122 @@ IBM 在这条路上走得很久。Watson 时代有大量医疗本体的积累，
         </aside>
       </section>
       <section>
-        <div class="content-header" style="margin-bottom: 18px;">
+        <div class="content-header" style="margin-bottom: 20px;">
           <div class="ctx">CH.08 · 02 / 03 · 三元组</div>
-          <h2 style="font-size: 1.9em !important;">RDF 三元组 · 同一套语法 · 两个领域</h2>
-          <p class="sub">主语 — 谓语 — 宾语 · 左：IBM Watson Health 历史场景 · 右：下一页我们班图谱的组成砖块</p>
+          <h2 style="font-size: 1.9em !important;">一条三元组 · 就是"谁 · 怎么样 · 什么"</h2>
+          <p class="sub">四条这样的小砖块 · 就能让 AI 推出一句你没直接告诉它的话</p>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 1180px; margin: 0 auto;">
-          <!-- LEFT: Medical (IBM Watson Health) -->
-          <div style="background: rgba(15,15,30,0.55); border: 1px solid rgba(69,137,255,0.28); border-radius: 12px; padding: 18px 22px;">
-            <div style="font-family: var(--r-code-font); font-size: 10.5px; letter-spacing: 1.8px; color: var(--accent-2); margin-bottom: 8px;">SCENE A · IBM WATSON HEALTH · UMLS</div>
-            <div style="font-family: var(--r-code-font); font-size: 15px; line-height: 2.05;">
-              <div><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">rdf:type</span> — <b style="color: #fff;">NSAID</b></div>
-              <div><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">treats</span> — <b style="color: #fff;">头痛</b></div>
-              <div><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">hasSideEffect</span> — <b style="color: #fff;">胃出血</b></div>
-              <div><b style="color: var(--accent-2);">胃出血</b> — <span style="color: var(--text-dim);">contraindicatedFor</span> — <b style="color: #fff;">溃疡患者</b></div>
-              <div><b style="color: var(--accent-2);">该患者</b> — <span style="color: var(--text-dim);">hasHistory</span> — <b style="color: #fff;">消化性溃疡</b></div>
-            </div>
-            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.10); font-size: 13.5px; color: var(--success);">
-              <b>∴ 推理结论：</b>不要给该患者开阿司匹林
-            </div>
-            <div style="margin-top: 10px; font-size: 11px; color: var(--text-faint); line-height: 1.5;">
-              数据源：<b style="color: var(--text-dim);">UMLS</b>（NIH 维护 · 400 万医学概念 · 6000 万三元组）· Watson for Oncology 处方决策底座
+        <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1.35fr 1fr; gap: 26px; align-items: start;">
+          <!-- LEFT: visual mini-graph -->
+          <div style="background: rgba(15,15,30,0.55); border: 1px solid rgba(0,212,170,0.28); border-radius: 12px; padding: 22px 22px 14px;">
+            <div style="font-family: var(--r-code-font); font-size: 10.5px; letter-spacing: 1.8px; color: #00D4AA; margin-bottom: 14px;">用你们自己的一条报名信息 · 慢慢展开</div>
+            <svg viewBox="0 0 640 380" style="width:100%; display:block;">
+              <defs>
+                <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="rgba(226,232,240,0.7)"/></marker>
+                <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#00D4AA"/></marker>
+              </defs>
+              <!-- Person node -->
+              <g>
+                <circle cx="110" cy="70" r="34" fill="#4589ff" opacity="0.28"/>
+                <circle cx="110" cy="70" r="20" fill="#4589ff"/>
+                <text x="110" y="74" text-anchor="middle" fill="#fff" font-size="14" font-weight="600">张明远</text>
+                <text x="110" y="118" text-anchor="middle" fill="rgba(226,232,240,0.5)" font-size="10" font-family="ui-monospace,monospace">人 · Person</text>
+              </g>
+              <!-- edge belongsTo -->
+              <line x1="140" y1="80" x2="278" y2="152" stroke="rgba(226,232,240,0.55)" stroke-width="1.4" marker-end="url(#arr)"/>
+              <text x="200" y="112" fill="rgba(226,232,240,0.75)" font-size="12" font-family="ui-monospace,monospace">属于</text>
+              <!-- College node -->
+              <g>
+                <circle cx="310" cy="170" r="30" fill="#F59E0B" opacity="0.30"/>
+                <circle cx="310" cy="170" r="19" fill="#F59E0B"/>
+                <text x="310" y="174" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">计算机学院</text>
+                <text x="310" y="212" text-anchor="middle" fill="rgba(245,158,11,0.75)" font-size="10" font-family="ui-monospace,monospace">学院 · College</text>
+              </g>
+              <!-- edge hasInterest -->
+              <line x1="138" y1="88" x2="228" y2="280" stroke="rgba(226,232,240,0.55)" stroke-width="1.4" marker-end="url(#arr)"/>
+              <text x="150" y="200" fill="rgba(226,232,240,0.75)" font-size="12" font-family="ui-monospace,monospace">关心</text>
+              <!-- Skill node RAG -->
+              <g>
+                <circle cx="250" cy="300" r="26" fill="#c08bff" opacity="0.30"/>
+                <circle cx="250" cy="300" r="16" fill="#c08bff"/>
+                <text x="250" y="304" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">RAG</text>
+                <text x="250" y="338" text-anchor="middle" fill="rgba(192,139,255,0.75)" font-size="10" font-family="ui-monospace,monospace">技能 · Skill</text>
+              </g>
+              <!-- edge subClassOf 1 -->
+              <line x1="278" y1="298" x2="422" y2="278" stroke="rgba(226,232,240,0.55)" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+              <text x="345" y="278" text-anchor="middle" fill="rgba(226,232,240,0.75)" font-size="11" font-family="ui-monospace,monospace">是一种</text>
+              <!-- Skill node 大模型工程 -->
+              <g>
+                <circle cx="460" cy="270" r="30" fill="#c08bff" opacity="0.30"/>
+                <circle cx="460" cy="270" r="18" fill="#c08bff"/>
+                <text x="460" y="274" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">大模型工程</text>
+              </g>
+              <!-- edge subClassOf 2 -->
+              <line x1="486" y1="252" x2="558" y2="152" stroke="rgba(226,232,240,0.55)" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+              <text x="540" y="205" text-anchor="middle" fill="rgba(226,232,240,0.75)" font-size="11" font-family="ui-monospace,monospace">是一种</text>
+              <!-- Skill node AI 应用 -->
+              <g>
+                <circle cx="574" cy="130" r="32" fill="#c08bff" opacity="0.30"/>
+                <circle cx="574" cy="130" r="20" fill="#c08bff"/>
+                <text x="574" y="134" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">AI 应用</text>
+              </g>
+              <!-- Inferred edge from 张明远 to AI 应用 (green dashed) -->
+              <path d="M 128 46 Q 380 -10 570 108" stroke="#00D4AA" stroke-width="2" stroke-dasharray="6,4" fill="none" marker-end="url(#arrG)" opacity="0.9"/>
+              <text x="360" y="18" text-anchor="middle" fill="#00D4AA" font-size="12" font-weight="600" font-family="ui-monospace,monospace">? AI 自动推出：也关心 AI 应用</text>
+            </svg>
+            <div style="margin-top: 8px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.10); font-size: 12px; color: var(--text-dim); line-height: 1.75;">
+              <b style="color:#fff;">左图 4 条实线</b>是你今天报名时填的 4 条事实：<br>
+              &nbsp;① 张明远 <b>属于</b> 计算机学院 &nbsp;&nbsp; ② 张明远 <b>关心</b> RAG<br>
+              &nbsp;③ RAG <b>是一种</b> 大模型工程 &nbsp;&nbsp; ④ 大模型工程 <b>是一种</b> AI 应用<br>
+              <b style="color:#00D4AA;">上面那条虚线</b>是 AI 自动推出的第 5 条 —— 从"关心 RAG"沿着"是一种"往上走两步 · 就得出"张明远也关心 AI 应用"。<b>没直接写 · 图上能推出</b>。
             </div>
           </div>
 
-          <!-- RIGHT: Our class (leads to Ch.08/03 KG demo) -->
-          <div style="background: rgba(0,212,170,0.06); border: 1.5px solid rgba(0,212,170,0.38); border-radius: 12px; padding: 18px 22px; box-shadow: 0 0 24px rgba(0,212,170,0.10);">
-            <div style="font-family: var(--r-code-font); font-size: 10.5px; letter-spacing: 1.8px; color: #00D4AA; margin-bottom: 8px;">SCENE B · 我们班 · 下一页现场演示</div>
-            <div style="font-family: var(--r-code-font); font-size: 15px; line-height: 2.05;">
-              <div><b style="color: #00D4AA;">张明远</b> — <span style="color: var(--text-dim);">rdf:type</span> — <b style="color: #fff;">Person</b></div>
-              <div><b style="color: #00D4AA;">张明远</b> — <span style="color: var(--text-dim);">belongsTo</span> — <b style="color: #fff;">计算机学院</b></div>
-              <div><b style="color: #00D4AA;">张明远</b> — <span style="color: var(--text-dim);">hasInterest</span> — <b style="color: #fff;">RAG</b></div>
-              <div><b style="color: #00D4AA;">RAG</b> — <span style="color: var(--text-dim);">rdfs:subClassOf</span> — <b style="color: #fff;">大模型工程</b></div>
-              <div><b style="color: #00D4AA;">大模型工程</b> — <span style="color: var(--text-dim);">rdfs:subClassOf</span> — <b style="color: #fff;">AI 应用</b></div>
+          <!-- RIGHT: the vocabulary + why it matters -->
+          <div>
+            <div style="background: rgba(15,15,30,0.55); border: 1px solid rgba(69,137,255,0.24); border-radius: 12px; padding: 18px 22px; margin-bottom: 14px;">
+              <div style="font-family: var(--r-code-font); font-size: 10.5px; letter-spacing: 1.8px; color: var(--accent-2); margin-bottom: 10px;">三元组 = 谁 · 怎么样 · 什么</div>
+              <div style="font-family: var(--r-code-font); font-size: 16px; color: #fff; line-height: 1.7;">
+                <span style="color:#4589ff;">主语</span> — <span style="color: var(--text-dim);">谓语</span> — <span style="color:#F59E0B;">宾语</span>
+              </div>
+              <div style="margin-top: 12px; font-size: 12.5px; color: var(--text-dim); line-height: 1.8;">
+                这是知识图谱的<b style="color:#fff;">最小砖块</b>·和一句话的主谓宾结构一样。<br>
+                英文叫 <b style="color:var(--accent-2);">RDF Triple</b>·W3C 二十多年的标准·<br>
+                医疗 KG · Google Search · Wikidata · IBM watsonx · 全部用这个格式。
+              </div>
             </div>
-            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.10); font-size: 13.5px; color: #F59E0B;">
-              <b>∴ 推理结论：</b>张明远 hasInterest AI 应用（subClassOf 传递）
-            </div>
-            <div style="margin-top: 10px; font-size: 11px; color: var(--text-faint); line-height: 1.5;">
-              数据源：<b style="color: var(--text-dim);">今天你们填的报名表</b> · 12 位学员 × 3-5 个兴趣 = 45 条三元组
+
+            <div style="background: rgba(15,15,30,0.55); border: 1px solid rgba(245,158,11,0.24); border-radius: 12px; padding: 18px 22px;">
+              <div style="font-family: var(--r-code-font); font-size: 10.5px; letter-spacing: 1.8px; color: #F59E0B; margin-bottom: 10px;">为什么这个东西 · 是 AI 时代的地基</div>
+              <div style="font-size: 12.5px; color: var(--text-dim); line-height: 1.85;">
+                大模型会说话 · 但<b style="color:#fff;">经常一本正经胡说八道</b>。<br>
+                三元组图谱·把事实<b style="color:#fff;">锁死成结构化数据</b>·<br>
+                模型必须<b style="color:#fff;">沿着已有的边</b>才能推·<br>
+                <span style="color:#00D4AA;">→ 推出来的每一步都能溯源 · 讲得清 · 靠得住。</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="takeaway" style="max-width: 1180px; margin-left: auto; margin-right: auto;">
-          同一套 W3C RDF 语法 · 医疗和教育两种场景 · 都能靠图上推理得出结论 —— <b>下一页把学员 45 条三元组接起来 · 五个算法当场跑给你看</b>
+        <div class="takeaway" style="max-width: 1200px; margin-left: auto; margin-right: auto;">
+          <b>下一页</b>把你们全班 12 位学员的信息都变成三元组 · 画在一张大图上 · 5 个算法当场跑给你看
         </div>
 
         <aside class="notes">
-知识图谱的基本砖头叫三元组·主语·谓语·宾语·三个词表达一条事实·就这么简单。
+知识图谱最基本的砖块·就叫"三元组"·就是"谁·怎么样·什么"·和一句中文的主谓宾结构完全一样。英文叫 RDF Triple·W3C 二十多年的国际标准。
 
-屏幕左边这五条不是我编的·来自 UMLS·全称 Unified Medical Language System·美国 NIH 维护的世界最大医学本体·400 万概念·6000 万三元组·IBM Watson Health 处方决策就跑在这上面。一条一条看：阿司匹林是非甾体抗炎药·治头痛·副作用是胃出血·胃出血对溃疡患者是禁忌·而这个患者恰好有溃疡病史·五条边接起来·AI 自动推出不要开阿司匹林·纯图上推理·不用问大模型。
+我给大家看的这个图·是从你们今天报名表里·抽一位同学的信息出来展开的。四条实线·就是你们填的四条事实：张明远属于计算机学院·张明远关心 RAG·RAG 是一种大模型工程·大模型工程是一种 AI 应用。
 
-屏幕右边这五条·就是你们·今天填的报名表·被我系统抽出来的三元组·主角是张明远·计算机学院的·兴趣里有 RAG·而 RAG 属于大模型工程·大模型工程属于 AI 应用·五条边接起来·AI 也能自动推出一条新事实：张明远对 AI 应用感兴趣·这条我们没直接写·是通过 rdfs 里的 subClassOf 传递性推出来的。
+看那条绿色虚线——这条是我们没直接写的·是 AI 自动推出来的·它说张明远也关心 AI 应用。为什么能推？因为从"关心 RAG"这条边·沿着"是一种"往上爬两步·就到 AI 应用·顺着已有的边走·结论是硬的·不是编的。这在计算机里叫"传递性推理"。
 
-两个例子·同一套 W3C RDF 语法·同一种推理机制。医疗领域 IBM 从 Watson for Oncology 时代就在做·今天 watsonx 上还在跑；今天在座各位·就是我们班这个小知识图谱的原始数据·每个人自己就是一条 Person 实例。
+这就是知识图谱最贵的价值。大模型你们知道·经常一本正经胡说八道·因为它是概率预测下一个词。三元组图谱不一样·每一条边都是明确的事实·推出来的东西都能追溯·讲得清·靠得住。
 
-放大到亿级三元组·就是 Google Knowledge Graph·Wikidata·企业主数据 KG·全部一个原理。
+同样的方法·把它拉到医疗领域·就是 IBM Watson Health·把"张明远"换成"阿司匹林"·把"关心"换成"治疗"·三元组接起来能告诉医生哪个药不能开·世界最大的医学本体 UMLS·NIH 维护·400 万概念·6000 万条·就是这么建的。
 
-下一页我们不看医疗了·看你们自己的图·屏幕上会出现 12 位学员·几个学院·十几个兴趣领域·总共 45 条边·五个真实的图算法当场跑一遍——度中心性·Jaccard 相似度·跨学院桥接·二跳共兴趣路径·兴趣覆盖率·每一个算法都会告诉你们班一件你们自己都不知道的事。
+放大到亿级·就是 Google Knowledge Graph·Wikidata·企业主数据 KG·IBM watsonx.data·全部一个原理。
+
+下一页·你们不看单个人·看整个班·12 位同学·几个学院·十几个兴趣·总共 45 条三元组接成的一张大图·五个真实的图算法当场跑给你们看——谁最中心·谁和谁最像·哪个兴趣跨学院最多·三个人怎么组队·哪个学院方向最多元。这些答案不是我提前写好的·是从图上算出来的·你们班的真实情况。
         </aside>
       </section>
       <section data-state="kg-stage" id="slide-kg" class="kg-full-slide">
