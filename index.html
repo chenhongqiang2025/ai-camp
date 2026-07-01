@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/400.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/500.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/noto-sans-sc@5/600.css">
+<script src="./teacher-auth.js" defer></script>
 <style>
   :root {
     --bg-0: #0b0b0c;
@@ -402,70 +403,20 @@
     `).join('');
   }
 
-  // ============================================================
-  // Teacher-mode unlock · 保护 17 演示区
-  // 三种解锁方式（任一即可）：
-  //   ① URL 参数：?unlock=<pass>  一次访问后 localStorage 记住
-  //   ② 键盘：Ctrl+K 弹密码框
-  //   ③ 点击占位卡下方的提示（也弹密码框）
-  // localStorage 记住 · 退出用页面标题旁的 × 按钮
-  // ============================================================
-  const TEACHER_PASS = 'richard-fnc-2026';
-  const TEACHER_KEY = 'ai_camp_teacher_unlock_v1';
-
-  function isUnlocked() {
-    try { return localStorage.getItem(TEACHER_KEY) === '1'; } catch { return false; }
-  }
-  function setUnlocked(v) {
-    try {
-      if (v) localStorage.setItem(TEACHER_KEY, '1');
-      else localStorage.removeItem(TEACHER_KEY);
-    } catch {}
-    applyLockState();
-  }
-  function applyLockState() {
-    document.body.classList.toggle('teacher-unlocked', isUnlocked());
-  }
-
-  // ① URL param unlock
-  try {
-    const urlPass = new URL(location.href).searchParams.get('unlock');
-    if (urlPass === TEACHER_PASS) setUnlocked(true);
-  } catch {}
-
-  applyLockState();
-
-  function promptUnlock() {
-    const pass = prompt('教师访问码 · Teacher access code:');
-    if (pass === null) return;
-    if (pass === TEACHER_PASS) {
-      setUnlocked(true);
-    } else {
-      alert('访问码不正确 · Access code incorrect');
-    }
-  }
-
-  // ② Ctrl+K keyboard shortcut
-  document.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 'k' && (e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey) {
-      const tag = (e.target && e.target.tagName) || '';
-      if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-      e.preventDefault();
-      promptUnlock();
-    }
-  });
-
-  // ③ Click on the hint chip
+  // Teacher-mode unlock is now handled by shared teacher-auth.js.
+  // This page just wires two UI actions.
   const hintEl = document.getElementById('unlockHint');
-  if (hintEl) hintEl.addEventListener('click', promptUnlock);
+  if (hintEl) hintEl.addEventListener('click', () => window.TeacherAuth.promptUnlock());
 
-  // Exit teacher mode button
   const exitBtn = document.getElementById('exitTeacher');
   if (exitBtn) exitBtn.addEventListener('click', () => {
     if (confirm('退出教师模式？下次进入将看到访客视图 · Exit teacher mode?')) {
-      setUnlocked(false);
+      window.TeacherAuth.logout();
+      location.reload();
     }
   });
+
+  // React to cross-tab logout / unlock — no code needed, TeacherAuth toggles body class
 </script>
 
 </body>

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>Day 1 · 学员数据汇总操作台</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<script src="./teacher-auth.js" defer></script>
 <style>
   :root {
     --bg: #0a0a0c; --bg-2: #14141a; --bg-3: #1d1d24; --border: #2a2a35;
@@ -94,7 +95,18 @@
 </head>
 <body>
 
-<div class="wrap">
+<!-- Teacher-gate: shown when localStorage says not a teacher -->
+<div id="teacherGuard" style="display:none; min-height:100vh; align-items:center; justify-content:center; padding:40px 20px;">
+  <div style="max-width:560px; padding:44px 40px; background:linear-gradient(180deg,#14141a,#0a0a0c); border:1px solid #2a2a35; border-radius:14px; text-align:center; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans SC',sans-serif; color:#e0e0e0;">
+    <div style="font-size:36px; margin-bottom:14px; opacity:0.5;">🔒</div>
+    <div style="font-size:19px; font-weight:500; margin-bottom:8px; color:#fff;">教师内部工具 · 感谢关注</div>
+    <div style="font-family:ui-monospace,'SF Mono',Consolas,monospace; font-size:11px; color:#8d8d95; letter-spacing:2px; text-transform:uppercase; margin-bottom:18px;">TEACHER-ONLY OPERATIONS CONSOLE</div>
+    <div style="font-size:13.5px; color:#aab; line-height:1.75; margin-bottom:22px;">本页是讲师 Day 1 现场汇总学员数据用的操作台 · 仅面向讲师使用。<br>如果您是学员 · 请从 <a href="./" style="color:#6fa7ff; text-decoration:none;">主页</a> 或 <a href="./enroll.html" style="color:#6fa7ff; text-decoration:none;">「学生入口 · ENROLL」</a>报名。</div>
+    <div id="tgHint" style="display:inline-block; padding:8px 16px; border:1px dashed #2a2a35; border-radius:100px; font-family:ui-monospace,monospace; font-size:11px; color:#8d8d95; letter-spacing:0.5px; cursor:pointer;" title="点击输入教师访问码 · 或按 Ctrl+K">教师? 按 <kbd style="padding:1px 6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); border-radius:3px;">Ctrl</kbd>+<kbd style="padding:1px 6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.10); border-radius:3px;">K</kbd> 或点这里输入访问码</div>
+  </div>
+</div>
+
+<div class="wrap" id="collectMain" style="display:none;">
 
   <h1>Day 1 · 学员数据汇总操作台</h1>
   <div class="lead">8 分钟窗口 · 一屏搞定 · <b>此页面必须在演示机浏览器（同 chenhongqiang2025.github.io 域名）打开，才能写到 KG 用的本地存储</b></div>
@@ -435,6 +447,28 @@ window.addEventListener('storage', (e) => { if (e.key === KB_KEY) refresh(); });
 renderDemoPreview();
 refresh();
 updateParseStatus();
+
+// ============ Teacher-only gate ============
+function applyCollectGate() {
+  const on = window.TeacherAuth && window.TeacherAuth.isTeacher();
+  const guard = document.getElementById('teacherGuard');
+  const main = document.getElementById('collectMain');
+  if (guard) guard.style.display = on ? 'none' : 'flex';
+  if (main) main.style.display = on ? '' : 'none';
+}
+function bootCollectGate() {
+  applyCollectGate();
+  const hint = document.getElementById('tgHint');
+  if (hint) hint.addEventListener('click', () => window.TeacherAuth.promptUnlock());
+  window.addEventListener('teacher-status-changed', applyCollectGate);
+  window.addEventListener('storage', () => applyCollectGate());
+}
+if (window.TeacherAuth) {
+  bootCollectGate();
+} else {
+  // wait for the deferred teacher-auth.js
+  window.addEventListener('load', bootCollectGate);
+}
 </script>
 
 </body>

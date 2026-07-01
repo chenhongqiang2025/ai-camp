@@ -23,6 +23,8 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
 <!-- D3.js v7 for SVG-based Knowledge Graph (Nongfu-Spring inspired) -->
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<!-- Shared teacher-identity gate for all ai-camp pages -->
+<script src="./teacher-auth.js" defer></script>
 
 <style>
   :root {
@@ -731,6 +733,13 @@
     color: #ffffff !important;
     font-weight: 600;
   }
+  /* Teacher-only surfaces: hidden for students, shown when TeacherAuth
+     puts body.teacher-unlocked. .slide-demo-cta is display:none by
+     default (hidden even without body class) so students never see the
+     demo shortcut on any slide. */
+  body:not(.teacher-unlocked) #globalDemoCta { display: none !important; }
+  body:not(.teacher-unlocked) .review-toolbar { display: none !important; }
+  body:not(.teacher-unlocked) .review-overlay { display: none !important; }
   .slide-demo-cta.primary:hover { background: linear-gradient(135deg, #4589ff, #78a9ff); box-shadow: 0 8px 32px rgba(69,137,255,0.5); }
 
   /* Speaker view notes styling — makes h3 / p / hr / b inside

@@ -7,6 +7,7 @@
 <meta name="description" content="2026 IBM × 大连高新园区 AI 夏令营 · 学生注册入口" />
 <meta name="theme-color" content="#0b0b0c" />
 
+<script src="./teacher-auth.js" defer></script>
 <!-- Fonts via jsdelivr CDN -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/ibm-plex-sans@5/400.css">
@@ -416,6 +417,20 @@ function renderSuccess(s) {
 /* ---------- Special: ?import=1 mode (teacher batch import students) ---------- */
 function renderImportMode() {
   document.querySelector('.topbar a').textContent = '← 返回主页';
+  // Teacher gate: only teachers can see the bulk-import UI
+  const isTeacher = window.TeacherAuth && window.TeacherAuth.isTeacher();
+  if (!isTeacher) {
+    card.innerHTML = `
+      <div style="text-align:center; padding: 30px 20px;">
+        <div style="font-size:36px; margin-bottom:14px; opacity:0.5;">🔒</div>
+        <h2 style="margin:0 0 10px; color:var(--text);">教师内部工具 · 感谢关注</h2>
+        <div style="font-family:var(--font-mono); font-size:11px; color:var(--text-faint); letter-spacing:2px; text-transform:uppercase; margin-bottom:16px;">TEACHER-ONLY BULK IMPORT</div>
+        <p class="desc" style="max-width:460px; margin: 0 auto 20px;">这是讲师端的批量导入工具·仅面向讲师使用。<br>如果您是学员·请从 <a href="./" style="color:var(--accent-2); text-decoration:none;">主页</a> 或 <a href="./enroll.html" style="color:var(--accent-2); text-decoration:none;">学生入口</a> 报名。</p>
+        <button class="btn" onclick="window.TeacherAuth.promptUnlock()" style="padding:8px 18px; background:transparent; border:1px dashed var(--border); color:var(--text-faint); font-family:var(--font-mono); font-size:11px; letter-spacing:0.5px; border-radius:100px; cursor:pointer;">教师? 按 Ctrl+K 或点这里输入访问码</button>
+      </div>
+    `;
+    return;
+  }
   card.innerHTML = `
     <div class="badge"><span class="dot2"></span>讲师 · 批量导入</div>
     <h1>📥 批量导入学生数据</h1>
