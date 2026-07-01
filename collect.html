@@ -97,21 +97,21 @@
 <div class="wrap">
 
   <h1>Day 1 · 学员数据汇总操作台</h1>
-  <div class="lead">8 分钟窗口 · 一屏搞定 · <b>此页面必须在演示机浏览器（同 chenhongqiang2025.github.io 域名）打开，才能写到 KG 用的 localStorage</b></div>
+  <div class="lead">8 分钟窗口 · 一屏搞定 · <b>此页面必须在演示机浏览器（同 chenhongqiang2025.github.io 域名）打开，才能写到 KG 用的本地存储</b></div>
 
   <!-- ============ STATUS BAR ============ -->
   <div class="statusbar">
     <div class="stat">
-      <span class="k">CURRENT KB</span>
+      <span class="k">当前收集</span>
       <span class="v big" id="stCount">0</span>
       <span class="k">名学员</span>
     </div>
     <div class="stat">
-      <span class="k">DEMO</span>
+      <span class="k">兜底 DEMO</span>
       <span class="v" id="stDemo">0</span>
     </div>
     <div class="stat">
-      <span class="k">REAL</span>
+      <span class="k">真实学员</span>
       <span class="v" id="stReal">0</span>
     </div>
     <div class="gap"></div>
@@ -163,7 +163,7 @@
         <span>粘贴后自动解析 · 显示可导入学员数</span>
       </div>
 
-      <button class="btn" id="importBtn" onclick="doImport()" disabled>▶ 解析 + 导入到本机 KB</button>
+      <button class="btn" id="importBtn" onclick="doImport()" disabled>▶ 解析 + 导入到本机</button>
       <button class="btn secondary" onclick="clearPaste()">清空粘贴区</button>
 
       <div class="divider"></div>
@@ -183,7 +183,7 @@
       <div class="sub">30 秒 · 学员没提交时保证 KG 不空图</div>
 
       <button class="btn" onclick="injectDemo()">⚡ 一键注入 5 名 DEMO 学员（月球营宇宙）</button>
-      <button class="btn secondary" onclick="exportBackup()">⎘ 导出当前 KB 为 JSON（备份）</button>
+      <button class="btn secondary" onclick="exportBackup()">⎘ 导出学员数据为 JSON（备份）</button>
       <button class="btn danger" onclick="clearAllKB()">🗑 清空本机所有学员数据</button>
 
       <div class="divider"></div>
@@ -193,9 +193,9 @@
 
   </div>
 
-  <!-- ============ CURRENT KB LIST ============ -->
+  <!-- ============ CURRENT STUDENT LIST ============ -->
   <div class="student-list">
-    <h2>本机 KB 当前学员 <span class="count" id="listCount">0</span></h2>
+    <h2>已收集学员 <span class="count" id="listCount">0</span></h2>
     <div id="studentList"></div>
   </div>
 
@@ -363,7 +363,7 @@ function injectDemo() {
 
 function exportBackup() {
   const kb = getKB();
-  if (!kb.length) { toast('KB 空 · 无可备份', 'err'); return; }
+  if (!kb.length) { toast('学员数据为空 · 无可备份', 'err'); return; }
   const blob = new Blob([JSON.stringify(kb, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
@@ -376,8 +376,8 @@ function exportBackup() {
 
 function clearAllKB() {
   const kb = getKB();
-  if (!kb.length) { toast('KB 已空', 'err'); return; }
-  if (!confirm(`确定清空本机所有 ${kb.length} 名学员数据？\n（学员手机上的数据不受影响 · 只清演示机 localStorage）`)) return;
+  if (!kb.length) { toast('本机已无学员数据', 'err'); return; }
+  if (!confirm(`确定清空本机所有 ${kb.length} 名学员数据？\n（学员手机上的数据不受影响 · 只清演示机本地存储）`)) return;
   localStorage.removeItem(KB_KEY);
   refresh();
   toast('✓ 已清空');
@@ -402,7 +402,7 @@ function renderList() {
   const el = document.getElementById('studentList');
   document.getElementById('listCount').textContent = kb.length;
   if (!kb.length) {
-    el.innerHTML = '<div class="empty">本机 KB 暂无学员 · 从 Step 2 粘贴导入 · 或 Step 3 一键注入 DEMO</div>';
+    el.innerHTML = '<div class="empty">本机暂无学员数据 · 从 Step 2 粘贴导入 · 或 Step 3 一键注入 DEMO</div>';
     return;
   }
   el.innerHTML = `<div class="grid">${kb.map(s => `
