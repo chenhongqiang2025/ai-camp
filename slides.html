@@ -1784,36 +1784,66 @@ IBM 在这条路上走得很久。Watson 时代有大量医疗本体的积累，
         </aside>
       </section>
       <section>
-        <div class="content-header">
+        <div class="content-header" style="margin-bottom: 18px;">
           <div class="ctx">CH.08 · 02 / 03 · 三元组</div>
-          <h2>RDF 三元组 · 知识的最小单元</h2>
-          <p class="sub">主语 — 谓语 — 宾语 · IBM Watson Health 医疗知识图谱真实片段</p>
+          <h2 style="font-size: 1.9em !important;">RDF 三元组 · 同一套语法 · 两个领域</h2>
+          <p class="sub">主语 — 谓语 — 宾语 · 左：IBM Watson Health 历史场景 · 右：下一页我们班图谱的组成砖块</p>
         </div>
-        <div class="year-hero">
-          <div class="quote" style="font-size: 1.25em; padding: 24px 36px; text-align: left; min-width: 62%; font-family: var(--r-code-font); line-height: 1.9;">
-            <div style="margin-bottom: 10px;"><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">rdf:type</span> — <b style="color: #fff;">非甾体抗炎药 (NSAID)</b></div>
-            <div style="margin-bottom: 10px;"><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">treats</span> — <b style="color: #fff;">头痛</b></div>
-            <div style="margin-bottom: 10px;"><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">hasSideEffect</span> — <b style="color: #fff;">胃出血</b></div>
-            <div style="margin-bottom: 10px;"><b style="color: var(--accent-2);">胃出血</b> — <span style="color: var(--text-dim);">contraindicatedFor</span> — <b style="color: #fff;">消化性溃疡患者</b></div>
-            <div><b style="color: var(--accent-2);">李医生的患者</b> — <span style="color: var(--text-dim);">hasHistory</span> — <b style="color: #fff;">消化性溃疡</b></div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 22px; max-width: 1180px; margin: 0 auto;">
+          <!-- LEFT: Medical (IBM Watson Health) -->
+          <div style="background: rgba(15,15,30,0.55); border: 1px solid rgba(69,137,255,0.28); border-radius: 12px; padding: 18px 22px;">
+            <div style="font-family: var(--r-code-font); font-size: 10.5px; letter-spacing: 1.8px; color: var(--accent-2); margin-bottom: 8px;">SCENE A · IBM WATSON HEALTH · UMLS</div>
+            <div style="font-family: var(--r-code-font); font-size: 15px; line-height: 2.05;">
+              <div><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">rdf:type</span> — <b style="color: #fff;">NSAID</b></div>
+              <div><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">treats</span> — <b style="color: #fff;">头痛</b></div>
+              <div><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">hasSideEffect</span> — <b style="color: #fff;">胃出血</b></div>
+              <div><b style="color: var(--accent-2);">胃出血</b> — <span style="color: var(--text-dim);">contraindicatedFor</span> — <b style="color: #fff;">溃疡患者</b></div>
+              <div><b style="color: var(--accent-2);">该患者</b> — <span style="color: var(--text-dim);">hasHistory</span> — <b style="color: #fff;">消化性溃疡</b></div>
+            </div>
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.10); font-size: 13.5px; color: var(--success);">
+              <b>∴ 推理结论：</b>不要给该患者开阿司匹林
+            </div>
+            <div style="margin-top: 10px; font-size: 11px; color: var(--text-faint); line-height: 1.5;">
+              数据源：<b style="color: var(--text-dim);">UMLS</b>（NIH 维护 · 400 万医学概念 · 6000 万三元组）· Watson for Oncology 处方决策底座
+            </div>
           </div>
-          <p style="margin-top: 28px; font-size: 0.85em;">这 5 条三元组来自真实的 <b style="color: var(--accent-2);">UMLS</b>（Unified Medical Language System · NIH 维护 · 400 万医学概念 · 6000 万三元组）· IBM Watson Health 处方决策的核心底座。</p>
+
+          <!-- RIGHT: Our class (leads to Ch.08/03 KG demo) -->
+          <div style="background: rgba(0,212,170,0.06); border: 1.5px solid rgba(0,212,170,0.38); border-radius: 12px; padding: 18px 22px; box-shadow: 0 0 24px rgba(0,212,170,0.10);">
+            <div style="font-family: var(--r-code-font); font-size: 10.5px; letter-spacing: 1.8px; color: #00D4AA; margin-bottom: 8px;">SCENE B · 我们班 · 下一页现场演示</div>
+            <div style="font-family: var(--r-code-font); font-size: 15px; line-height: 2.05;">
+              <div><b style="color: #00D4AA;">张明远</b> — <span style="color: var(--text-dim);">rdf:type</span> — <b style="color: #fff;">Person</b></div>
+              <div><b style="color: #00D4AA;">张明远</b> — <span style="color: var(--text-dim);">belongsTo</span> — <b style="color: #fff;">计算机学院</b></div>
+              <div><b style="color: #00D4AA;">张明远</b> — <span style="color: var(--text-dim);">hasInterest</span> — <b style="color: #fff;">RAG</b></div>
+              <div><b style="color: #00D4AA;">RAG</b> — <span style="color: var(--text-dim);">rdfs:subClassOf</span> — <b style="color: #fff;">大模型工程</b></div>
+              <div><b style="color: #00D4AA;">大模型工程</b> — <span style="color: var(--text-dim);">rdfs:subClassOf</span> — <b style="color: #fff;">AI 应用</b></div>
+            </div>
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.10); font-size: 13.5px; color: #F59E0B;">
+              <b>∴ 推理结论：</b>张明远 hasInterest AI 应用（subClassOf 传递）
+            </div>
+            <div style="margin-top: 10px; font-size: 11px; color: var(--text-faint); line-height: 1.5;">
+              数据源：<b style="color: var(--text-dim);">今天你们填的报名表</b> · 12 位学员 × 3-5 个兴趣 = 45 条三元组
+            </div>
+          </div>
         </div>
-        <div class="takeaway">图谱推理：treats + hasSideEffect + contraindicatedFor + hasHistory 四条边接起来 → AI 推出"不要给这个患者开阿司匹林"</div>
+
+        <div class="takeaway" style="max-width: 1180px; margin-left: auto; margin-right: auto;">
+          同一套 W3C RDF 语法 · 医疗和教育两种场景 · 都能靠图上推理得出结论 —— <b>下一页把学员 45 条三元组接起来 · 五个算法当场跑给你看</b>
+        </div>
+
         <aside class="notes">
-知识图谱的基本砖头叫三元组——主语、谓语、宾语。三个词就能表达一条事实。
+知识图谱的基本砖头叫三元组·主语·谓语·宾语·三个词表达一条事实·就这么简单。
 
-屏幕上这五条不是我编的。这是从 UMLS 抽出来的真实医疗知识图谱片段。UMLS 全称是 Unified Medical Language System，NIH 维护的世界最大医学本体，400 万概念、6000 万三元组，IBM Watson Health 处方决策就跑在这上面。
+屏幕左边这五条不是我编的·来自 UMLS·全称 Unified Medical Language System·美国 NIH 维护的世界最大医学本体·400 万概念·6000 万三元组·IBM Watson Health 处方决策就跑在这上面。一条一条看：阿司匹林是非甾体抗炎药·治头痛·副作用是胃出血·胃出血对溃疡患者是禁忌·而这个患者恰好有溃疡病史·五条边接起来·AI 自动推出不要开阿司匹林·纯图上推理·不用问大模型。
 
-一条一条看。阿司匹林是一种非甾体抗炎药。阿司匹林能治头痛。阿司匹林有一个副作用叫胃出血。胃出血这个副作用对有消化性溃疡病史的患者是禁忌。而李医生手里这个患者，恰好有消化性溃疡病史。
+屏幕右边这五条·就是你们·今天填的报名表·被我系统抽出来的三元组·主角是张明远·计算机学院的·兴趣里有 RAG·而 RAG 属于大模型工程·大模型工程属于 AI 应用·五条边接起来·AI 也能自动推出一条新事实：张明远对 AI 应用感兴趣·这条我们没直接写·是通过 rdfs 里的 subClassOf 传递性推出来的。
 
-单看每一条都很平常。但是接起来——AI 就能自动推理出来：这个患者不能开阿司匹林。这是纯粹的图上推理，不用问 GPT，不需要大模型，就是四条边接起来。
+两个例子·同一套 W3C RDF 语法·同一种推理机制。医疗领域 IBM 从 Watson for Oncology 时代就在做·今天 watsonx 上还在跑；今天在座各位·就是我们班这个小知识图谱的原始数据·每个人自己就是一条 Person 实例。
 
-这就是知识图谱最强的地方——它不只是存事实，它能推出新事实。医疗领域这套东西 IBM 从 Watson for Oncology 时代就在做，今天 watsonx 上医疗客户还在用。
+放大到亿级三元组·就是 Google Knowledge Graph·Wikidata·企业主数据 KG·全部一个原理。
 
-放大到亿级，就是 Google 知识图谱、Wikidata、医疗 UMLS、金融风控 KG、企业主数据 KG。每一个大模型的产业化落地，背后几乎都有一个 KG 兜底事实。
-
-下一页我给大家看的，不是医疗，是我们这个班——你们刚才填的信息，姓名、学院、兴趣，已经被批量导入之后自动接成了一张图谱。AI 会基于这张图给出五个真实的推理。
+下一页我们不看医疗了·看你们自己的图·屏幕上会出现 12 位学员·几个学院·十几个兴趣领域·总共 45 条边·五个真实的图算法当场跑一遍——度中心性·Jaccard 相似度·跨学院桥接·二跳共兴趣路径·兴趣覆盖率·每一个算法都会告诉你们班一件你们自己都不知道的事。
         </aside>
       </section>
       <section data-state="kg-stage" id="slide-kg" class="kg-full-slide">
@@ -1895,27 +1925,27 @@ IBM 在这条路上走得很久。Watson 时代有大量医疗本体的积累，
         </div>
 
         <aside class="notes">
-大家看到屏幕上左边这张图。这不是我准备好的假数据·是刚才你们在报名页填的信息——姓名、学院、兴趣——被批量导入之后·自动构建出的一张知识图谱。
+上一页右边那五条三元组·就是屏幕上左边这张图的组成砖块。张明远 rdf:type Person·张明远 belongsTo 计算机学院·张明远 hasInterest RAG·这三条·在图上就是从"张明远"这个蓝色球引出去的三条边。整个班 12 位学员·每人 3 到 5 条·加起来 45 条边·就是屏幕左边你们看到的这张图。
 
-图上有三种颜色的球：蓝色是每一位学员·金色是学院·紫色是兴趣领域。学员和学院之间用一根线连着·代表"属于"·学员和兴趣之间用另一根线·代表"关心"。
+三种颜色的球对应三种类：蓝色是 Person 学员·金色是 College 学院·紫色是 Skill 兴趣领域。两种关系：学员 belongsTo 学院·学员 hasInterest 技能。左下角图例明明白白写着。
 
-这就是本体论最基本的三样东西——实体 Entity·关系 Relation·属性 Attribute。三个组成一个三元组：主体·谓词·宾语。刚才那页医疗例子里·阿司匹林·hasSideEffect·胃出血·就是一条标准三元组。
+这不是我编的假数据·是你们刚才在报名页填的信息·自动构建出来的。
 
-图谱最强的地方·不是它存了多少事实·是接起来之后能推出新事实。右边这个 Ontology Copilot 就是干这个的。我给大家跑五个真实的图算法。
+图谱最强的地方·不是它存了多少事实·是能推出新事实。右边这个 Ontology Copilot 就是干这个的·我给大家跑五个真实的图算法·全都是本地推理·零 LLM 调用。
 
-第一个·度中心性。我点一下·它会找出图上边最多的那个学员·这就是这个班的"中心人物"·信息流最汇聚的节点。
+第一个·度中心性 Degree Centrality。数每个 Person 节点连了几条边·最多的那个就是这张图的中心人物。这告诉我们·如果要组队·优先联系他效率最高。
 
-第二个·Jaccard 相似度。找出兴趣重叠度最高的两位学员——他们共享的兴趣占并集的比例最大。这是知识图谱里最经典的相似度算法。
+第二个·Jaccard 相似度。公式是共同兴趣的数量除以并集数量·1976 年就有了。找出兴趣重叠度最高的两位学员。跨学院时是天然组队候选。
 
-第三个·跨类桥接。找出横跨最多学院的兴趣·这是学科交叉最活跃的方向·未来最容易出创新的地方。
+第三个·跨类桥接·Cross-domain。对每一个兴趣节点·数它连了几个不同的学院。触达学院最多的兴趣·就是学科交叉最活跃的方向·未来最容易出跨界创新的地方。
 
-第四个·二跳路径。三个人 A B C·A 和 B 共享兴趣 X·B 和 C 共享兴趣 Y·那 A B C 就能组队。图算法叫二跳邻居。
+第四个·二跳共兴趣路径·2-hop path。图算法经典·从锚点出发·两步能到的人有多少·跟锚点的兴趣重叠最高的两位·就组成三人组。
 
-第五个·兴趣覆盖率。看看哪个学院能被最多兴趣覆盖·代表这个学院的学员方向最多元。
+第五个·兴趣覆盖率 Coverage。对每一个学院·通过 belongsTo 逆向拿到人·再取兴趣并集·兴趣多样性最高的那个学院·就是研究方向最多元的。
 
-看到没有·同样的一张图·不同的算法·推出不同的洞察。这就是知识图谱的价值——结构化 · 加上推理·让 AI 不只是记住·而是真正能推出结论。
+看到没有·同样一张图·五个算法·五种洞察。这就是知识图谱的价值——结构化数据加上标准推理算法·让 AI 不只是记住·而是真正能推出结论。同样的东西·上一页在医疗领域·这一页在教育领域·下一步在你们工作的任何一个领域都能用。
 
-放大到亿级·就是 Google 知识图谱·医疗知识图谱·企业知识图谱。今天 IBM watsonx.data 的核心底座·就是这个逻辑。
+放大到亿级三元组·就是 Google Knowledge Graph·Wikidata·企业主数据 KG。今天 IBM watsonx.data 的核心底座·就是这个逻辑。
         </aside>
       </section>
     </section>
