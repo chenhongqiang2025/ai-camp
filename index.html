@@ -199,10 +199,38 @@
   }
   footer b { color: var(--text-dim); font-weight: 500; }
 
+  /* 17 演示资源快速跳转 · Richard 上课点击直达 */
+  .demos-section { max-width: 1180px; width: 100%; margin: 60px auto 30px; padding: 0 24px; position: relative; z-index: 2; animation: fade-in 1s ease 0.5s both; }
+  .demos-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+  .demos-header h2 { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: 0.3px; }
+  .demos-header h2 .count { color: var(--accent-2); font-family: var(--font-mono); font-size: 15px; margin: 0 3px; }
+  .demos-header .hint { font-size: 12px; color: var(--text-faint); font-family: var(--font-mono); letter-spacing: 0.5px; }
+  .demos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+  .demo-card {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-decoration: none; color: inherit;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .demo-card:hover { border-color: var(--accent); background: linear-gradient(180deg, rgba(69,137,255,0.10), var(--bg-1)); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(69,137,255,0.15); }
+  .demo-card .row-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .demo-card .ico { font-size: 15px; }
+  .demo-card .chap { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 1px; color: var(--accent-2); padding: 2px 6px; background: var(--accent-soft); border-radius: 8px; }
+  .demo-card .name { font-size: 13.5px; font-weight: 500; color: var(--text); line-height: 1.4; margin-top: 4px; }
+  .demo-card .desc { font-size: 11px; color: var(--text-faint); line-height: 1.5; font-family: var(--font-mono); }
+  .demo-card.primary { border-color: rgba(69,137,255,0.5); background: linear-gradient(180deg, rgba(69,137,255,0.14), var(--bg-1)); }
+  .demo-card.primary .chap { background: var(--accent); color: #fff; }
+
   @media (max-width: 680px) {
     .topbar { padding: 18px 20px; }
     .info { grid-template-columns: 1fr; }
     .hero { padding: 40px 20px 30px; }
+    .demos-section { margin: 40px auto 20px; padding: 0 16px; }
+    .demos-grid { grid-template-columns: repeat(2, 1fr); }
     footer { padding: 18px 20px; }
   }
 </style>
@@ -264,6 +292,14 @@
   </div>
 </main>
 
+<section class="demos-section">
+  <div class="demos-header">
+    <h2>Demo · 一键跳转 <span class="count">17</span> 个演示</h2>
+    <div class="hint">CLICK ANY · OPENS IN NEW TAB</div>
+  </div>
+  <div class="demos-grid" id="demosGrid"></div>
+</section>
+
 <footer>
   © 2026 陳宏强 Richard Chen · All Rights Reserved · 教学专用
   <span style="margin: 0 8px; opacity: 0.4;">|</span>
@@ -284,6 +320,39 @@
   }
   tick();
   setInterval(tick, 60000);
+
+  // 17 演示资源 · 与 ai-camp-admin/admin.html getDemoCatalog 完全一致
+  const DEMOS = [
+    { icon:'🤖', name:'IBM Consulting Advantage', chap:'Ch.07 · RAG 主演示', url:'https://nextgen-beta.ica.ibm.com/ica/chat', primary:true },
+    { icon:'⌛', name:'AI 70 年时间轴',        chap:'Ch.02', url:'./History/timeline-demo.html' },
+    { icon:'⨁', name:'感知机 · 一行数学',      chap:'Ch.03/01', url:'./ML/perceptron-demo.html' },
+    { icon:'↻', name:'反向传播 · XOR',         chap:'Ch.03/02', url:'./ML/backprop-demo.html' },
+    { icon:'▦', name:'CNN 卷积核滑动',         chap:'Ch.03/03', url:'./ML/cnn-demo.html' },
+    { icon:'⟲', name:'RNN 隐状态衰减',         chap:'Ch.03/04', url:'./ML/rnn-demo.html' },
+    { icon:'⎘', name:'词袋 BoW',              chap:'Ch.04/01', url:'./NLP/bow-demo.html' },
+    { icon:'⊕', name:'Word2Vec 类比',         chap:'Ch.04/02', url:'./NLP/word2vec-demo.html' },
+    { icon:'✦', name:'Attention 热图',        chap:'Ch.04/03', url:'./NLP/attention-demo.html' },
+    { icon:'✪', name:'Transformer 自注意力',  chap:'Ch.04/04', url:'./NLP/transformer-demo.html' },
+    { icon:'◐', name:'ChatGPT 破亿对比',      chap:'Ch.05', url:'./ChatGPT/chatgpt-demo.html' },
+    { icon:'⚠', name:'幻觉 · token 预测',     chap:'Ch.06', url:'./Hallucination/hallucination-demo.html' },
+    { icon:'⌬', name:'KG 知识图谱现场演示',   chap:'Ch.08', url:'./slides.html#/10/3' },
+    { icon:'◆', name:'Ontology 本体推理',     chap:'Ch.08/01', url:'./Ontology/ontology-demo.html' },
+    { icon:'◉', name:'MCP 三角色协议',        chap:'Ch.10', url:'./MCP/mcp-demo.html' },
+    { icon:'◈', name:'Agent · ReAct 循环',    chap:'Ch.11', url:'./Agent/agent-demo.html' },
+    { icon:'⇄', name:'A2A 双 Agent 协作',     chap:'Ch.12', url:'./A2A/a2a-demo.html' }
+  ];
+  const grid = document.getElementById('demosGrid');
+  if (grid) {
+    grid.innerHTML = DEMOS.map(d => `
+      <a class="demo-card${d.primary ? ' primary' : ''}" href="${d.url}" target="_blank" rel="noopener">
+        <div class="row-top">
+          <span class="ico">${d.icon}</span>
+          <span class="chap">${d.chap}</span>
+        </div>
+        <div class="name">${d.name}</div>
+      </a>
+    `).join('');
+  }
 </script>
 
 </body>
