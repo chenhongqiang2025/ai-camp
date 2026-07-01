@@ -2984,73 +2984,68 @@ FNC 全称 FutureNow Center，是 IBM Consulting 在中国本地的落地团队�
           .height(dom.clientHeight)
           .backgroundColor('rgba(0,0,0,0)')
           .nodeRelSize(5)
-          // Multi-layer glow node rendering — universe-inspired
-          //   outer halo (radial gradient) → core (white spot → color) → ring → label
+          // Multi-layer glow node — resilient version using shadowBlur (no
+          // radial gradients, so any bad values never break the render loop).
           .nodeCanvasObjectMode(() => 'replace')
           .nodeCanvasObject((node, ctx, scale) => {
+            // Defensive: force-graph gives x/y after first tick; skip until then
+            if (!isFinite(node.x) || !isFinite(node.y)) return;
             const isPerson  = node.category === 0;
             const isCollege = node.category === 1;
-            // Base radius (people slightly larger; college anchors biggest)
-            const baseR = isCollege ? 7 : (isPerson ? 5.2 : 4);
+            const baseR = isCollege ? 7 : (isPerson ? 5.5 : 4);
             const dim = kgHL_nodes.size > 0 && !kgHL_nodes.has(node.id);
             const on = !dim;
-            // Gentle pulse per frame (deterministic by id hash)
+            const highlighted = kgHL_nodes.has(node.id);
+            // Deterministic per-node pulse
             if (node._pulse === undefined) {
               node._pulse = ((node.id || '').split('').reduce((a,c)=>a+c.charCodeAt(0),0) % 100) / 100 * Math.PI * 2;
             }
-            const t = performance.now() * 0.001;
-            const pulseScale = on ? (1 + 0.10 * Math.sin(t * 2 + node._pulse)) : 1;
+            const pulseScale = on ? (1 + 0.08 * Math.sin(performance.now() * 0.002 + node._pulse)) : 1;
             const r = baseR * pulseScale;
 
-            // Layer 1 · Outer halo
+            // Outer glow via shadowBlur — cheap and robust
             if (on) {
-              const glowR = r * 3.4;
-              const halo = ctx.createRadialGradient(node.x, node.y, r * 0.4, node.x, node.y, glowR);
-              halo.addColorStop(0, hexToRgba(node.color, 0.35));
-              halo.addColorStop(0.5, hexToRgba(node.color, 0.08));
-              halo.addColorStop(1, 'transparent');
-              ctx.fillStyle = halo;
-              ctx.fillRect(node.x - glowR, node.y - glowR, glowR * 2, glowR * 2);
-            }
-
-            // Layer 2 · Core with white highlight
-            ctx.beginPath();
-            ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
-            if (on) {
-              const core = ctx.createRadialGradient(node.x - r * 0.35, node.y - r * 0.35, 0, node.x, node.y, r);
-              core.addColorStop(0, '#ffffff');
-              core.addColorStop(0.35, node.color);
-              core.addColorStop(1, hexToRgba(node.color, 0.75));
-              ctx.fillStyle = core;
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
+              ctx.shadowColor = node.color;
+              ctx.shadowBlur = highlighted ? 24 : 14;
+              ctx.fillStyle = node.color;
+              ctx.fill();
+              ctx.restore();
             } else {
+              ctx.beginPath();
+              ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
               ctx.fillStyle = 'rgba(90,93,108,0.28)';
+              ctx.fill();
             }
-            ctx.fill();
 
-            // Layer 3 · Thin outer ring
+            // Small white highlight dot (top-left) to give a "gem" feel
+            if (on) {
+              ctx.beginPath();
+              ctx.arc(node.x - r * 0.35, node.y - r * 0.35, Math.max(1, r * 0.28), 0, 2 * Math.PI, false);
+              ctx.fillStyle = 'rgba(255,255,255,0.7)';
+              ctx.fill();
+            }
+
+            // Thin ring
             ctx.beginPath();
-            ctx.arc(node.x, node.y, r + 1.5, 0, 2 * Math.PI, false);
-            ctx.strokeStyle = on ? hexToRgba(node.color, 0.55) : 'rgba(0,0,0,0)';
+            ctx.arc(node.x, node.y, r + 1.4, 0, 2 * Math.PI, false);
+            ctx.strokeStyle = on ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0)';
             ctx.lineWidth = 1;
             ctx.stroke();
 
-            // Layer 4 · Label
-            if (scale > 0.55) {
+            // Label
+            if (scale > 0.5) {
               const fw = isCollege ? 700 : (isPerson ? 500 : 400);
               const fs = Math.max(9, Math.min(13, 12 / scale));
               ctx.font = `${fw} ${fs}px "IBM Plex Sans","Noto Sans SC",sans-serif`;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'top';
               ctx.fillStyle = on
-                ? (isCollege ? '#F59E0B' : (isPerson ? 'rgba(255,255,255,0.94)' : 'rgba(192,139,255,0.85)'))
+                ? (isCollege ? '#F59E0B' : (isPerson ? 'rgba(255,255,255,0.95)' : 'rgba(192,139,255,0.85)'))
                 : 'rgba(140,143,156,0.35)';
-              // subtle text shadow via double-draw when highlighted
-              if (kgHL_nodes.has(node.id)) {
-                ctx.shadowColor = node.color;
-                ctx.shadowBlur = 8;
-              }
-              ctx.fillText(node.name, node.x, node.y + r + 4);
-              ctx.shadowBlur = 0;
+              ctx.fillText(node.name || '', node.x, node.y + r + 4);
             }
           })
           .nodePointerAreaPaint((node, color, ctx) => {
