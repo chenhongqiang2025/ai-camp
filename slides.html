@@ -695,19 +695,25 @@
   /* Demo CTA button inside slides — click during class to launch that
      chapter's demo in a new tab. Sits right after the .takeaway line. */
   .slide-demo-cta {
+    /* Absolute-positioned pill fixed to bottom-right of the slide, so a
+       dense slide can't push it off screen or under Reveal's nav bar. */
+    position: absolute;
+    bottom: 22px;
+    right: 34px;
+    z-index: 20;
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 7px 16px;
-    background: linear-gradient(135deg, rgba(69,137,255,0.22), rgba(120,169,255,0.14));
-    border: 1px solid rgba(69,137,255,0.55);
+    padding: 8px 18px;
+    background: linear-gradient(135deg, rgba(69,137,255,0.28), rgba(120,169,255,0.18));
+    border: 1px solid rgba(69,137,255,0.6);
     border-radius: 100px;
     color: #78a9ff !important;
     text-decoration: none !important;
     font-family: inherit;
     font-size: 13.5px;
     font-weight: 500;
-    margin-top: 12px;
     transition: all 0.2s;
-    box-shadow: 0 3px 14px rgba(69,137,255,0.15);
+    box-shadow: 0 4px 18px rgba(69,137,255,0.22);
+    backdrop-filter: blur(6px);
     cursor: pointer;
   }
   .slide-demo-cta:hover {
