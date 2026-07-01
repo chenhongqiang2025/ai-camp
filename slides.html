@@ -1314,10 +1314,24 @@
         </div>
         <div class="takeaway">今天 RAG 用的"语义检索"，本质就是在 Word2Vec 这一脉的 embedding 空间里做近邻搜索</div>
         <aside class="notes">
-<p>2013 年，Google 的 Mikolov 提出 Word2Vec，让每个词变成一个几百维的向量。</p>
-<p>奇迹出现——你在这个空间里做减法，king 减 man 加 woman，结果非常接近 queen。</p>
-<p>Word2Vec 第一次让"语义"变成可以加减乘除的几何关系。</p>
-<p>今天 RAG 里的"向量检索"，根上就是从这里来的。</p>
+<h3>核心比喻 · 直接念</h3>
+<p><b>Word2Vec 干了什么？</b>把每一个词变成一个坐标。</p>
+<p>就像给汉字画一张星图——每个字一颗星星。<b>意思相近的星星靠得近</b>：猫、狗、宠物聚成一团；北京、东京、伦敦聚成一团；国王、王后、男人、女人围成一个整齐的四边形。</p>
+<hr>
+<h3>惊人的减法魔法 · 一定要现场演示</h3>
+<p>2013 年 Google 的 Mikolov 发现——这个空间里居然可以做加减法。</p>
+<p><b>国王 − 男人 + 女人 ≈ 王后。</b></p>
+<p>为什么？"国王 − 男人" 这个减法，把"男性"这个方向剥掉了，剩下的是"皇家"这个方向。再把"女性"加回去，就变成"有皇家性的女人" —— 王后。</p>
+<p>类似的还有：<b>巴黎 − 法国 + 日本 ≈ 东京</b>（把国家去掉换一个）、<b>老师 − 学校 + 医院 ≈ 医生</b>（把职场去掉换一个）。</p>
+<hr>
+<h3>课堂类比 · 学员立刻懂</h3>
+<p>"你们淘宝搜 <b>苹果 手机</b>，为什么能搜到 iPhone？因为苹果手机和 iPhone 这两个词的坐标离得非常近。"</p>
+<p>"这个坐标不是我拍脑袋定的。是让机器读了几十亿句话，看'哪些词老一起出现'，自动学出来的。"</p>
+<hr>
+<h3>为什么重要（承上启下）</h3>
+<p>正因为词/句/文档都能变成坐标，我们才能<b>比较两个东西像不像</b>——用几何距离。这就是<b>RAG 第 07 章</b>的地基：把用户问题变向量、把文档变向量、找最近的。</p>
+<p>下一页 Attention 让模型自己挑重点。</p>
+<p style="color:#ffd566;">▶ 现场按 F 全屏 · 点标题右下角的"Word2Vec 类比 demo" · 亲手拖国王/北京/苹果 3 个预设按钮，学员会惊。</p>
         </aside>
       </section>
 
@@ -1739,6 +1753,65 @@
 <p>接下来切到 IBM Consulting Advantage 平台，跑这 4 组对比。</p>
 <p>每一组都看两次回答——关 RAG 时 AI 怎么编，开 RAG 后 AI 怎么引文档。</p>
 <p>注意看 source 引用——那才是 AI 应该有的样子。</p>
+        </aside>
+      </section>
+
+      <section data-demo-url="./NLP/similarity-demo.html" data-demo-name="RAG 三种相似度算法 demo">
+        <div class="content-header">
+          <div class="ctx">CH.07 · 深入 · 相似度算法</div>
+          <h2>RAG 到底怎么"检索"到相关段落？</h2>
+          <p class="sub">三种主流算法 · 余弦看方向 · 欧氏看远近 · 点积看方向+长度</p>
+        </div>
+        <div class="cards-3" style="grid-template-columns: repeat(3, 1fr); max-width: 1100px; margin: 0 auto;">
+          <div class="card">
+            <div class="icon" style="color:#ffd566;">①</div>
+            <h3>余弦相似度 <span style="font-size:11px;color:#4589ff;font-family:ui-monospace,monospace;">⭐ 默认</span></h3>
+            <p><b>看方向</b><br>类比 <b>指南针</b><br>两根针指同方向就同类<br><br><span style="color:#888;font-size:12px;">文本 RAG 首选 · OpenAI / BGE / M3E 全用它</span></p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color:#6fa7ff;">②</div>
+            <h3>欧氏距离</h3>
+            <p><b>看远近</b><br>类比 <b>卷尺</b><br>两点在空间里直线量一下<br><br><span style="color:#888;font-size:12px;">图片检索 · 数值特征 · 未归一化文本别用</span></p>
+          </div>
+          <div class="card">
+            <div class="icon" style="color:#a56eff;">③</div>
+            <h3>点积</h3>
+            <p><b>方向 + 长度</b><br>类比 <b>打分制</b><br>方向对齐得分 × 用多大力<br><br><span style="color:#888;font-size:12px;">Transformer 注意力 · Faiss 加速默认</span></p>
+          </div>
+        </div>
+        <div class="takeaway">同一份数据 · 三种算法 · 冠军可能完全不同 —— 用哪个取决于你希望"相似"是什么意思</div>
+        <aside class="notes">
+<h3>本页定位 · 承上启下</h3>
+<p>前 4 页告诉你 <b>RAG 有多神</b>——关它就编·开它就引文档。</p>
+<p>这一页解决一个问题：<b>RAG 的"检索"到底怎么做到的？</b>——凭什么它能从几百个段落里选出跟你问题最相关的那几段？答案就是这三种算法。</p>
+<hr>
+<h3>算法 ① 余弦相似度 · 直接念</h3>
+<p>就像<b>指南针</b>。两根针指同一个方向就是同类——不管针有多长。</p>
+<p>举例："巴黎的天气" 和 "巴黎今天下午的天气特别好呀" · 两个句子长短差 5 倍 · 但语义方向一致 · 余弦相似度接近 1。</p>
+<p><b>文本 RAG 默认用它。</b>因为不受文档长短干扰 · 只看意思像不像。OpenAI、BGE、M3E 这些做 embedding 的模型 · 都建议用余弦。</p>
+<hr>
+<h3>算法 ② 欧氏距离 · 直接念</h3>
+<p>就像<b>卷尺</b>。两个点在空间里的直线距离 · 距离越小越相似。</p>
+<p>公式就是初中学的两点距离——只是维度从二维变成一千维。</p>
+<p><b>图片检索、房价推荐这类数值场景常用。</b>但文本向量没归一化的话 · 长文档天然吃亏 · 一般不首选。</p>
+<hr>
+<h3>算法 ③ 点积 · 直接念</h3>
+<p>就像<b>打分制</b>。方向对齐得多少分 · 再乘以你用多大力。方向不对 · 再使劲白搭。</p>
+<p>Transformer 大模型的注意力机制 · 底层就是点积。</p>
+<p>Faiss、Milvus 这些向量库为什么默认用点积？因为如果 embedding 向量都归一化到长度 1 · <b>点积 = 余弦</b> · 数学上完全等价 · 但省一次除法 · 算得更快。</p>
+<hr>
+<h3>关键教学时刻 · 现场打开 demo</h3>
+<p>按 F 全屏 · 点右下角"RAG 三种相似度算法 demo" · 你会看到：</p>
+<p>• 一个黄色 Query 向量 · 三个候选文档 A / B / C</p>
+<p>• 顶部三个模式按钮 · <b>切换后三种算法选出的冠军完全不同</b>：</p>
+<p>&nbsp;&nbsp;- 余弦冠军 = <b>A</b>（方向和 Query 完全一致）</p>
+<p>&nbsp;&nbsp;- 欧氏冠军 = <b>C</b>（在空间里离 Query 最近）</p>
+<p>&nbsp;&nbsp;- 点积冠军 = <b>B</b>（方向差不多 · 但长得离谱）</p>
+<p>让学员拖动 A / B / C 三个圆点 · 实时看数字变化。切换算法时画布辅助线会跟着切：余弦画夹角弧、欧氏画直线、点积画投影。</p>
+<hr>
+<h3>收束 · 一句话记忆</h3>
+<p><b>"文本 RAG 记一个词 —— 余弦。想深挖 · 记三个词 —— 方向、距离、方向+长度。"</b></p>
+<p style="color:#ffd566;">▶ 讲完直接切下一页 · 那句金句"RAG 就像给 AI 一本书"</p>
         </aside>
       </section>
     </section>

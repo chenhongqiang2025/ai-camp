@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>RAG 三种相似度算法 · 余弦 vs 欧氏距离 vs 点积</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0c; color: #e0e0e0; font-family: -apple-system, "Segoe UI", "Noto Sans SC", sans-serif; padding: 22px; min-height: 100vh; }
+
+  h1 { color: #fff; font-size: 22px; margin-bottom: 4px; letter-spacing: -0.2px; }
+  .sub { color: #888; font-size: 12px; margin-bottom: 20px; font-family: ui-monospace, monospace; letter-spacing: 1.2px; }
+
+  /* Mode toggle */
+  .modes { display: flex; gap: 8px; margin-bottom: 16px; max-width: 1280px; margin-left: auto; margin-right: auto; }
+  .mode-btn {
+    flex: 1; padding: 14px 18px; background: #14141a; border: 1px solid #2a2a35;
+    border-radius: 8px; cursor: pointer; color: #aab;
+    font-family: inherit; font-size: 13.5px; transition: all .2s;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 3px;
+  }
+  .mode-btn:hover { background: #1c1c25; color: #ddd; }
+  .mode-btn.on { background: linear-gradient(180deg, #1e2f4a, #172335); border-color: #4589ff; color: #fff; box-shadow: 0 0 0 1px #4589ff inset, 0 4px 20px rgba(69,137,255,0.15); }
+  .mode-btn b { font-size: 15px; letter-spacing: 0.3px; }
+  .mode-btn.on b { color: #6fa7ff; }
+  .mode-btn small { font-family: ui-monospace, monospace; font-size: 11px; color: #666; letter-spacing: 0.4px; }
+  .mode-btn.on small { color: #a5c4ff; }
+
+  /* Main stage */
+  .stage { max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 1fr 380px; gap: 14px; }
+  .col { background: #14141a; border: 1px solid #2a2a35; border-radius: 8px; padding: 18px; }
+  .col h3 { font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid #2a2a35; }
+
+  /* SVG canvas */
+  svg { width: 100%; display: block; user-select: none; }
+  .grid-bg { fill: none; stroke: #1a1a22; stroke-width: 1; }
+  .axis { stroke: #2a2a35; stroke-width: 1; }
+  .axis-label { fill: #555; font-family: ui-monospace, monospace; font-size: 10px; }
+
+  .vec-line { transition: opacity .3s; }
+  .doc-line { stroke-width: 2.5; }
+  .doc-line.win { stroke-width: 4; filter: drop-shadow(0 0 6px currentColor); }
+  .query-line { stroke: #ffd566; stroke-width: 3; }
+
+  .aux-line { stroke-dasharray: 4,3; opacity: 0.6; }
+  .aux-arc { fill: none; }
+
+  .vec-dot { cursor: grab; transition: r 0.15s; }
+  .vec-dot:hover { r: 9; }
+  .vec-dot.dragging { cursor: grabbing; }
+
+  .vec-label { font-family: ui-monospace, monospace; font-size: 12px; font-weight: 600; pointer-events: none; }
+  .vec-label.win { font-size: 14px; }
+
+  .origin-dot { fill: #666; }
+
+  /* Right panel */
+  .doc-table { display: flex; flex-direction: column; gap: 8px; }
+  .doc-row {
+    display: grid; grid-template-columns: 20px 1fr 90px;
+    gap: 10px; align-items: center;
+    padding: 10px 12px; background: #1a1a22; border: 1px solid #2a2a35;
+    border-radius: 6px; transition: all .2s;
+  }
+  .doc-row.win { border-color: #24a148; box-shadow: 0 0 0 1px #24a148 inset, 0 0 12px rgba(36,161,72,0.15); }
+  .doc-row .swatch { width: 14px; height: 14px; border-radius: 3px; }
+  .doc-row .name { color: #ddd; font-family: ui-monospace, monospace; font-size: 13px; }
+  .doc-row .name b { font-size: 14px; margin-right: 6px; }
+  .doc-row .score {
+    color: #fff; font-family: ui-monospace, monospace; font-size: 14px;
+    text-align: right; font-weight: 600;
+  }
+  .doc-row.win .score { color: #24a148; }
+  .doc-row .rank { color: #666; font-family: ui-monospace, monospace; font-size: 11px; text-align: center; }
+  .doc-row.win .rank { color: #24a148; }
+
+  .explain {
+    margin-top: 14px; padding: 12px 14px; background: rgba(69,137,255,0.06);
+    border-left: 3px solid #4589ff; border-radius: 4px;
+    font-size: 12.5px; line-height: 1.7; color: #ccd;
+  }
+  .explain b { color: #fff; }
+  .explain code { background: #0a0a0c; padding: 1px 6px; border-radius: 3px; font-size: 11.5px; color: #ffd566; }
+  .explain .fml { font-family: ui-monospace, monospace; color: #ffd566; }
+
+  .hint { margin-top: 10px; font-family: ui-monospace, monospace; font-size: 11px; color: #666; text-align: center; }
+
+  .footnote { max-width: 1280px; margin: 16px auto 0; font-size: 11px; color: #555; font-family: ui-monospace, monospace; text-align: center; }
+
+  /* Compare table below stage */
+  .compare-table {
+    max-width: 1280px; margin: 16px auto 0;
+    background: #14141a; border: 1px solid #2a2a35; border-radius: 8px;
+    padding: 14px 18px;
+  }
+  .compare-table h3 { font-family: ui-monospace, monospace; font-size: 10.5px; color: #6fa7ff; letter-spacing: 1.5px; text-transform: uppercase; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid #2a2a35; }
+  .compare-grid { display: grid; grid-template-columns: 60px repeat(3, 1fr); gap: 0; font-family: ui-monospace, monospace; font-size: 12.5px; }
+  .compare-grid > div { padding: 10px 12px; border-bottom: 1px solid #1a1a22; }
+  .compare-grid .head { color: #666; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; background: #0f0f14; border-bottom: 1px solid #2a2a35; }
+  .compare-grid .lbl { color: #888; }
+  .compare-grid .val { color: #ddd; }
+  .compare-grid .val.top { color: #24a148; font-weight: 600; }
+  .compare-grid .val.top::after { content: ' ★'; }
+
+  @media (max-width: 1000px) {
+    .stage { grid-template-columns: 1fr; }
+    .compare-grid { font-size: 11px; }
+    .compare-grid > div { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<h1>RAG 三种相似度算法 · 拖动候选文档，看三种算法各选谁</h1>
+<div class="sub">CH.07/BONUS · 余弦看方向 · 欧氏看远近 · 点积看方向+长度 · 同一份数据 · 三种算法 · 冠军可能不同</div>
+
+<div class="modes">
+  <button class="mode-btn on" data-mode="cosine">
+    <b>① 余弦相似度 · Cosine</b>
+    <small>看方向 · 指南针 · 文本 RAG 默认</small>
+  </button>
+  <button class="mode-btn" data-mode="euclidean">
+    <b>② 欧氏距离 · Euclidean</b>
+    <small>看远近 · 卷尺 · 图片/数值向量</small>
+  </button>
+  <button class="mode-btn" data-mode="dotproduct">
+    <b>③ 点积 · Dot Product</b>
+    <small>方向+长度 · 打分制 · Faiss 默认</small>
+  </button>
+</div>
+
+<div class="stage">
+
+  <div class="col">
+    <h3>2D 向量空间 · Query 是黄色 · 3 篇候选文档可拖动</h3>
+    <svg id="canvas" viewBox="0 0 720 500" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="hint">💡 用鼠标拖动 A / B / C 三个圆点，观察侧栏三种算法的分数怎么变。切换顶部按钮，看当前算法怎么画辅助线。</div>
+  </div>
+
+  <div class="col">
+    <h3>当前算法 · 三篇文档打分</h3>
+    <div class="doc-table" id="scores"></div>
+    <div class="explain" id="explain"></div>
+  </div>
+
+</div>
+
+<div class="compare-table">
+  <h3>三算法同时对比 · 冠军可能完全不同</h3>
+  <div class="compare-grid" id="compareGrid"></div>
+</div>
+
+<div class="footnote">
+  RAG 检索阶段的核心公式 · 用哪个取决于你想让"相似"是什么意思 · 大多数文本场景 = 余弦（或归一化后的点积）
+</div>
+
+<script>
+/* ================================================================
+   Data model
+   Query is fixed at [4, 3] (a stable reference).
+   Three docs (A/B/C) are draggable.
+   Initial positions are hand-tuned so that:
+     - Cosine  winner = A (direction perfectly aligned with Query)
+     - Euclid  winner = C (physically closest to Query point)
+     - Dotprod winner = B (huge magnitude, direction roughly aligned)
+   Verified outputs:
+     Q=[4,3], A=[3.2,2.4], B=[6,8], C=[4.5,2.5]
+     cosine:   A=1.0000  C=0.9891  B=0.9600
+     euclid:   C=0.7071  A=1.0000  B=5.3852
+     dotprod:  B=48.00   C=25.50   A=20.00
+   ================================================================ */
+const state = {
+  mode: 'cosine',
+  query: { x: 4, y: 3 },
+  docs: [
+    { id: 'A', x: 3.2, y: 2.4, color: '#4589ff', label: 'Doc A' },
+    { id: 'B', x: 6.0, y: 8.0, color: '#a56eff', label: 'Doc B' },
+    { id: 'C', x: 4.5, y: 2.5, color: '#08bdba', label: 'Doc C' },
+  ],
+};
+
+/* View mapping: math coord [-1..11] → svg pixel */
+const W = 720, H = 500;
+const M = 40;                          // margin
+const RANGE_MIN = -1, RANGE_MAX = 11;  // math axis range
+const sx = v => M + (v - RANGE_MIN) / (RANGE_MAX - RANGE_MIN) * (W - 2*M);
+const sy = v => H - M - (v - RANGE_MIN) / (RANGE_MAX - RANGE_MIN) * (H - 2*M);
+const invX = px => (px - M) / (W - 2*M) * (RANGE_MAX - RANGE_MIN) + RANGE_MIN;
+const invY = px => (H - M - px) / (H - 2*M) * (RANGE_MAX - RANGE_MIN) + RANGE_MIN;
+
+/* ==== Metrics ==== */
+function len(v) { return Math.hypot(v.x, v.y); }
+function dot(a, b) { return a.x*b.x + a.y*b.y; }
+function cos(a, b) { const na = len(a), nb = len(b); return (na && nb) ? dot(a,b) / (na*nb) : 0; }
+function euclid(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+
+/* Return { cosine, euclidean, dotproduct } for doc against query */
+function metrics(doc) {
+  return {
+    cosine: cos(state.query, doc),
+    euclidean: euclid(state.query, doc),
+    dotproduct: dot(state.query, doc),
+  };
+}
+
+/* Winner per algorithm: cosine/dot = MAX, euclid = MIN */
+function winners() {
+  const rows = state.docs.map(d => ({ id: d.id, ...metrics(d) }));
+  const winCos = rows.reduce((a, b) => a.cosine   >= b.cosine ? a : b).id;
+  const winEuc = rows.reduce((a, b) => a.euclidean <= b.euclidean ? a : b).id;
+  const winDot = rows.reduce((a, b) => a.dotproduct >= b.dotproduct ? a : b).id;
+  return { cosine: winCos, euclidean: winEuc, dotproduct: winDot };
+}
+
+/* ==== Rendering ==== */
+function render() {
+  renderCanvas();
+  renderScores();
+  renderExplain();
+  renderCompareTable();
+}
+
+function renderCanvas() {
+  const svg = document.getElementById('canvas');
+  let html = '';
+
+  // grid
+  for (let g = 0; g <= 10; g++) {
+    const x = sx(g), y = sy(g);
+    html += `<line class="grid-bg" x1="${x}" y1="${sy(RANGE_MAX)}" x2="${x}" y2="${sy(RANGE_MIN)}"/>`;
+    html += `<line class="grid-bg" x1="${sx(RANGE_MIN)}" y1="${y}" x2="${sx(RANGE_MAX)}" y2="${y}"/>`;
+  }
+
+  // axes
+  const x0 = sx(0), y0 = sy(0);
+  html += `<line class="axis" x1="${sx(RANGE_MIN)}" y1="${y0}" x2="${sx(RANGE_MAX)}" y2="${y0}"/>`;
+  html += `<line class="axis" x1="${x0}" y1="${sy(RANGE_MIN)}" x2="${x0}" y2="${sy(RANGE_MAX)}"/>`;
+  for (let g = 1; g <= 10; g++) {
+    html += `<text class="axis-label" x="${sx(g)}" y="${y0+14}" text-anchor="middle">${g}</text>`;
+    html += `<text class="axis-label" x="${x0-12}" y="${sy(g)+4}" text-anchor="end">${g}</text>`;
+  }
+  html += `<text class="axis-label" x="${x0-12}" y="${y0+14}" text-anchor="end">0</text>`;
+
+  const q = state.query;
+  const qPx = { x: sx(q.x), y: sy(q.y) };
+  const origin = { x: sx(0), y: sy(0) };
+  const wins = winners();
+  const winId = wins[state.mode];
+
+  /* ============ Mode-specific auxiliary drawing ============ */
+  if (state.mode === 'cosine') {
+    // Draw angle arcs from each doc's line to query's line — all in svg-space
+    state.docs.forEach(d => {
+      const dPx = { x: sx(d.x), y: sy(d.y) };
+      // Doc line from origin (thin dashed)
+      html += `<line class="vec-line aux-line" x1="${origin.x}" y1="${origin.y}" x2="${dPx.x}" y2="${dPx.y}" stroke="${d.color}"/>`;
+      // Angle arc between Query and Doc — compute in svg-pixel space directly
+      const qAng = Math.atan2(qPx.y - origin.y, qPx.x - origin.x);  // svg-space, y-down
+      const dAng = Math.atan2(dPx.y - origin.y, dPx.x - origin.x);
+      // Order start→end so sweep goes short way
+      let startAng, endAng, sweepFlag;
+      let diff = dAng - qAng;
+      while (diff >  Math.PI) diff -= 2 * Math.PI;
+      while (diff < -Math.PI) diff += 2 * Math.PI;
+      if (diff >= 0) { startAng = qAng; endAng = dAng; sweepFlag = 1; }
+      else           { startAng = dAng; endAng = qAng; sweepFlag = 1; }
+      const r = 46;
+      const start = { x: origin.x + r * Math.cos(startAng), y: origin.y + r * Math.sin(startAng) };
+      const end   = { x: origin.x + r * Math.cos(endAng),   y: origin.y + r * Math.sin(endAng) };
+      html += `<path class="aux-arc" d="M ${start.x} ${start.y} A ${r} ${r} 0 0 ${sweepFlag} ${end.x} ${end.y}" stroke="${d.color}" stroke-width="2" opacity="0.55"/>`;
+    });
+  } else if (state.mode === 'euclidean') {
+    // Draw straight line from Query point to each Doc point
+    state.docs.forEach(d => {
+      const dPx = { x: sx(d.x), y: sy(d.y) };
+      const isWin = d.id === winId;
+      html += `<line class="vec-line ${isWin ? 'win' : ''}" x1="${qPx.x}" y1="${qPx.y}" x2="${dPx.x}" y2="${dPx.y}" stroke="${d.color}" stroke-width="${isWin ? 4 : 2.5}" stroke-dasharray="${isWin ? '' : '5,3'}" opacity="${isWin ? 1 : 0.7}"/>`;
+      // Mid-line distance label
+      const mx = (qPx.x + dPx.x) / 2, my = (qPx.y + dPx.y) / 2;
+      const dist = euclid(state.query, d).toFixed(2);
+      html += `<text class="axis-label" x="${mx+5}" y="${my-3}" fill="${isWin ? '#24a148' : '#888'}" font-weight="${isWin ? 700 : 400}" font-size="${isWin ? 12 : 10}">${dist}</text>`;
+    });
+  } else if (state.mode === 'dotproduct') {
+    // Show projection of each Doc onto Query direction
+    const qLen = len(q);
+    const qUnit = { x: q.x / qLen, y: q.y / qLen };
+    state.docs.forEach(d => {
+      const projScalar = dot(d, qUnit);
+      const projPoint = { x: qUnit.x * projScalar, y: qUnit.y * projScalar };
+      const dPx = { x: sx(d.x), y: sy(d.y) };
+      const pPx = { x: sx(projPoint.x), y: sy(projPoint.y) };
+      // Perpendicular drop from Doc to Query line
+      html += `<line class="vec-line aux-line" x1="${dPx.x}" y1="${dPx.y}" x2="${pPx.x}" y2="${pPx.y}" stroke="${d.color}"/>`;
+      // Projection segment (from origin to projPoint) — this length × |Query| = dot product
+      const isWin = d.id === winId;
+      html += `<line class="vec-line ${isWin ? 'win' : ''}" x1="${origin.x}" y1="${origin.y}" x2="${pPx.x}" y2="${pPx.y}" stroke="${d.color}" stroke-width="${isWin ? 6 : 4}" opacity="${isWin ? 0.9 : 0.35}"/>`;
+    });
+  }
+
+  /* ============ Query arrow (always drawn, on top of aux) ============ */
+  html += `<line class="vec-line query-line" x1="${origin.x}" y1="${origin.y}" x2="${qPx.x}" y2="${qPx.y}"/>`;
+  html += `<circle cx="${qPx.x}" cy="${qPx.y}" r="7" fill="#ffd566" stroke="#0a0a0c" stroke-width="2"/>`;
+  html += `<text class="vec-label" x="${qPx.x + 12}" y="${qPx.y - 8}" fill="#ffd566">Query</text>`;
+  html += `<text class="axis-label" x="${qPx.x + 12}" y="${qPx.y + 8}" fill="#ffd566">[${q.x.toFixed(1)}, ${q.y.toFixed(1)}]</text>`;
+
+  /* ============ Doc arrows (from origin, always drawn) ============ */
+  state.docs.forEach(d => {
+    const dPx = { x: sx(d.x), y: sy(d.y) };
+    const isWin = d.id === winId;
+    // In cosine mode, we already drew a dashed line from origin. In others draw a solid faint doc line.
+    if (state.mode !== 'cosine' && state.mode !== 'dotproduct') {
+      html += `<line class="vec-line" x1="${origin.x}" y1="${origin.y}" x2="${dPx.x}" y2="${dPx.y}" stroke="${d.color}" stroke-width="1.5" opacity="0.3"/>`;
+    }
+    html += `<circle class="vec-dot ${isWin ? 'win' : ''}" cx="${dPx.x}" cy="${dPx.y}" r="7" fill="${d.color}" stroke="${isWin ? '#24a148' : '#0a0a0c'}" stroke-width="${isWin ? 3 : 2}" data-id="${d.id}"/>`;
+    html += `<text class="vec-label ${isWin ? 'win' : ''}" x="${dPx.x + 12}" y="${dPx.y - 8}" fill="${d.color}">${d.label}</text>`;
+    html += `<text class="axis-label" x="${dPx.x + 12}" y="${dPx.y + 8}" fill="${d.color}">[${d.x.toFixed(1)}, ${d.y.toFixed(1)}]</text>`;
+  });
+
+  // origin
+  html += `<circle class="origin-dot" cx="${origin.x}" cy="${origin.y}" r="3"/>`;
+
+  svg.innerHTML = html;
+  installDrag(svg);
+}
+
+function renderScores() {
+  const box = document.getElementById('scores');
+  const wins = winners();
+  const winId = wins[state.mode];
+  const rows = state.docs.map(d => ({ ...d, m: metrics(d) }));
+
+  // Sort by current mode
+  rows.sort((a, b) => {
+    if (state.mode === 'euclidean') return a.m.euclidean - b.m.euclidean;  // ascending
+    return b.m[state.mode] - a.m[state.mode];  // descending
+  });
+
+  box.innerHTML = rows.map((r, i) => {
+    const isWin = r.id === winId;
+    const value = r.m[state.mode];
+    const label = state.mode === 'cosine' ? value.toFixed(4)
+                : state.mode === 'euclidean' ? value.toFixed(3)
+                : value.toFixed(2);
+    return `<div class="doc-row ${isWin ? 'win' : ''}">
+      <span class="swatch" style="background:${r.color};"></span>
+      <span class="name"><b>${r.label}</b>Top-${i+1}${isWin ? ' ★' : ''}</span>
+      <span class="score">${label}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderExplain() {
+  const box = document.getElementById('explain');
+  const wins = winners();
+  const winId = wins[state.mode];
+  if (state.mode === 'cosine') {
+    box.innerHTML = `
+      <b>余弦相似度</b>：只看两个向量的<b>方向夹角</b>，不管长度。<br>
+      公式 <span class="fml">cos θ = (A·B) / (|A|·|B|)</span> · 值域 <code>[-1, 1]</code> · 越接近 <b>1</b> 越相似。<br><br>
+      🎯 当前冠军 <b style="color:#24a148;">${winId}</b>——它是方向和 Query 最一致的一篇。<br>
+      💡 <b>类比</b>：像指南针，两根针指同方向就同类，跟针有多长无关。<br>
+      💡 <b>用途</b>：文本 RAG 默认（BGE / OpenAI text-embedding-3 / M3E 等都用它）。
+    `;
+  } else if (state.mode === 'euclidean') {
+    box.innerHTML = `
+      <b>欧氏距离</b>：两个点在空间里的<b>直线距离</b>。距离 <b>越小</b> 越相似。<br>
+      公式 <span class="fml">d = √Σ(a_i − b_i)²</span> · 就是初中的两点距离公式，只是维度更高。<br><br>
+      🎯 当前冠军 <b style="color:#24a148;">${winId}</b>——它在几何位置上离 Query 最近。<br>
+      💡 <b>类比</b>：像卷尺，从 A 拉到 B 量多远。<br>
+      💡 <b>用途</b>：图片检索、数值特征。文本向量若<b>没归一化</b>会被长度带偏，一般不首选。
+    `;
+  } else {
+    box.innerHTML = `
+      <b>点积（Inner Product）</b>：<b>方向 + 长度</b> 一起算分。方向对齐加分，向量越长再加分。<br>
+      公式 <span class="fml">A·B = Σ a_i · b_i = |A|·|B|·cos θ</span> · 无固定值域。<br><br>
+      🎯 当前冠军 <b style="color:#24a148;">${winId}</b>——方向差不多 + 长度大 = 分数飙高。<br>
+      💡 <b>类比</b>：打分制。方向对齐得分 × 你用多大力，都不对就白搭。<br>
+      💡 <b>用途</b>：Transformer 注意力机制、Faiss 的 IndexFlatIP。归一化向量下 <b>点积 = 余弦</b>，但省一次除法更快。
+    `;
+  }
+}
+
+function renderCompareTable() {
+  const box = document.getElementById('compareGrid');
+  const wins = winners();
+  const rows = state.docs.map(d => ({ ...d, m: metrics(d) }));
+
+  let html = `
+    <div class="head">文档</div>
+    <div class="head">余弦 (方向)</div>
+    <div class="head">欧氏 (远近)</div>
+    <div class="head">点积 (方向+长度)</div>
+  `;
+  rows.forEach(r => {
+    const cTop = r.id === wins.cosine ? 'top' : '';
+    const eTop = r.id === wins.euclidean ? 'top' : '';
+    const dTop = r.id === wins.dotproduct ? 'top' : '';
+    html += `
+      <div class="lbl" style="color:${r.color};"><b>${r.label}</b></div>
+      <div class="val ${cTop}">${r.m.cosine.toFixed(4)}</div>
+      <div class="val ${eTop}">${r.m.euclidean.toFixed(3)}</div>
+      <div class="val ${dTop}">${r.m.dotproduct.toFixed(2)}</div>
+    `;
+  });
+  box.innerHTML = html;
+}
+
+/* ==== Drag interaction ==== */
+function installDrag(svg) {
+  const dots = svg.querySelectorAll('.vec-dot');
+  dots.forEach(dot => {
+    dot.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const id = dot.dataset.id;
+      dot.setPointerCapture(e.pointerId);
+      dot.classList.add('dragging');
+      function onMove(ev) {
+        const rect = svg.getBoundingClientRect();
+        const scaleX = W / rect.width;
+        const scaleY = H / rect.height;
+        const px = (ev.clientX - rect.left) * scaleX;
+        const py = (ev.clientY - rect.top) * scaleY;
+        const mx = Math.max(RANGE_MIN + 0.2, Math.min(RANGE_MAX - 0.2, invX(px)));
+        const my = Math.max(RANGE_MIN + 0.2, Math.min(RANGE_MAX - 0.2, invY(py)));
+        const doc = state.docs.find(d => d.id === id);
+        doc.x = Math.round(mx * 10) / 10;
+        doc.y = Math.round(my * 10) / 10;
+        render();
+      }
+      function onUp() {
+        dot.classList.remove('dragging');
+        window.removeEventListener('pointermove', onMove);
+        window.removeEventListener('pointerup', onUp);
+      }
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+    });
+  });
+}
+
+/* ==== Mode switching ==== */
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    state.mode = btn.dataset.mode;
+    render();
+  });
+});
+
+render();
+</script>
+
+</body>
+</html>

@@ -9,6 +9,7 @@
 | 章节 | 演示目录 | 主推荐工具 | 状态 |
 |---|---|---|---|
 | Ch.07 RAG | `ICA/` | IBM Consulting Advantage | ✅ Richard 已做 |
+| Ch.07 深入 | `NLP/similarity-demo.html` | 三算法可视化（余弦/欧氏/点积）· 拖动+切换 | ✅ 我做完 |
 | Ch.08 KG | `KG/` | 课件内置 + Neo4j AuraDB 备用 | ✅ 我做完 |
 | Ch.08/01 本体论 | `Ontology/` | WebProtégé + 本地兜底 HTML | ✅ 我做完 |
 | Ch.10 MCP | `MCP/` | Claude Desktop + filesystem-server | ✅ 我做完 |
