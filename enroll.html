@@ -199,7 +199,7 @@ function clearSession() { localStorage.removeItem(STORE_KEY); }
 function getKB() { try { return JSON.parse(localStorage.getItem(KB_KEY) || '[]'); } catch { return []; } }
 function addToKB(entry) {
   const kb = getKB();
-  const idx = kb.findIndex(x => x.code === entry.code);
+  const idx = kb.findIndex(x => x.code === entry.code && x.name === entry.name);
   if (idx >= 0) kb[idx] = entry; else kb.push(entry);
   localStorage.setItem(KB_KEY, JSON.stringify(kb));
 }
@@ -463,11 +463,12 @@ function renderImportMode() {
       return;
     }
 
-    // Merge to KB (overwrite by code)
+    // Merge to KB — dedup by code+name so shared access codes work
+    // (same student re-submitting overwrites; different students on same code coexist)
     const kb = getKB();
     let added = 0, updated = 0;
     parsed.students.forEach(s => {
-      const idx = kb.findIndex(x => x.code === s.code);
+      const idx = kb.findIndex(x => x.code === s.code && x.name === s.name);
       if (idx >= 0) { kb[idx] = s; updated++; }
       else { kb.push(s); added++; }
     });
