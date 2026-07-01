@@ -692,6 +692,39 @@
   .kg-ontology .tree .rel { color: rgba(226,232,240,0.4); font-size: 10px; margin: 0 4px; }
   .kg-ontology .note { margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(255,255,255,0.10); font-family: 'IBM Plex Sans','Noto Sans SC',sans-serif; font-size: 11px; color: rgba(226,232,240,0.65); line-height: 1.55; }
 
+  /* Demo CTA button inside slides — click during class to launch that
+     chapter's demo in a new tab. Sits right after the .takeaway line. */
+  .slide-demo-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 22px;
+    background: linear-gradient(135deg, rgba(69,137,255,0.22), rgba(120,169,255,0.14));
+    border: 1px solid rgba(69,137,255,0.55);
+    border-radius: 100px;
+    color: #78a9ff !important;
+    text-decoration: none !important;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+    margin-top: 18px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 18px rgba(69,137,255,0.15);
+    cursor: pointer;
+  }
+  .slide-demo-cta:hover {
+    background: linear-gradient(135deg, rgba(69,137,255,0.34), rgba(120,169,255,0.22));
+    border-color: rgba(69,137,255,0.85);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 26px rgba(69,137,255,0.32);
+    color: #ffffff !important;
+  }
+  .slide-demo-cta.primary {
+    background: linear-gradient(135deg, rgba(69,137,255,0.9), rgba(120,169,255,0.75));
+    border-color: rgba(69,137,255,0.9);
+    color: #ffffff !important;
+    font-weight: 600;
+  }
+  .slide-demo-cta.primary:hover { background: linear-gradient(135deg, #4589ff, #78a9ff); box-shadow: 0 8px 32px rgba(69,137,255,0.5); }
+
   /* Speaker view notes styling — makes h3 / p / hr / b inside
      aside.notes breathe when Richard opens the speaker window (S key).
      Note: Reveal 5 speaker view renders in a separate window, and by
@@ -1075,6 +1108,7 @@
           <div class="tl-item major"><div class="yr">2022</div><div class="ttl">ChatGPT</div><div class="ds">5 天破百万、2 个月破亿</div></div>
         </div>
         <div class="takeaway">GPU、互联网规模数据、Transformer 架构 —— 这三件事同时成熟，才有了 2017 之后的爆发</div>
+        <a class="slide-demo-cta" href="./History/timeline-demo.html" target="_blank" rel="noopener">▶ 打开 AI 70 年时间轴 <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>我们顺这条线看一下。</p>
 <p>2006 年，Hinton 把"深度学习"这个词重新带回学界。</p>
@@ -1111,6 +1145,7 @@
           <li><span class="n">激活</span><div><b>y = σ(z)</b> — 非线性函数（Sigmoid、ReLU），决定神经元是否"激活"<span class="ex">没有这一步，整个网络等价于一个线性回归</span></div></li>
         </ul>
         <div class="takeaway">今天的大模型 —— 数百亿到上万亿个这样的"神经元"叠起来，单个神经元的数学不超出中学范围</div>
+        <a class="slide-demo-cta" href="./ML/perceptron-demo.html" target="_blank" rel="noopener">▶ 打开 感知机 · 一行数学 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>神经网络听起来玄，单个神经元的结构其实非常简单。</p>
 <p>输入几个数，每个数乘一个权重，加起来，过一个非线性函数，输出一个数。仅此而已，中学数学就够看懂。</p>
@@ -1135,6 +1170,7 @@
           <div class="flow-step"><div class="ico">↓</div><div class="ttl">更新权重</div><div class="ds">每个参数朝降低误差的方向调一点</div></div>
         </div>
         <div class="takeaway">梯度下降 + 链式法则 —— 1986 年定型，今天的 LLM 训练本质还是这四步循环几百万次</div>
+        <a class="slide-demo-cta" href="./ML/backprop-demo.html" target="_blank" rel="noopener">▶ 打开 反向传播 XOR demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>神经网络是怎么"学"的？</p>
 <p>先猜一次，看跟正确答案差多远，然后把这个"错"沿着网络反向传回去，告诉每个参数应该往哪边调一点。重复几百万次，它就慢慢调到位了。</p>
@@ -1171,6 +1207,7 @@
           </div>
         </div>
         <div class="takeaway">AlexNet 2012 在 ImageNet 把 top-5 错误率从 26.2% 拉到 15.3% —— 之后人脸识别、自动驾驶、医疗影像都建立在 CNN 之上</div>
+        <a class="slide-demo-cta" href="./ML/cnn-demo.html" target="_blank" rel="noopener">▶ 打开 CNN 卷积核滑动 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>CNN 的核心想法很朴素——图像有"局部性"，旁边的像素往往是相关的。</p>
 <p>所以不需要每个像素都跟每个神经元相连，用一个小窗口扫整张图就够了。这样参数少很多，训练快很多。</p>
@@ -1191,6 +1228,7 @@
           <li><span class="n">短板</span><div><b>长序列梯度消失 · 串行不可并行</b><span class="ex">长句子容易丢信息；训练慢；GPU 利用率上不去</span></div></li>
         </ul>
         <div class="takeaway">RNN 的两个根本问题（长依赖丢失、不可并行），正是 2017 年 Transformer 要解决的</div>
+        <a class="slide-demo-cta" href="./ML/rnn-demo.html" target="_blank" rel="noopener">▶ 打开 RNN 隐状态衰减 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>CNN 让计算机会"看图"，RNN 让计算机会处理"有顺序"的数据——语言、语音、时序。</p>
 <p>RNN 的结构很简单——每一步的输出会回喂到下一步，所以网络有了"上下文"的概念。早期的机器翻译、语音识别基本都靠它。</p>
@@ -1239,6 +1277,7 @@
           </div>
         </div>
         <div class="takeaway">词袋丢失了语序、也无法表达词与词的语义关系 —— 后续 20 年 NLP 都在解这两个问题</div>
+        <a class="slide-demo-cta" href="./NLP/bow-demo.html" target="_blank" rel="noopener">▶ 打开 词袋 BoW demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>NLP 最朴素的方法叫词袋——把一句话拆成一堆词，统计每个词出现几次。</p>
 <p>简单粗暴有效，10 行代码就能写出来，当年的垃圾邮件分类、新闻分类基本都用它。</p>
@@ -1260,6 +1299,7 @@
           <p style="margin-top: 30px;">每个词放进一个几百维的向量空间，相似的词彼此靠近 —— 性别、复数、时态这些语义关系，变成了空间中的"方向"</p>
         </div>
         <div class="takeaway">今天 RAG 用的"语义检索"，本质就是在 Word2Vec 这一脉的 embedding 空间里做近邻搜索</div>
+        <a class="slide-demo-cta" href="./NLP/word2vec-demo.html" target="_blank" rel="noopener">▶ 打开 Word2Vec 类比 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>2013 年，Google 的 Mikolov 提出 Word2Vec，让每个词变成一个几百维的向量。</p>
 <p>奇迹出现——你在这个空间里做减法，king 减 man 加 woman，结果非常接近 queen。</p>
@@ -1280,6 +1320,7 @@
           <li><span class="n">效果</span><div><b>2015–2017 机器翻译质量明显提升</b><span class="ex">Attention 在 NLP 圈成为标配模块</span></div></li>
         </ul>
         <div class="takeaway">Attention 解决了"远处信息怎么留住"这个 RNN 的核心难题 —— 三年后被 Transformer 推到中心位置</div>
+        <a class="slide-demo-cta" href="./NLP/attention-demo.html" target="_blank" rel="noopener">▶ 打开 Attention 热图 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>RNN 翻长句子的瓶颈是——整句话被压成一个固定大小的向量，远处的词容易丢。</p>
 <p>2014 年 Bahdanau 提出一个想法——翻每一个输出词的时候，回头看一遍原句，给原句每个词一个"我现在该多关注它"的分数。</p>
@@ -1305,6 +1346,7 @@
           <li><span class="n">通用</span><div><b>同一架构后来通吃 NLP、视觉、语音、代码、蛋白质结构</b><span class="ex">BERT、GPT、Vision Transformer、AlphaFold 都是 Transformer 的变种</span></div></li>
         </ul>
         <div class="takeaway">从 2017 论文到 2022 ChatGPT —— 5 年时间，这个架构完成了所有现代 LLM 的奠基</div>
+        <a class="slide-demo-cta" href="./NLP/transformer-demo.html" target="_blank" rel="noopener">▶ 打开 Transformer 自注意力 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>2017 年 6 月，Google 八位作者发了一篇论文，标题叫 "Attention Is All You Need"——既然 Attention 这么好用，干脆全部用它。</p>
 <p>这篇论文做了三件事——抛弃 RNN 的循环结构；训练时整句话可以并行处理；同一个架构后来通吃 NLP、视觉、语音、代码、蛋白质结构。</p>
@@ -1409,6 +1451,7 @@
           </div>
         </div>
         <div class="takeaway">这三个方向同时在推进 —— 第 7 章起我们会逐个拆开看</div>
+        <a class="slide-demo-cta" href="./ChatGPT/chatgpt-demo.html" target="_blank" rel="noopener">▶ 打开 ChatGPT 破亿对比 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>2026 这一年，大模型同时在三个方向跑。</p>
 <p>第一条叫推理模型——OpenAI 的 o 系列、DeepSeek-R1、Claude 推理模式，让模型在回答前先"想几步"。</p>
@@ -1505,6 +1548,7 @@
           <div class="flow-step"><div class="ico">✓</div><div class="ttl">基于事实回答</div><div class="ds">引用具体段落，可追溯</div></div>
         </div>
         <div class="takeaway">下一章我们用同一个问题、同一个模型，对比一次 —— 关 RAG vs 开 RAG</div>
+        <a class="slide-demo-cta" href="./Hallucination/hallucination-demo.html" target="_blank" rel="noopener">▶ 打开 幻觉 · token 预测 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>幻觉解不了，怎么办——不让它凭记忆答，让它每次回答前先去翻书。</p>
 <p>这就是 RAG，检索增强生成。</p>
@@ -1682,6 +1726,7 @@
           </div>
         </div>
         <div class="takeaway">同一份文档 · 关 RAG 时 AI 编 · 开 RAG 后 AI 引文档 —— RAG 不是让 AI 变聪明，是让 AI 变诚实</div>
+        <a class="slide-demo-cta primary" href="https://nextgen-beta.ica.ibm.com/ica/chat" target="_blank" rel="noopener">▶ 打开 ICA · RAG 主演示（IBM 平台） <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>接下来切到 IBM Consulting Advantage 平台，跑这 4 组对比。</p>
 <p>每一组都看两次回答——关 RAG 时 AI 怎么编，开 RAG 后 AI 怎么引文档。</p>
@@ -1729,6 +1774,7 @@
           <li><span class="n">应用</span><div><b>医疗、金融、推荐、watsonx</b> · 凡是要严格推理的地方<span class="ex">IBM 在医疗本体方面有长期积累 —— Watson 早期就建在这上面</span></div></li>
         </ul>
         <div class="takeaway">大模型擅长语言、本体擅长逻辑 —— 两者结合是 IBM 长期坚持的 Hybrid AI 路线</div>
+        <a class="slide-demo-cta" href="./Ontology/ontology-demo.html" target="_blank" rel="noopener">▶ 打开 Ontology 本体推理 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <h3>开场 · 30 秒</h3>
 <p>本体论这个词听起来玄·其实做的事很朴素——<b>把世界拆成两件事：是什么·和什么有关系</b>。</p>
@@ -2335,6 +2381,7 @@
           <li><span class="n">趋势</span><div><b>越来越像"AI 应用商店"</b> · 一键安装一个 Server 就能给 AI 多一种能力<span class="ex">下一章 Agent 直接建在 MCP 之上</span></div></li>
         </ul>
         <div class="takeaway">MCP 是把"接工具"这件事变成开放协议 —— 谁支持谁受益，没人想做被锁定的那一方</div>
+        <a class="slide-demo-cta" href="./MCP/mcp-demo.html" target="_blank" rel="noopener">▶ 打开 MCP 三角色协议 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>2024 年到 2026 年这两年，MCP 的开源生态长得很快。</p>
 <p>个人侧——文件系统、浏览器、Git、Notion、Obsidian，把日常工具都接给 AI。</p>
@@ -2421,6 +2468,7 @@
           </div>
         </div>
         <div class="takeaway">ReAct = Reasoning + Acting 循环 · 想一步 → 调工具 → 看结果 → 再想再动</div>
+        <a class="slide-demo-cta" href="./Agent/agent-demo.html" target="_blank" rel="noopener">▶ 打开 Agent · ReAct 循环 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>接下来切到 Agent 演示页。</p>
 <p>这是一个月球营报名顾问 Agent。我输入"帮我看看 7.15 出发要准备什么"，让大家看 Agent 怎么自己分解任务、调用三个工具、综合输出。</p>
@@ -2514,6 +2562,7 @@
           <div class="flow-step"><div class="ico">✓</div><div class="ttl">演示输出</div><div class="ds">大屏显示给一位代表学员的推荐 + 理由</div></div>
         </div>
         <div class="takeaway">MCP (Agent ↔ Tool) + A2A (Agent ↔ Agent) = 完整的 Agent 协作协议栈</div>
+        <a class="slide-demo-cta" href="./A2A/a2a-demo.html" target="_blank" rel="noopener">▶ 打开 A2A 双 Agent 协作 demo <span style="opacity:0.7;margin-left:4px;">↗</span></a>
         <aside class="notes">
 <p>接下来切到 A2A 演示页。</p>
 <p>两个 Agent 协作——</p>
