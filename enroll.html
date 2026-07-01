@@ -419,27 +419,33 @@ function renderSuccess(s) {
   }
 
   // === Method 2: mailto — opens the student's mail app with everything pre-filled ===
+  // Design notes:
+  //  · Body kept short (< 500 chars) to avoid Windows Outlook's mailto:
+  //    UTF-8 → GBK conversion bug that produces &#XXXX; entities and
+  //    duplicated segments when body is long.
+  //  · Uses single Chinese punctuation, no mixed 中/英 labels.
+  //  · Includes one raw JSON line at the bottom so Richard can copy
+  //    that line straight into collect.html's bulk-import textarea.
   const mailBtn = document.getElementById('fMailto');
   if (mailBtn) {
     mailBtn.addEventListener('click', () => {
       const TEACHER_MAIL = 'hongqian@cn.ibm.com';
-      const subject = `AI Camp 2026 登记 · ${s.name || ''}`;
-      const interests = (s.interests || []).join(' · ');
+      const subject = 'AI Camp 登记 · ' + (s.name || '');
+      const interests = (s.interests || []).join('、');
       const bodyLines = [
-        'Richard 老师您好，',
+        'AI Camp 2026 登记',
         '',
-        '我完成了 AI Camp 2026 的登记，信息如下：',
-        '',
-        '姓名 / Name: ' + (s.name || ''),
-        '学院 / 单位: ' + (s.college || ''),
-        '访问码: ' + (s.code || ''),
-        '兴趣领域: ' + interests,
+        '姓名：' + (s.name || ''),
+        '学院：' + (s.college || ''),
+        '访问码：' + (s.code || ''),
+        '兴趣：' + interests,
       ];
-      if (s.bio) bodyLines.push('简介: ' + s.bio);
-      bodyLines.push('', '登记时间: ' + (s.submittedAt || new Date().toISOString()));
-      bodyLines.push('', '—— 由 AI Camp 报名系统自动生成');
-      const body = bodyLines.join('\n');
-      const href = `mailto:${TEACHER_MAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      if (s.bio) bodyLines.push('简介：' + s.bio);
+      bodyLines.push('');
+      bodyLines.push('=== JSON（复制这一行到 admin 一键导入）===');
+      bodyLines.push(compactJSON);
+      const body = bodyLines.join('\r\n');
+      const href = 'mailto:' + TEACHER_MAIL + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
       window.location.href = href;
 
       // Visual feedback
