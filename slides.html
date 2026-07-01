@@ -577,12 +577,22 @@
      Layered canvases: bg starfield + main force-graph + node glow
      Right slide-in AI Copilot panel (nongfu-inspired)
      ============================================================ */
-  .reveal .slides > section > section.kg-full-slide {
+  .reveal .slides > section > section.kg-full-slide,
+  body.theme-light .reveal .slides > section > section.kg-full-slide {
     padding: 0 !important; display: block !important;
     width: 100% !important; height: 100% !important;
     min-height: 720px !important;
     position: relative; overflow: hidden;
     background: #050510 !important;
+    color: #e2e8f0 !important;
+    isolation: isolate;
+  }
+  /* KG slide is always dark — hide any global chrome that would leak
+     the theme (chapter indicator, help tip, theme toggle button) */
+  body:has(section.kg-full-slide.present) .chap-indicator,
+  body:has(section.kg-full-slide.present) .help-tip,
+  body:has(section.kg-full-slide.present) .theme-toggle {
+    display: none !important;
   }
   /* Layer 1 · star / nebula field (32fps, offscreen-cached) */
   .kg-full-slide .kg-stars {
