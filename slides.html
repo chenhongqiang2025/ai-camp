@@ -572,108 +572,236 @@
      KG (Knowledge Graph) — ECharts force-directed container
      ============================================================ */
   /* KG full-bleed slide: chart fills the slide, header/stats/actions are floating overlays (Google Maps 风) */
+  /* ============================================================
+     KG Universe Slide · redesigned 2026-06-30
+     Layered canvases: bg starfield + main force-graph + node glow
+     Right slide-in AI Copilot panel (nongfu-inspired)
+     ============================================================ */
   .reveal .slides > section > section.kg-full-slide {
-    padding: 0 !important;
-    display: block !important;
-    width: 100% !important;
-    height: 100% !important;
+    padding: 0 !important; display: block !important;
+    width: 100% !important; height: 100% !important;
     min-height: 720px !important;
-    position: relative;
-    overflow: hidden;
+    position: relative; overflow: hidden;
+    background: #050510;
   }
-  .kg-full-slide .kg-particles {
+  /* Layer 1 · star / nebula field (32fps, offscreen-cached) */
+  .kg-full-slide .kg-stars {
     position: absolute !important; inset: 0 !important;
-    z-index: 1; pointer-events: none;
+    z-index: 0; pointer-events: none;
   }
+  /* Layer 2 · force-graph chart */
   .kg-full-slide .kg-chart {
     position: absolute !important; inset: 0 !important;
-    border: 0; border-radius: 0; height: auto !important;
-    background: radial-gradient(ellipse at center, #0f0f12, #050506);
-    z-index: 2;
+    z-index: 1; border: 0; border-radius: 0; height: auto !important;
+    background: transparent;
   }
-  .kg-full-slide .kg-chart canvas { display: block; }
-  /* Floating overlays */
-  .kg-overlay { position: absolute; z-index: 10; background: rgba(11,11,12,0.78); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(69,137,255,0.25); border-radius: 10px; box-shadow: 0 6px 22px rgba(0,0,0,0.5); }
-  /* Floating status bar OVER chart (top center) — z-index above WebGL canvas */
-  .kg-full-slide .kg-statusbar {
-    position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
-    z-index: 11;
-    display: flex; align-items: center; justify-content: center;
-    padding: 6px 16px;
-    background: rgba(11,11,12,0.65);
-    border: 1px solid rgba(120,169,255,0.18);
-    border-radius: 100px;
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    font-family: var(--r-code-font); font-size: 12.5px;
-    color: var(--text-dim);
-    box-shadow: 0 4px 18px rgba(0,0,0,0.35);
-  }
-  .kg-full-slide .kg-statusbar .kg-title-mini { letter-spacing: 1px; }
-  .kg-full-slide .kg-statusbar .kg-title-mini b { color: #fff; margin-right: 10px; font-weight: 600; letter-spacing: 0; }
-  .kg-full-slide .kg-statusbar #kgLiveBadge { color: var(--success); font-size: 11.5px; }
-  .kg-overlay.kg-actions { bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; padding: 8px 12px; border-radius: 100px; }
-  .kg-overlay.kg-actions button { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 9px 20px; border-radius: 100px; cursor: pointer; font-family: inherit; font-size: 14px; font-weight: 500; white-space: nowrap; transition: all .15s; }
-  .kg-overlay.kg-actions button:hover { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-2); }
-  .kg-overlay.kg-actions button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .kg-overlay.kg-actions button.primary:hover { background: var(--accent-2); }
-  /* AI Bot — bottom right of KG slide */
-  .kg-bot { position: absolute; bottom: 24px; right: 80px; z-index: 14; }
-  .kg-bot-toggle {
-    width: 56px; height: 56px;
-    border-radius: 50%; border: 0;
-    background: linear-gradient(135deg, var(--accent), var(--interactive));
-    color: #fff; font-size: 26px; cursor: pointer;
-    box-shadow: 0 6px 22px rgba(192,139,255,0.45), 0 0 0 0 rgba(192,139,255,0.6);
-    transition: all .2s; display: flex; align-items: center; justify-content: center;
-    animation: bot-pulse 2.4s infinite;
-  }
-  @keyframes bot-pulse {
-    0%, 100% { box-shadow: 0 6px 22px rgba(192,139,255,0.45), 0 0 0 0 rgba(192,139,255,0.6); }
-    50% { box-shadow: 0 6px 22px rgba(192,139,255,0.45), 0 0 0 14px rgba(192,139,255,0); }
-  }
-  .kg-bot-toggle:hover { transform: scale(1.08); }
-  .kg-bot-panel {
-    display: none;
-    position: absolute;
-    bottom: 70px; right: 0;
-    width: 360px;
-    background: rgba(11,11,12,0.94);
+  .kg-full-slide .kg-chart canvas { display: block; background: transparent !important; }
+
+  /* Floating chrome — glassmorphism */
+  .kg-overlay {
+    position: absolute; z-index: 10;
+    background: rgba(10,10,24,0.72);
     backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(192,139,255,0.4);
-    border-radius: 14px;
-    box-shadow: 0 10px 36px rgba(0,0,0,0.6);
-    overflow: hidden;
-  }
-  .kg-bot.open .kg-bot-panel { display: block; animation: bot-in .25s ease-out; }
-  @keyframes bot-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-  .kg-bot-h { padding: 12px 16px; background: linear-gradient(135deg, rgba(69,137,255,0.18), rgba(192,139,255,0.18)); display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-  .kg-bot-h .ttl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fff; font-weight: 500; }
-  .kg-bot-h .ttl .dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); }
-  .kg-bot-h button.close { background: transparent; border: 0; color: var(--text-dim); font-size: 16px; cursor: pointer; padding: 0 4px; }
-  .kg-bot-h button.close:hover { color: #fff; }
-  .kg-bot-msgs { padding: 14px 16px; max-height: 240px; min-height: 80px; overflow-y: auto; }
-  .kg-bot-msg { padding: 9px 13px; margin-bottom: 8px; border-radius: 10px; font-size: 13px; line-height: 1.65; }
-  .kg-bot-msg.ai { background: rgba(192,139,255,0.1); border: 1px solid rgba(192,139,255,0.3); color: #f4f4f4; }
-  .kg-bot-msg.ai b { color: var(--interactive); }
-  .kg-bot-msg.user { background: var(--accent-soft); border: 1px solid rgba(69,137,255,0.3); color: var(--accent-2); margin-left: 30px; text-align: right; font-size: 12px; }
-  .kg-bot-msg.thinking { color: var(--text-faint); font-style: italic; }
-  .kg-bot-chips { padding: 10px 14px 14px; border-top: 1px dashed var(--border); }
-  .kg-bot-chips .label { font-family: var(--r-code-font); font-size: 10px; color: var(--text-faint); letter-spacing: 1.2px; margin-bottom: 8px; }
-  .kg-bot-chips .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-  .kg-bot-chips button { background: var(--bg-2); border: 1px solid var(--border); color: var(--text); padding: 6px 11px; border-radius: 100px; cursor: pointer; font-size: 11.5px; font-family: inherit; transition: all .15s; }
-  .kg-bot-chips button:hover { background: rgba(192,139,255,0.15); border-color: var(--interactive); color: var(--interactive); }
-  @media (max-width: 900px) {
-    .kg-bot { bottom: 70px; right: 16px; }
-    .kg-bot-panel { width: 280px; }
+    border: 1px solid rgba(0,212,170,0.18);
+    border-radius: 12px;
+    box-shadow: 0 10px 32px rgba(0,0,0,0.55);
   }
 
-  .kg-overlay.kg-tip { bottom: 22px; right: 70px; padding: 8px 14px; font-size: 11px; color: var(--text-faint); font-family: var(--r-code-font); max-width: 260px; display: none; /* moved into bot tooltip */ }
-  .kg-overlay.kg-tip b { color: var(--text-dim); }
+  /* Top-center status pill */
+  .kg-full-slide .kg-statusbar {
+    position: absolute; top: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 11;
+    display: flex; align-items: center; gap: 14px;
+    padding: 8px 20px;
+    background: rgba(10,10,24,0.68);
+    border: 1px solid rgba(0,212,170,0.28);
+    border-radius: 100px;
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    font-family: 'Orbitron', var(--r-code-font); font-size: 11.5px;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    box-shadow: 0 4px 20px rgba(0,212,170,0.18);
+  }
+  .kg-full-slide .kg-statusbar b { color: #fff; font-weight: 700; letter-spacing: 3px; text-shadow: 0 0 12px rgba(0,212,170,0.6); }
+  .kg-full-slide .kg-statusbar .kg-count { color: #00D4AA; font-size: 12px; letter-spacing: 1px; }
+  .kg-full-slide .kg-statusbar #kgLiveBadge { color: #00D4AA; font-size: 10.5px; letter-spacing: 1.5px; }
+  .kg-full-slide .kg-statusbar #kgLiveBadge.flash { color: #F59E0B; animation: flash-badge 0.6s ease-in-out 2; }
+  @keyframes flash-badge { 50% { opacity: 0.3; text-shadow: 0 0 12px #F59E0B; } }
+
+  /* Bottom pill toolbar */
+  .kg-overlay.kg-actions {
+    bottom: 26px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 6px; padding: 6px 8px; border-radius: 100px;
+    border-color: rgba(0,212,170,0.22);
+  }
+  .kg-overlay.kg-actions button {
+    background: transparent; border: 1px solid transparent;
+    color: rgba(226,232,240,0.75); padding: 9px 18px;
+    border-radius: 100px; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    white-space: nowrap; transition: all .2s;
+  }
+  .kg-overlay.kg-actions button:hover {
+    background: rgba(0,212,170,0.12); color: #00D4AA;
+    border-color: rgba(0,212,170,0.35);
+  }
+  .kg-overlay.kg-actions button.primary {
+    background: linear-gradient(135deg, #00D4AA, #00b894);
+    color: #051f18; font-weight: 600;
+    box-shadow: 0 0 18px rgba(0,212,170,0.35);
+  }
+  .kg-overlay.kg-actions button.primary:hover { transform: translateY(-1px); box-shadow: 0 0 24px rgba(0,212,170,0.6); }
+
+  /* ============================================================
+     Right slide-in AI Copilot panel (nongfu-inspired)
+     ============================================================ */
+  .kg-copilot {
+    position: absolute; top: 60px; bottom: 90px; right: 20px;
+    width: 380px; max-width: 40vw;
+    z-index: 12;
+    display: flex; flex-direction: column;
+    background: rgba(10,10,24,0.85);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(124,58,237,0.32);
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 40px rgba(124,58,237,0.15);
+    transform: translateX(calc(100% + 30px));
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .kg-copilot.open { transform: translateX(0); }
+  .kg-copilot-h {
+    padding: 14px 18px; display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, rgba(0,212,170,0.16), rgba(124,58,237,0.16));
+    border-bottom: 1px solid rgba(124,58,237,0.24);
+    border-radius: 16px 16px 0 0;
+  }
+  .kg-copilot-h .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #00D4AA, #7C3AED);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #fff;
+    box-shadow: 0 0 16px rgba(0,212,170,0.5);
+  }
+  .kg-copilot-h .ttl {
+    flex: 1; color: #fff; font-weight: 600; font-size: 14px;
+    font-family: 'Orbitron', var(--r-code-font); letter-spacing: 1.5px;
+  }
+  .kg-copilot-h .ttl .sub {
+    display: block; font-size: 10px; color: rgba(226,232,240,0.55);
+    letter-spacing: 2px; margin-top: 2px; font-weight: 400;
+  }
+  .kg-copilot-h .close-btn {
+    background: transparent; border: 0; color: rgba(226,232,240,0.6);
+    font-size: 20px; cursor: pointer; padding: 0 6px;
+  }
+  .kg-copilot-h .close-btn:hover { color: #fff; }
+
+  .kg-copilot-body { flex: 1; overflow-y: auto; padding: 16px 18px; scrollbar-width: thin; scrollbar-color: rgba(124,58,237,0.4) transparent; }
+  .kg-copilot-body::-webkit-scrollbar { width: 4px; }
+  .kg-copilot-body::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 2px; }
+
+  .kg-scenarios { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .kg-scenario {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 11px 12px;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: left;
+    font-family: inherit;
+    color: #fff;
+  }
+  .kg-scenario:hover {
+    background: rgba(0,212,170,0.08);
+    border-color: rgba(0,212,170,0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,212,170,0.15);
+  }
+  .kg-scenario .ico { font-size: 18px; display: block; margin-bottom: 4px; }
+  .kg-scenario .name { font-size: 12px; font-weight: 600; color: #fff; }
+  .kg-scenario .desc { font-size: 10.5px; color: rgba(226,232,240,0.55); margin-top: 2px; line-height: 1.4; }
+
+  .kg-msgs { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+  .kg-msg {
+    padding: 10px 14px; border-radius: 10px;
+    font-size: 13px; line-height: 1.7;
+    max-width: 100%;
+    animation: msg-in 0.3s ease-out;
+  }
+  @keyframes msg-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .kg-msg.ai {
+    background: rgba(0,212,170,0.08);
+    border: 1px solid rgba(0,212,170,0.22);
+    color: #e2e8f0;
+    align-self: flex-start;
+  }
+  .kg-msg.ai b { color: #00D4AA; }
+  .kg-msg.ai i { color: #F59E0B; font-style: normal; font-weight: 600; }
+  .kg-msg.user {
+    background: rgba(124,58,237,0.15);
+    border: 1px solid rgba(124,58,237,0.35);
+    color: #fff; align-self: flex-end;
+    font-size: 12px; padding: 8px 12px;
+  }
+  .kg-msg.thinking {
+    color: rgba(226,232,240,0.5); font-style: italic;
+    background: transparent; border-color: rgba(255,255,255,0.08);
+  }
+  .kg-msg.thinking::after {
+    content: ' ▊'; animation: caret-blink 0.9s steps(2) infinite;
+  }
+  @keyframes caret-blink { 50% { opacity: 0; } }
+
+  .kg-copilot-body .divider {
+    height: 1px; margin: 12px 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  }
+  .kg-copilot-body .sec-label {
+    font-family: 'Orbitron', var(--r-code-font);
+    font-size: 10px; letter-spacing: 2px;
+    color: rgba(226,232,240,0.4); margin-bottom: 8px;
+  }
+
+  /* Node detail slot at bottom of copilot */
+  .kg-node-detail {
+    padding: 12px 14px; background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.22); border-radius: 10px;
+    margin-top: 12px;
+  }
+  .kg-node-detail .h { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .kg-node-detail .h .nm { color: #F59E0B; font-weight: 600; font-size: 13px; }
+  .kg-node-detail .h .role { font-family: var(--r-code-font); font-size: 10px; color: rgba(226,232,240,0.5); padding: 2px 8px; background: rgba(245,158,11,0.15); border-radius: 10px; }
+  .kg-node-detail .row { font-size: 12px; margin: 4px 0; color: rgba(226,232,240,0.85); }
+  .kg-node-detail .row .k { color: rgba(226,232,240,0.5); font-family: var(--r-code-font); font-size: 10px; letter-spacing: 1px; margin-right: 6px; }
+  .kg-node-detail .tags { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
+  .kg-node-detail .tag { background: rgba(255,255,255,0.06); color: #e2e8f0; padding: 2px 8px; border-radius: 10px; font-family: var(--r-code-font); font-size: 10px; }
+
+  /* Floating trigger button when copilot closed */
+  .kg-copilot-launcher {
+    position: absolute; bottom: 26px; right: 26px; z-index: 11;
+    width: 56px; height: 56px; border-radius: 50%; border: 0;
+    background: linear-gradient(135deg, #00D4AA, #7C3AED);
+    color: #fff; font-size: 24px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(124,58,237,0.4), 0 0 0 0 rgba(0,212,170,0.5);
+    animation: launcher-pulse 2.6s infinite;
+    transition: transform 0.2s;
+  }
+  .kg-copilot-launcher:hover { transform: scale(1.08); }
+  .kg-copilot-launcher.hidden { display: none; }
+  @keyframes launcher-pulse {
+    0%,100% { box-shadow: 0 8px 24px rgba(124,58,237,0.4), 0 0 0 0 rgba(0,212,170,0.5); }
+    50%    { box-shadow: 0 8px 24px rgba(124,58,237,0.4), 0 0 0 16px rgba(0,212,170,0); }
+  }
+
   @media (max-width: 900px) {
-    .kg-full-slide .kg-statusbar { font-size: 11px; padding: 0 0 6px; }
-    .kg-overlay.kg-actions { bottom: 12px; flex-wrap: wrap; justify-content: center; padding: 6px 8px; }
-    .kg-overlay.kg-actions button { font-size: 11px; padding: 5px 10px; }
-    .kg-overlay.kg-tip { display: none; }
+    .kg-copilot { width: calc(100vw - 32px); max-width: 100%; top: 90px; bottom: 100px; }
+    .kg-scenarios { grid-template-columns: 1fr; }
+    .kg-full-slide .kg-statusbar { font-size: 10.5px; padding: 6px 12px; gap: 8px; }
+    .kg-overlay.kg-actions { bottom: 16px; flex-wrap: wrap; justify-content: center; }
+    .kg-overlay.kg-actions button { font-size: 11.5px; padding: 6px 12px; }
+    .kg-copilot-launcher { bottom: 16px; right: 16px; width: 48px; height: 48px; font-size: 20px; }
   }
 
   /* ============================================================
@@ -1808,23 +1936,25 @@ IBM 在这条路上走得很久。Watson 时代有大量医疗本体的积累，
         </aside>
       </section>
       <section data-state="kg-stage" id="slide-kg" class="kg-full-slide">
-        <!-- Slim status bar OUTSIDE chart (top thin strip) -->
-        <div class="kg-statusbar">
-          <span class="kg-title-mini"><b>KG 知识图谱演示</b> <span id="kgLiveBadge">● 实时监听中</span></span>
-        </div>
+        <!-- Layer 1 · starfield + nebulae background -->
+        <canvas class="kg-stars" id="kgStars"></canvas>
 
-        <!-- Particle drift layer (background, inside chart only) -->
-        <canvas class="kg-particles" id="kgParticles"></canvas>
-
-        <!-- Full-bleed chart -->
+        <!-- Layer 2 · main force-graph -->
         <div class="kg-chart" id="kgChart"></div>
 
-        <!-- Hidden counts (kept for JS but not rendered as overlay) -->
-        <span id="kgPeople" style="display:none;">0</span>
-        <span id="kgEdges" style="display:none;">0</span>
+        <!-- Top pill status bar -->
+        <div class="kg-statusbar">
+          <b>KNOWLEDGE GRAPH</b>
+          <span>·</span>
+          <span class="kg-count"><span id="kgPeople">0</span> 学员</span>
+          <span>·</span>
+          <span class="kg-count"><span id="kgEdges">0</span> 关系</span>
+          <span>·</span>
+          <span id="kgLiveBadge">● LIVE</span>
+        </div>
         <span id="kgClusters" style="display:none;">0</span>
 
-        <!-- Floating overlay: action toolbar (bottom-center) -->
+        <!-- Bottom pill toolbar -->
         <div class="kg-overlay kg-actions">
           <button class="primary" onclick="kgInjectDemo()">▶ 加载演示数据</button>
           <button onclick="kgRefreshFromKB()">↻ 刷新学生数据</button>
@@ -1832,27 +1962,57 @@ IBM 在这条路上走得很久。Watson 时代有大量医疗本体的积累，
           <button onclick="kgClearHighlight()">清除高亮</button>
         </div>
 
-        <!-- AI 推理对话机器人 (bottom-right) -->
-        <div class="kg-bot" id="kgBot">
-          <button class="kg-bot-toggle" onclick="toggleKGBot()" title="点击与 AI 助手对话 — 基于图谱推理">🤖</button>
-          <div class="kg-bot-panel">
-            <div class="kg-bot-h">
-              <span class="ttl"><span class="dot"></span> KG 推理演示助手</span>
-              <button class="close" onclick="toggleKGBot()">✕</button>
+        <!-- Right slide-in AI Copilot panel (nongfu-inspired) -->
+        <button class="kg-copilot-launcher" id="kgCopilotLauncher" onclick="toggleKGCopilot()" title="打开 AI 推理助手">🤖</button>
+        <div class="kg-copilot" id="kgCopilot">
+          <div class="kg-copilot-h">
+            <div class="avatar">🤖</div>
+            <div class="ttl">KG COPILOT<span class="sub">图谱推理演示 · 完全本地</span></div>
+            <button class="close-btn" onclick="toggleKGCopilot()">✕</button>
+          </div>
+          <div class="kg-copilot-body">
+            <div class="sec-label">SCENARIO · 一键触发推理</div>
+            <div class="kg-scenarios">
+              <button class="kg-scenario" onclick="askKG('similar')">
+                <span class="ico">🔍</span>
+                <div class="name">兴趣孪生对</div>
+                <div class="desc">找兴趣重叠最高的两位学员</div>
+              </button>
+              <button class="kg-scenario" onclick="askKG('central')">
+                <span class="ico">⭐</span>
+                <div class="name">图谱中心</div>
+                <div class="desc">连接度最高的核心人物</div>
+              </button>
+              <button class="kg-scenario" onclick="askKG('aiCollege')">
+                <span class="ico">🎓</span>
+                <div class="name">AI 大院</div>
+                <div class="desc">AI 兴趣浓度最高的学院</div>
+              </button>
+              <button class="kg-scenario" onclick="askKG('team')">
+                <span class="ico">👥</span>
+                <div class="name">3 人组队</div>
+                <div class="desc">跨学院互补 + 兴趣重叠</div>
+              </button>
+              <button class="kg-scenario" onclick="askKG('cross')">
+                <span class="ico">🌐</span>
+                <div class="name">跨学科兴趣</div>
+                <div class="desc">横跨最多学院的方向</div>
+              </button>
+              <button class="kg-scenario" onclick="kgClearHighlight()">
+                <span class="ico">✕</span>
+                <div class="name">清除高亮</div>
+                <div class="desc">恢复完整图谱视图</div>
+              </button>
             </div>
-            <div class="kg-bot-msgs" id="kgBotMsgs">
-              <div class="kg-bot-msg ai">你好，我能基于这张图谱回答你的问题。<br>下面任选一个试试 👇</div>
+
+            <div class="divider"></div>
+            <div class="sec-label">CHAT · 推理输出</div>
+            <div class="kg-msgs" id="kgMsgs">
+              <div class="kg-msg ai">你好 · 我基于这张图谱做本地推理 · 点击上面场景卡片开始 <b>或直接点图上任一节点看详情</b></div>
             </div>
-            <div class="kg-bot-chips">
-              <div class="label">推理任务示例 · 完全本地计算</div>
-              <div class="chips">
-                <button onclick="askKG('similar')">🔍 谁和谁最相似？</button>
-                <button onclick="askKG('central')">⭐ 谁是中心人物？</button>
-                <button onclick="askKG('aiCollege')">🎓 哪个学院最热衷 AI？</button>
-                <button onclick="askKG('team')">👥 推荐 3 人组队</button>
-                <button onclick="askKG('cross')">🌐 跨学院共同兴趣</button>
-              </div>
-            </div>
+
+            <!-- Node detail slot (shown when a person node is clicked) -->
+            <div class="kg-node-detail" id="kgNodeDetail" style="display:none;"></div>
           </div>
         </div>
 
@@ -2597,90 +2757,99 @@ FNC 全称 FutureNow Center，是 IBM Consulting 在中国本地的落地团队�
   let kgData = { people: [], colleges: new Set(), interests: new Set() };
   let kgHighlighted = null;
 
-  // ===== Particle drift background — gives "data flowing" cinematic feel =====
-  let kgParticlesAnim = null;
+  // ===== Layer 1 · Starfield + drifting nebulae (universe-style) =====
+  //   Two-buffer approach: nebulae layer cached on offscreen canvas,
+  //   only stars twinkle on main canvas. ~32fps, negligible CPU.
+  let kgStarsAnim = null, kgStarsData = null;
   function startKGParticles() {
-    const canvas = document.getElementById('kgParticles');
+    const canvas = document.getElementById('kgStars');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    let w = 0, h = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let w = 0, h = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let stars = [], nebulae = [];
 
     function resize() {
       const rect = canvas.getBoundingClientRect();
-      w = rect.width; h = rect.height;
+      w = rect.width || window.innerWidth;
+      h = rect.height || window.innerHeight;
+      if (w < 10 || h < 10) { w = 1280; h = 720; }
       canvas.width = w * dpr; canvas.height = h * dpr;
       canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      // Rebuild sky
+      stars = Array.from({ length: 220 }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 1.6 + 0.3,
+        alpha: Math.random(),
+        speed: Math.random() * 0.010 + 0.003,
+        phase: Math.random() * Math.PI * 2
+      }));
+      nebulae = [
+        { x: w * 0.15, y: h * 0.30, r: 320, hue: 168, alpha: 0.045, dx:  0.10, dy: 0.06 },
+        { x: w * 0.80, y: h * 0.70, r: 380, hue: 265, alpha: 0.050, dx: -0.08, dy: 0.09 },
+        { x: w * 0.60, y: h * 0.15, r: 280, hue:  35, alpha: 0.030, dx:  0.05, dy: 0.04 }
+      ];
     }
     resize();
-    // Re-resize on container changes
     if (typeof ResizeObserver !== 'undefined' && !canvas._roBound) {
       canvas._roBound = true;
-      new ResizeObserver(() => { resize(); }).observe(canvas);
+      new ResizeObserver(resize).observe(canvas);
     }
 
-    const NUM = 70;
-    const palette = [[120,169,255,0.55], [192,139,255,0.5], [255,255,255,0.35]];
-    const particles = Array.from({ length: NUM }, () => {
-      const c = palette[Math.floor(Math.random() * palette.length)];
-      return {
-        x: Math.random() * w, y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.18,
-        vy: (Math.random() - 0.5) * 0.18,
-        r: 0.6 + Math.random() * 1.6,
-        col: c,
-        twinkle: Math.random() * Math.PI * 2
-      };
-    });
+    if (kgStarsAnim) { cancelAnimationFrame(kgStarsAnim); kgStarsAnim = null; }
+    let lastFrame = 0, frameInterval = 1000 / 32; // cap ~32fps
+    function tick(now) {
+      kgStarsAnim = requestAnimationFrame(tick);
+      if (!lastFrame) lastFrame = now;
+      if (now - lastFrame < frameInterval) return;
+      lastFrame = now;
 
-    if (kgParticlesAnim) cancelAnimationFrame(kgParticlesAnim);
-    function tick() {
-      ctx.clearRect(0, 0, w, h);
-      particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
-        p.twinkle += 0.018;
-        const alpha = p.col[3] * (0.55 + 0.45 * Math.sin(p.twinkle));
+      // Base black
+      ctx.fillStyle = '#050510';
+      ctx.fillRect(0, 0, w, h);
+
+      // Nebulae — soft radial glow, slow drift
+      for (const n of nebulae) {
+        n.x += n.dx; n.y += n.dy;
+        if (n.x < -n.r) n.x = w + n.r;
+        if (n.x > w + n.r) n.x = -n.r;
+        if (n.y < -n.r) n.y = h + n.r;
+        if (n.y > h + n.r) n.y = -n.r;
+        const grad = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+        grad.addColorStop(0, `hsla(${n.hue},80%,50%,${n.alpha})`);
+        grad.addColorStop(0.5, `hsla(${n.hue},60%,30%,${n.alpha * 0.4})`);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(n.x - n.r, n.y - n.r, n.r * 2, n.r * 2);
+      }
+
+      // Stars — 220 pinpoints twinkling
+      const t = now * 0.001;
+      for (const s of stars) {
+        const a = 0.3 + 0.7 * Math.abs(Math.sin(t * s.speed * 1000 + s.phase));
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${alpha})`;
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},0.7)`;
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(220,230,255,${a})`;
         ctx.fill();
-      });
-      // Connect nearby particles with faint lines (constellation effect)
-      ctx.shadowBlur = 0;
-      for (let i = 0; i < NUM; i++) {
-        for (let j = i + 1; j < NUM; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const d = Math.sqrt(dx*dx + dy*dy);
-          if (d < 90) {
-            ctx.strokeStyle = `rgba(120,169,255,${(1 - d/90) * 0.08})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
-          }
+        if (s.r > 1.1) {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r * 2.6, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(200,220,255,${a * 0.08})`;
+          ctx.fill();
         }
       }
-      kgParticlesAnim = requestAnimationFrame(tick);
     }
-    tick();
+    kgStarsAnim = requestAnimationFrame(tick);
+    kgStarsData = { stars, nebulae };
   }
 
   // ===== Live-listener visual feedback =====
   function flashLiveBadge() {
     const el = document.getElementById('kgLiveBadge');
     if (!el) return;
-    const orig = el.innerHTML;
-    const origColor = el.style.color;
-    el.innerHTML = '✨ 新数据已同步';
-    el.style.color = 'var(--accent-2)';
-    setTimeout(() => { el.innerHTML = orig; el.style.color = origColor; }, 2500);
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 2400);
   }
 
   // Title is now static in HTML ("KG 知识图谱演示" + 实时监听 badge), no dynamic updates needed.
@@ -2798,58 +2967,111 @@ FNC 全称 FutureNow Center，是 IBM Consulting 在中国本地的落地团队�
           .width(dom.clientWidth)
           .height(dom.clientHeight)
           .backgroundColor('rgba(0,0,0,0)')
-          .nodeRelSize(4)
-          // 节点：简洁实色圆点 · 同学院兴趣三色，仅高亮时变化
+          .nodeRelSize(5)
+          // Multi-layer glow node rendering — universe-inspired
+          //   outer halo (radial gradient) → core (white spot → color) → ring → label
           .nodeCanvasObjectMode(() => 'replace')
           .nodeCanvasObject((node, ctx, scale) => {
-            const r = node.category === 1 ? 6 : (node.category === 0 ? 5 : 4);
+            const isPerson  = node.category === 0;
+            const isCollege = node.category === 1;
+            // Base radius (people slightly larger; college anchors biggest)
+            const baseR = isCollege ? 7 : (isPerson ? 5.2 : 4);
             const dim = kgHL_nodes.size > 0 && !kgHL_nodes.has(node.id);
+            const on = !dim;
+            // Gentle pulse per frame (deterministic by id hash)
+            if (node._pulse === undefined) {
+              node._pulse = ((node.id || '').split('').reduce((a,c)=>a+c.charCodeAt(0),0) % 100) / 100 * Math.PI * 2;
+            }
+            const t = performance.now() * 0.001;
+            const pulseScale = on ? (1 + 0.10 * Math.sin(t * 2 + node._pulse)) : 1;
+            const r = baseR * pulseScale;
+
+            // Layer 1 · Outer halo
+            if (on) {
+              const glowR = r * 3.4;
+              const halo = ctx.createRadialGradient(node.x, node.y, r * 0.4, node.x, node.y, glowR);
+              halo.addColorStop(0, hexToRgba(node.color, 0.35));
+              halo.addColorStop(0.5, hexToRgba(node.color, 0.08));
+              halo.addColorStop(1, 'transparent');
+              ctx.fillStyle = halo;
+              ctx.fillRect(node.x - glowR, node.y - glowR, glowR * 2, glowR * 2);
+            }
+
+            // Layer 2 · Core with white highlight
             ctx.beginPath();
             ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
-            ctx.fillStyle = dim ? 'rgba(90,93,108,0.30)' : node.color;
+            if (on) {
+              const core = ctx.createRadialGradient(node.x - r * 0.35, node.y - r * 0.35, 0, node.x, node.y, r);
+              core.addColorStop(0, '#ffffff');
+              core.addColorStop(0.35, node.color);
+              core.addColorStop(1, hexToRgba(node.color, 0.75));
+              ctx.fillStyle = core;
+            } else {
+              ctx.fillStyle = 'rgba(90,93,108,0.28)';
+            }
             ctx.fill();
-            // Subtle border
-            ctx.strokeStyle = dim ? 'rgba(0,0,0,0)' : 'rgba(255,255,255,0.25)';
-            ctx.lineWidth = 0.6;
+
+            // Layer 3 · Thin outer ring
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, r + 1.5, 0, 2 * Math.PI, false);
+            ctx.strokeStyle = on ? hexToRgba(node.color, 0.55) : 'rgba(0,0,0,0)';
+            ctx.lineWidth = 1;
             ctx.stroke();
-            // 文字 label · 节点下方
-            if (scale > 0.6) {
-              ctx.font = (node.category === 1 ? 600 : 400) + ' ' + (12 / scale) + 'px IBM Plex Sans, Noto Sans SC, sans-serif';
+
+            // Layer 4 · Label
+            if (scale > 0.55) {
+              const fw = isCollege ? 700 : (isPerson ? 500 : 400);
+              const fs = Math.max(9, Math.min(13, 12 / scale));
+              ctx.font = `${fw} ${fs}px "IBM Plex Sans","Noto Sans SC",sans-serif`;
               ctx.textAlign = 'center';
               ctx.textBaseline = 'top';
-              ctx.fillStyle = dim ? 'rgba(140,143,156,0.35)' : 'rgba(244,244,244,0.92)';
-              ctx.fillText(node.name, node.x, node.y + r + 3);
+              ctx.fillStyle = on
+                ? (isCollege ? '#F59E0B' : (isPerson ? 'rgba(255,255,255,0.94)' : 'rgba(192,139,255,0.85)'))
+                : 'rgba(140,143,156,0.35)';
+              // subtle text shadow via double-draw when highlighted
+              if (kgHL_nodes.has(node.id)) {
+                ctx.shadowColor = node.color;
+                ctx.shadowBlur = 8;
+              }
+              ctx.fillText(node.name, node.x, node.y + r + 4);
+              ctx.shadowBlur = 0;
             }
           })
           .nodePointerAreaPaint((node, color, ctx) => {
-            const r = node.category === 1 ? 8 : 6;
+            const r = node.category === 1 ? 10 : 7;
             ctx.beginPath(); ctx.arc(node.x, node.y, r, 0, 2*Math.PI, false);
             ctx.fillStyle = color; ctx.fill();
           })
           .linkColor(l => {
             if (kgHL_links.size === 0) {
-              return l.type === 'college' ? 'rgba(241,194,27,0.22)' : 'rgba(192,139,255,0.22)';
+              return l.type === 'college' ? 'rgba(245,158,11,0.28)' : 'rgba(124,58,237,0.28)';
             }
-            return kgHL_links.has(l) ? 'rgba(120,169,255,0.85)' : 'rgba(120,130,150,0.06)';
+            return kgHL_links.has(l) ? 'rgba(0,212,170,0.95)' : 'rgba(120,130,150,0.05)';
           })
-          .linkWidth(l => kgHL_links.has(l) ? 1.4 : 0.6)
-          // 朴素粒子流 — 每条边 1 个慢速粒子，高亮时多 + 加速
-          .linkDirectionalParticles(l => kgHL_links.has(l) ? 3 : 1)
-          .linkDirectionalParticleSpeed(l => kgHL_links.has(l) ? 0.008 : 0.0035)
-          .linkDirectionalParticleWidth(l => kgHL_links.has(l) ? 2.2 : 1.4)
+          .linkWidth(l => kgHL_links.has(l) ? 2 : 0.7)
+          // Traveling energy particles — universe-style, more visible
+          .linkDirectionalParticles(l => kgHL_links.has(l) ? 4 : 1)
+          .linkDirectionalParticleSpeed(l => kgHL_links.has(l) ? 0.010 : 0.0038)
+          .linkDirectionalParticleWidth(l => kgHL_links.has(l) ? 3 : 1.6)
           .linkDirectionalParticleColor(l => {
-            if (kgHL_links.has(l)) return 'rgba(255,255,255,0.95)';
-            return l.type === 'college' ? 'rgba(241,194,27,0.6)' : 'rgba(192,139,255,0.55)';
+            if (kgHL_links.has(l)) return '#ffffff';
+            return l.type === 'college' ? 'rgba(245,158,11,0.75)' : 'rgba(192,139,255,0.65)';
           })
           .onNodeClick(node => {
             kgHighlightNode(node.id);
             kgInstance.centerAt(node.x, node.y, 700);
             kgInstance.zoom(2.2, 700);
+            // Open copilot with node detail if a person
+            if (node.category === 0 && node._meta) {
+              showNodeDetail(node._meta);
+              openKGCopilot(true);
+            }
           })
           .onBackgroundClick(() => {
             kgClearHighlight();
             kgInstance.centerAt(0, 0, 700);
             kgInstance.zoom(1, 700);
+            hideNodeDetail();
           })
           .d3VelocityDecay(0.32)
           .cooldownTicks(160);
@@ -2951,37 +3173,123 @@ FNC 全称 FutureNow Center，是 IBM Consulting 在中国本地的落地团队�
   window.kgClearHighlight = kgClearHighlight;
 
   // ============================================================
-  // KG 推理助手 (chatbot) — 纯本地图算法，不调 LLM
-  // 5 个推理任务：相似度、中心度、聚类、推荐、跨域
+  // KG Copilot — right slide-in panel with scenario cards
+  // typewriter output, node detail, multi-hop highlight
   // ============================================================
-  function toggleKGBot() {
-    const bot = document.getElementById('kgBot');
-    if (bot) bot.classList.toggle('open');
+  function hexToRgba(hex, a) {
+    if (!hex) return `rgba(255,255,255,${a})`;
+    if (hex.startsWith('rgb')) {
+      // already rgb(a); replace/append alpha
+      return hex.replace(/rgba?\(([^)]+)\)/, (m, inner) => {
+        const parts = inner.split(',').map(s => s.trim());
+        return `rgba(${parts[0]},${parts[1]},${parts[2]},${a})`;
+      });
+    }
+    const h = hex.replace('#', '');
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${a})`;
   }
-  window.toggleKGBot = toggleKGBot;
 
-  function pushBotMsg(html, klass) {
-    const el = document.getElementById('kgBotMsgs');
+  function toggleKGCopilot() {
+    const cp = document.getElementById('kgCopilot');
+    const launcher = document.getElementById('kgCopilotLauncher');
+    if (!cp) return;
+    const opening = !cp.classList.contains('open');
+    cp.classList.toggle('open', opening);
+    if (launcher) launcher.classList.toggle('hidden', opening);
+  }
+  function openKGCopilot(force) {
+    const cp = document.getElementById('kgCopilot');
+    const launcher = document.getElementById('kgCopilotLauncher');
+    if (!cp) return;
+    if (force || !cp.classList.contains('open')) {
+      cp.classList.add('open');
+      if (launcher) launcher.classList.add('hidden');
+    }
+  }
+  window.toggleKGCopilot = toggleKGCopilot;
+
+  function pushKGMsg(html, klass) {
+    const el = document.getElementById('kgMsgs');
     if (!el) return null;
     const msg = document.createElement('div');
-    msg.className = 'kg-bot-msg ' + (klass || 'ai');
+    msg.className = 'kg-msg ' + (klass || 'ai');
     msg.innerHTML = html;
     el.appendChild(msg);
-    el.scrollTop = el.scrollHeight;
+    // Scroll body to bottom
+    const body = el.closest('.kg-copilot-body');
+    if (body) body.scrollTop = body.scrollHeight;
     return msg;
   }
 
+  // Typewriter effect for AI answers — feels alive
+  function typewriteInto(el, html, speedMs) {
+    if (!el) return;
+    speedMs = speedMs || 14;
+    // Split by tags so HTML stays valid — we reveal text nodes char by char
+    el.innerHTML = '';
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const chunks = [];
+    (function walk(node) {
+      if (node.nodeType === 3) chunks.push({ text: node.textContent });
+      else if (node.nodeType === 1) {
+        const tag = node.tagName.toLowerCase();
+        chunks.push({ openTag: tag, attrs: [...node.attributes].map(a => `${a.name}="${a.value}"`).join(' ') });
+        node.childNodes.forEach(walk);
+        chunks.push({ closeTag: tag });
+      }
+    })(tmp);
+
+    let i = 0, currentText = '', openStack = [];
+    function render() {
+      // Rebuild HTML from processed chunks + partial current text
+      let out = '';
+      for (let k = 0; k < i; k++) {
+        const c = chunks[k];
+        if (c.text) out += c.text;
+        else if (c.openTag) out += `<${c.openTag}${c.attrs ? ' ' + c.attrs : ''}>`;
+        else if (c.closeTag) out += `</${c.closeTag}>`;
+      }
+      out += currentText;
+      // Close any still-open tags for valid HTML during animation
+      openStack.forEach(tag => { out += `</${tag}>`; });
+      el.innerHTML = out;
+    }
+
+    function step() {
+      if (i >= chunks.length) return;
+      const c = chunks[i];
+      if (c.openTag) { openStack.push(c.openTag); i++; render(); step(); return; }
+      if (c.closeTag) { openStack.pop(); i++; render(); step(); return; }
+      // text chunk — reveal char by char
+      if (currentText.length < c.text.length) {
+        currentText += c.text[currentText.length];
+        render();
+        setTimeout(step, speedMs);
+      } else {
+        currentText = ''; i++;
+        // reset openStack representation since text was inside those tags
+        render(); step();
+      }
+    }
+    step();
+  }
+
   const KG_QUERIES = {
-    similar:   '🔍 谁和谁最相似？',
-    central:   '⭐ 谁是中心人物？',
-    aiCollege: '🎓 哪个学院最热衷 AI？',
+    similar:   '🔍 找兴趣孪生对',
+    central:   '⭐ 找图谱中心',
+    aiCollege: '🎓 AI 兴趣浓度最高学院',
     team:      '👥 推荐 3 人组队',
-    cross:     '🌐 跨学院共同兴趣'
+    cross:     '🌐 跨学科兴趣'
   };
 
   function askKG(qid) {
-    pushBotMsg(KG_QUERIES[qid] || qid, 'user');
-    const thinkingMsg = pushBotMsg('⚙️ 正在基于图谱推理 ...', 'ai thinking');
+    openKGCopilot(true);
+    pushKGMsg(KG_QUERIES[qid] || qid, 'user');
+    const thinkingMsg = pushKGMsg('正在基于图谱推理', 'ai thinking');
     setTimeout(() => {
       const people = loadKBFromStorage();
       let result;
@@ -2993,15 +3301,40 @@ FNC 全称 FutureNow Center，是 IBM Consulting 在中国本地的落地团队�
         if (qid === 'cross')     result = kgQ_crossCollege(people);
       } catch (e) { result = { text: '推理出错：' + e.message }; }
       thinkingMsg.classList.remove('thinking');
-      thinkingMsg.innerHTML = (typeof result === 'string') ? result : (result.text || '没找到答案');
+      const output = (typeof result === 'string') ? result : (result.text || '没找到答案');
+      typewriteInto(thinkingMsg, output, 12);
       if (result && result.highlightId) {
         kgHighlightNode(result.highlightId);
       } else if (result && result.highlightIds && result.highlightIds.length) {
         kgHighlightNodes(result.highlightIds);
       }
-    }, 700);
+    }, 550);
   }
   window.askKG = askKG;
+
+  // Show a person node's detail in the copilot bottom slot
+  function showNodeDetail(person) {
+    const el = document.getElementById('kgNodeDetail');
+    if (!el || !person) return;
+    const tags = (person.interests || []).map(t => `<span class="tag">${escapeHTML(t)}</span>`).join('');
+    el.innerHTML = `
+      <div class="h">
+        <span class="nm">${escapeHTML(person.name || '?')}</span>
+        <span class="role">${escapeHTML(person.college || '?')}</span>
+      </div>
+      <div class="row"><span class="k">CODE</span>${escapeHTML(person.code || '?')}</div>
+      ${person.bio ? `<div class="row"><span class="k">BIO</span>${escapeHTML(person.bio)}</div>` : ''}
+      ${tags ? `<div class="tags">${tags}</div>` : ''}
+    `;
+    el.style.display = 'block';
+  }
+  function hideNodeDetail() {
+    const el = document.getElementById('kgNodeDetail');
+    if (el) el.style.display = 'none';
+  }
+  function escapeHTML(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
 
   // Highlight multiple nodes (用于 AI 助手推荐组队等多节点结果)
   function kgHighlightNodes(ids) {
