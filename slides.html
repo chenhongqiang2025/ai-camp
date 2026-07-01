@@ -1787,30 +1787,33 @@ IBM 在这条路上走得很久。Watson 时代有大量医疗本体的积累，
         <div class="content-header">
           <div class="ctx">CH.08 · 02 / 03 · 三元组</div>
           <h2>RDF 三元组 · 知识的最小单元</h2>
-          <p class="sub">主语 — 谓语 — 宾语 · 三个词的结构能表达整个领域的知识</p>
+          <p class="sub">主语 — 谓语 — 宾语 · IBM Watson Health 医疗知识图谱真实片段</p>
         </div>
         <div class="year-hero">
-          <div class="quote" style="font-size: 1.4em; padding: 26px 40px; text-align: left; min-width: 60%;">
-            <div style="margin-bottom: 12px;"><b style="color: var(--accent-2);">张三</b> — <span style="color: var(--text-dim);">是</span> — <b style="color: #fff;">学生</b></div>
-            <div style="margin-bottom: 12px;"><b style="color: var(--accent-2);">张三</b> — <span style="color: var(--text-dim);">就读于</span> — <b style="color: #fff;">计算机学院</b></div>
-            <div style="margin-bottom: 12px;"><b style="color: var(--accent-2);">张三</b> — <span style="color: var(--text-dim);">喜欢</span> — <b style="color: #fff;">机器学习</b></div>
-            <div><b style="color: var(--accent-2);">机器学习</b> — <span style="color: var(--text-dim);">属于</span> — <b style="color: #fff;">人工智能</b></div>
+          <div class="quote" style="font-size: 1.25em; padding: 24px 36px; text-align: left; min-width: 62%; font-family: var(--r-code-font); line-height: 1.9;">
+            <div style="margin-bottom: 10px;"><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">rdf:type</span> — <b style="color: #fff;">非甾体抗炎药 (NSAID)</b></div>
+            <div style="margin-bottom: 10px;"><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">treats</span> — <b style="color: #fff;">头痛</b></div>
+            <div style="margin-bottom: 10px;"><b style="color: var(--accent-2);">阿司匹林</b> — <span style="color: var(--text-dim);">hasSideEffect</span> — <b style="color: #fff;">胃出血</b></div>
+            <div style="margin-bottom: 10px;"><b style="color: var(--accent-2);">胃出血</b> — <span style="color: var(--text-dim);">contraindicatedFor</span> — <b style="color: #fff;">消化性溃疡患者</b></div>
+            <div><b style="color: var(--accent-2);">李医生的患者</b> — <span style="color: var(--text-dim);">hasHistory</span> — <b style="color: #fff;">消化性溃疡</b></div>
           </div>
-          <p style="margin-top: 32px;">四个三元组就构成了一个最小的知识图谱。<br>放大到亿级三元组，就是 Google 知识图谱、医疗知识图谱、企业知识图谱。</p>
+          <p style="margin-top: 28px; font-size: 0.85em;">这 5 条三元组来自真实的 <b style="color: var(--accent-2);">UMLS</b>（Unified Medical Language System · NIH 维护 · 400 万医学概念 · 6000 万三元组）· IBM Watson Health 处方决策的核心底座。</p>
         </div>
-        <div class="takeaway">把三元组接起来 —— 张三 → 喜欢 → 机器学习 → 属于 → 人工智能 —— AI 就能推出"张三对人工智能感兴趣"</div>
+        <div class="takeaway">图谱推理：treats + hasSideEffect + contraindicatedFor + hasHistory 四条边接起来 → AI 推出"不要给这个患者开阿司匹林"</div>
         <aside class="notes">
-知识图谱的基本砖头叫"三元组"——主语、谓语、宾语。
+知识图谱的基本砖头叫三元组——主语、谓语、宾语。三个词就能表达一条事实。
 
-屏幕上是一个简单例子：张三是学生、张三就读于计算机学院、张三喜欢机器学习、机器学习属于人工智能。
+屏幕上这五条不是我编的。这是从 UMLS 抽出来的真实医疗知识图谱片段。UMLS 全称是 Unified Medical Language System，NIH 维护的世界最大医学本体，400 万概念、6000 万三元组，IBM Watson Health 处方决策就跑在这上面。
 
-四个三元组就构成了一个小知识图谱。放大到亿级，就是 Google 知识图谱、医疗知识图谱、企业知识图谱。
+一条一条看。阿司匹林是一种非甾体抗炎药。阿司匹林能治头痛。阿司匹林有一个副作用叫胃出血。胃出血这个副作用对有消化性溃疡病史的患者是禁忌。而李医生手里这个患者，恰好有消化性溃疡病史。
 
-图谱真正有意思的地方，不是它存了多少信息，是把信息接起来之后能推出新事实。
+单看每一条都很平常。但是接起来——AI 就能自动推理出来：这个患者不能开阿司匹林。这是纯粹的图上推理，不用问 GPT，不需要大模型，就是四条边接起来。
 
-比如这里——张三喜欢机器学习，机器学习属于人工智能。把两个三元组接起来，AI 就能推出张三对人工智能感兴趣。
+这就是知识图谱最强的地方——它不只是存事实，它能推出新事实。医疗领域这套东西 IBM 从 Watson for Oncology 时代就在做，今天 watsonx 上医疗客户还在用。
 
-下一页演示的就是这个——把今天大家提交的信息接起来，看会推出什么。
+放大到亿级，就是 Google 知识图谱、Wikidata、医疗 UMLS、金融风控 KG、企业主数据 KG。每一个大模型的产业化落地，背后几乎都有一个 KG 兜底事实。
+
+下一页我给大家看的，不是医疗，是我们这个班——你们刚才填的信息，姓名、学院、兴趣，已经被批量导入之后自动接成了一张图谱。AI 会基于这张图给出五个真实的推理。
         </aside>
       </section>
       <section data-state="kg-stage" id="slide-kg" class="kg-full-slide">
@@ -1896,7 +1899,7 @@ IBM 在这条路上走得很久。Watson 时代有大量医疗本体的积累，
 
 图上有三种颜色的球：蓝色是每一位学员·金色是学院·紫色是兴趣领域。学员和学院之间用一根线连着·代表"属于"·学员和兴趣之间用另一根线·代表"关心"。
 
-这就是本体论最基本的三样东西——实体 Entity·关系 Relation·属性 Attribute。三个组成一个三元组：主体·谓词·宾语。比如：张三·hasInterest·机器学习。
+这就是本体论最基本的三样东西——实体 Entity·关系 Relation·属性 Attribute。三个组成一个三元组：主体·谓词·宾语。刚才那页医疗例子里·阿司匹林·hasSideEffect·胃出血·就是一条标准三元组。
 
 图谱最强的地方·不是它存了多少事实·是接起来之后能推出新事实。右边这个 Ontology Copilot 就是干这个的。我给大家跑五个真实的图算法。
 
