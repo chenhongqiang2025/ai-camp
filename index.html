@@ -236,7 +236,8 @@
   body:not(.teacher-unlocked) .demos-grid { display: none; }
   body:not(.teacher-unlocked) .demos-header .hint { display: none; }
   body:not(.teacher-unlocked) .demos-header h2 { color: var(--text-dim); font-weight: 500; }
-  body:not(.teacher-unlocked) .demos-header h2 .count { display: none; }
+  body:not(.teacher-unlocked) .demos-header .unlocked-title { display: none; }
+  body.teacher-unlocked .demos-header .locked-title { display: none; }
   .demos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
   .demo-card {
     display: flex; flex-direction: column; gap: 4px;
@@ -326,23 +327,20 @@
 
 <section class="demos-section">
   <div class="demos-header">
-    <h2>Demo · <span class="lock-hint" id="lockHint">教师内部演示 </span><span class="count">17</span> 个演示</h2>
+    <h2>Demo · <span class="locked-title">教师演示入口</span><span class="unlocked-title">一键跳转 <span class="count">17</span> 个演示</span></h2>
     <div class="hint">CLICK ANY · OPENS IN NEW TAB</div>
     <button class="exit-teacher" id="exitTeacher" title="退出教师模式">× 退出教师模式</button>
   </div>
 
   <div class="demos-guard" id="demosGuard">
-    <div class="guard-icon">🔒</div>
+    <div class="guard-icon" id="unlockHint" title="" style="cursor:pointer;">🔒</div>
     <div class="guard-title">
-      教师内部演示 · 感谢关注
+      教师演示入口
       <span class="en">Teacher-only demo library</span>
     </div>
     <div class="guard-sub">
       本页 <b style="color:var(--text);">17 个演示资源</b>仅面向讲师现场授课使用。<br>
       如果您是学员 · 请从页面顶部<b style="color:var(--accent-2);">「学生入口 · ENROLL」</b>报名并进入课件。
-    </div>
-    <div class="guard-hint" id="unlockHint" title="点击输入教师访问码 · 或按 Ctrl+K">
-      教师? 按 <kbd>Ctrl</kbd>+<kbd>K</kbd> 或点这里输入访问码
     </div>
   </div>
 
